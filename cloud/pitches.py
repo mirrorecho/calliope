@@ -145,7 +145,7 @@ class TallyCircleOfFifthsRange(TallyAppBase):
 
 class CloudPitches:
 
-    def __init__(self, pitch_lines=None, filename=None, project=None, autoload=False):
+    def __init__(self, pitch_lines=None, pitch_ranges=None, filename=None, project=None, autoload=False):
         self.is_loaded = False
 
         if project is not None:
@@ -160,11 +160,16 @@ class CloudPitches:
         self.filepath = self.project.data_path + "/" + filename
 
         self.dont_touch_pitches = None # [[]] # for future use
-        self.voice_ranges = [["[A3 A5]"]] # TO DO... extrapolate last entry for total # of lines/columns
+        
+        self.pitch_ranges = pitch_ranges # TO DO... extrapolate last entry for total # of lines/columns
+        if self.pitch_ranges is not None:
+            self.auto_move_into_ranges = True
+        else:
+            self.auto_move_into_ranges = False
 
         if pitch_lines is not None:
             self.pitch_lines = pitch_lines
-        elif autoload and os.path.isfile(filepath):
+        elif autoload and os.path.isfile(self.filepath):
             self.load()
         else:
             self.pitch_lines = [[]]
@@ -173,7 +178,6 @@ class CloudPitches:
 
         self.tally_apps = []
 
-        self.auto_move_into_ranges = True
         self.octave_transpositions_allowed = True
 
     def init_data(self, pitch_lines = None):
@@ -262,6 +266,14 @@ class CloudPitches:
             if random.randrange(0,2) == 0:
                 swap1 = indeces_sorted[i]
 
+    def move_into_ranges(self):
+        if self.pitch_ranges is not None:
+            for l in range(self.num_lines):
+                for c in range(self.num_columns):
+                    self.pitch_lines[l][c] = pitchtools.transpose_pitch_expr_into_pitch_range([self.pitch_lines[l][c]], self.pitch_ranges[l][c])[0]
+        else:
+            print("Tried moving pitches into ranges, but pitch_ranges is None")
+
     def randomize_column(self, column_index):
         # any more efficient way to do this...?        
         # TO DO... DON'T RANDOMIZE dont_touch_pitches
@@ -294,6 +306,8 @@ class CloudPitches:
         elif try_type_number == 4:
             # swap 2 (weighted) in some random column
             self.column_swap2_weighted(random.randrange(self.num_columns))
+        if self.auto_move_into_ranges:
+            self.move_into_ranges()
 
 
     def get_rearranged(self):
@@ -357,7 +371,7 @@ class CloudPitches:
         arrangement.show_pdf()
 
 
-    def tally_loop(self, times=22, filepath=None):
+    def tally_loop(self, times=9, filepath=None):
 
         k=input("Enter 't' to rearrange and re-tally, 'l' to load, 's' to save, 'p' to show pdf, 'q' to quit: ")
 

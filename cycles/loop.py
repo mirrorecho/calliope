@@ -10,14 +10,11 @@ class Cycle:
     flags = []
     arrangement = None
 
-    def __init__(self, measures_durations, arrangement=None):
+    def __init__(self, measures_durations, arrangement_type=Arrangement):
         # measures durations used in many transformations... default to 1 measure of 4/4
         self.measures_durations = measures_durations
         
-        if arrangement is not None:
-            self.arrangement = arrangement
-        else:
-            self.arrangement = Arrangement()
+        self.arrangement = arrangement_type()
         self.fill_skips()
 
     def fill_skips(self):
@@ -46,10 +43,11 @@ class Cycle:
 
 class CycleLoop:
 
-    def __init__(self, measures_durations=[(4,4), (4,4)]):
+    def __init__(self, measures_durations=[(4,4), (4,4)], arrangement_type=Arrangement):
         self.cycles = []
         self.transforms = []
         self.measures_durations = measures_durations
+        self.arrangement_type = arrangement_type
 
     def flag_index(self, flag):
         """
@@ -70,7 +68,9 @@ class CycleLoop:
                         ))
 
     def add_cycle(self, index=None, add_flags=[], measures_durations=None):
-        cycle = Cycle(self.measures_durations if measures_durations is None else measures_durations)
+        cycle = Cycle(
+                    measures_durations=self.measures_durations if measures_durations is None else measures_durations,
+                    arrangement_type=self.arrangement_type)
         if index is None:
             self.cycles.append(cycle)
         else:
