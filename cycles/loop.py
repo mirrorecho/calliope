@@ -1,7 +1,6 @@
 from abjad import *
-from arrangement import Arrangement, Part, PianoStaffPart
-from tokei import TokeiArrangement
-from cycles.transform import AddData
+from calliope.work import Arrangement, Part, PianoStaffPart
+from calliope.cycles.transform import AddData
 
 class Cycle:
     """
@@ -11,11 +10,14 @@ class Cycle:
     flags = []
     arrangement = None
 
-    def __init__(self, measures_durations):
+    def __init__(self, measures_durations, arrangement=None):
         # measures durations used in many transformations... default to 1 measure of 4/4
         self.measures_durations = measures_durations
-        # to do... don't restrict this to a tokei arrangement??
-        self.arrangement = TokeiArrangement()
+        
+        if arrangement is not None:
+            self.arrangement = arrangement
+        else:
+            self.arrangement = Arrangement()
         self.fill_skips()
 
     def fill_skips(self):

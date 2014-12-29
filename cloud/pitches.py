@@ -1,6 +1,6 @@
 from abjad import *
 
-from arrangement import Arrangement
+from calliope.work import Arrangement
 
 import os
 import random
@@ -185,6 +185,8 @@ class CloudPitches:
         try:
             if len(self.pitch_lines[0]) > 0:
                 self.is_loaded = True
+        except:
+            pass
 
     def reset_tally(self):
         # fill initial tallies with 0s 

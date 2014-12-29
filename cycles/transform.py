@@ -1,6 +1,6 @@
 from abjad import *
-from cycles.cells import IntervalRepeatCell
-from cloud.pitches import CloudPitches
+from calliope.cycles.cells import IntervalRepeatCell
+from calliope.cloud.pitches import CloudPitches
 
 import copy
 
