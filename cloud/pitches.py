@@ -307,6 +307,26 @@ class CloudPitches:
             # swap 2 (weighted) in some random column
             self.column_swap2_weighted(random.randrange(self.num_columns))
         if self.auto_move_into_ranges:
+            
+            #passable way to move pitches into matching octave
+            for l in range(self.num_lines):
+                for c in range(self.num_columns):
+                    if c == 0:
+                        if (self.pitch_lines[l][c+1] - self.pitch_lines[l][c]) < -6 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] -= 12
+                        elif (self.pitch_lines[l][c+1] - self.pitch_lines[l][c]) > 6 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] += 12
+                    elif c == self.num_columns-1:
+                        if (self.pitch_lines[l][c-1] - self.pitch_lines[l][c]) < -6 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] -= 12
+                        elif (self.pitch_lines[l][c-1] - self.pitch_lines[l][c]) > 6 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] += 12
+                    else:
+                        if (self.pitch_lines[l][c+1] + self.pitch_lines[l][c-1]) - (self.pitch_lines[l][c] * 2) < -12 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] -= 12
+                        elif (self.pitch_lines[l][c+1] + self.pitch_lines[l][c-1]) - (self.pitch_lines[l][c] * 2) > 12 and random.randrange(2) == 1:
+                            self.pitch_lines[l][c] += 12
+
             self.move_into_ranges()
 
 
@@ -341,7 +361,7 @@ class CloudPitches:
             filepath = self.filepath
         cloud_data = {}
         cloud_data["pitch_lines"] = self.pitch_lines
-        cloud_data["voice_ranges"] = self.voice_ranges
+        cloud_data["pitch_ranges"] = self.pitch_ranges
         cloud_data["dont_touch_pitches"] = self.dont_touch_pitches
 
         with open(filepath, "wb") as p_file:
