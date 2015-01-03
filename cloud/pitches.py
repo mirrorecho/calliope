@@ -6,6 +6,9 @@ import os
 import random
 import copy
 import pickle
+import tkinter
+import time
+import threading
 
 def get_diatonic_spread(pitch_line):
     pass
@@ -334,26 +337,36 @@ class CloudPitches:
         tries = []
         best_try = self
         # BETTER TO USE RECURSION HERE?
-        # this should get a variety of try type cominations...
-        for i in range(3):
+        # this should get a variety of try type combinations...
+        for i in range(2):
             i_try = copy.deepcopy(self)
             i_try.rearrange_try()
             i_try.get_tallies()
             if i_try.tally_total > best_try.tally_total:
                 best_try = i_try
-            for j in range(3):
+            for j in range(2):
                 j_try = copy.deepcopy(i_try)
                 j_try.rearrange_try()
                 j_try.get_tallies()
                 if j_try.tally_total > best_try.tally_total:
                     best_try = j_try
-                for k in range(3):
+                for k in range(2):
                     k_try = copy.deepcopy(j_try)
                     k_try.rearrange_try()
                     k_try.get_tallies()
                     if k_try.tally_total > best_try.tally_total:
                         best_try = k_try
-        return best_try
+                    for l in range(3):
+                        l_try = copy.deepcopy(k_try)
+                        l_try.rearrange_try()
+                        l_try.get_tallies()
+                        if l_try.tally_total > best_try.tally_total:
+                            best_try = l_try
+        if best_try is not self:
+            self.pitch_lines = best_try.pitch_lines
+            self.tallies = best_try.tallies
+            self.tally_total = best_try.tally_total
+
 
 
     def save(self, filepath=None):
@@ -393,18 +406,39 @@ class CloudPitches:
 
     def tally_loop(self, times=9, filepath=None):
 
-        k=input("Enter 't' to rearrange and re-tally, 'l' to load, 's' to save, 'p' to show pdf, 'q' to quit: ")
-
+        # see http://stackoverflow.com/questions/11758555/python-do-something-until-keypress-or-timeout
+        # for more on how this threading works...
         cloud = self
+
+        def re_tally():
+            T0 = time.clock()
+            while not stop_event.isSet(): #as long as long as flag is not set 
+                cloud.get_rearranged() # WTF, why doesn't cloud = cloud.get_rearranged() work???
+                print("Total tally:" + str(cloud.tally_total))
+                time.sleep(0.2)
+
+        def _stop_tally():
+            print("Stopping tally after this try...")
+            stop_event.set()
+            thread.join() #wait for the thread to finish
+            root.quit()
+            root.destroy()
 
         if filepath is None:
             filepath = self.filepath
 
+        k=input("Enter 't' start re-tallying, 'l' to load, 'r' to re-randomize, 's' to save, 'p' to show pdf, 'q' to quit: ")
+
         if k== "t":
-            for i in range(times):
-                cloud = cloud.get_rearranged()
-            print("Tried rearranging " + str(times) + " times...")
-            print("New total tally:" + str(cloud.tally_total))
+            
+            root = tkinter.Tk()
+            quit_button = tkinter.Button(master=root, text='Stop re-tallying', command=_stop_tally) #the quit button
+            quit_button.pack(side=tkinter.BOTTOM)
+            thread = threading.Thread(target=re_tally, args=())
+            stop_event = threading.Event()
+            thread.start()
+            root.mainloop()
+            
             cloud = CloudPitches.tally_loop(cloud)
 
         elif k == "l":
@@ -412,6 +446,12 @@ class CloudPitches:
             print("Loaded " + filepath)
             cloud.get_tallies()
             print("Total tally:" + str(cloud.tally_total))
+            cloud = CloudPitches.tally_loop(cloud)
+
+        elif k == "r":
+            cloud.randomize_all_columns()
+            cloud.get_tallies()
+            print("Randomized all columns... new tally is: " + str(cloud.tally_total))
             cloud = CloudPitches.tally_loop(cloud)
 
         elif k == "p":

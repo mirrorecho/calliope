@@ -192,14 +192,22 @@ class Arrangement:
         pdf_file_path = self.make_pdf(part_names=part_names)
         systemtools.IOManager.open_file(pdf_file_path)
 
-    def append_arrangement(self, arrangement):
+    def append_arrangement(self, arrangement, divider=False):
+        # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
+
         for part_name in self.parts:
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             if self.parts[part_name].is_simultaneous:
                 for i, part_line in enumerate(self.parts[part_name]):
                     part_line.extend(arrangement.parts[part_name][i])
+                    if divider:
+                        bar_line = indicatortools.BarLine("||")
+                        attach(bar_line, part_line[-1])
             else:
                 self.parts[part_name].extend(arrangement.parts[part_name])
+                if divider:
+                    bar_line = indicatortools.BarLine("||")
+                    attach(bar_line, self.parts[part_name][-1])
 
 
 

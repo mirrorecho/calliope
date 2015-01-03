@@ -97,5 +97,7 @@ class CycleLoop:
     def make_arrangement(self):
         arrangement = self.cycles[0].arrangement
         for cycle in self.cycles[1:]:
-            arrangement.append_arrangement(cycle.arrangement)
+            arrangement.append_arrangement(cycle.arrangement, divider=True)
         return arrangement
+
+
