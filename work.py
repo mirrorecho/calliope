@@ -12,8 +12,9 @@ class Project():
         self.pdf_path = self.project_path + "/" + PDF_SUBFOLDER
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
 
+## MAYBE THIS SHOULD INHERIT FROM STAFF...??!
 class Part(scoretools.Container):
-    
+
     def __init__(self, instrument=None, cleff=None):
         self.instrument = instrument
         self.start_cleff = cleff

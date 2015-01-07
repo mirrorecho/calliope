@@ -39,6 +39,24 @@ class TallyAppBase:
     def tally_pitch_across_columns(self, cloud, line_index, column_index, across_colum_index):
         pass
 
+class TallyRepeatedJumps(TallyAppBase):
+    def __init__(self, min_jump=3, over_incremental_multiplier=-2, back_again_multiplier=0.5, line_weights=None, column_weights=None):
+        self.min_jump=3
+        self.back_again_multiplier = back_again_multiplier # this let's us say that jumps back to the same pitch not as bad
+        self.over_incremental_multiplier = over_incremental_multiplier
+        super().__init__(line_weights=line_weights, column_weights=column_weights)
+    
+    def tally_pitch(self, cloud, line_index, column_index):
+        if column_index > 0 and column_index < cloud.num_columns-1:
+            jump_1 = abs(cloud.pitch_lines[line_index][column_index] - cloud.pitch_lines[line_index][column_index-1])
+            jump_2 = abs(cloud.pitch_lines[line_index][column_index] - cloud.pitch_lines[line_index][column_index+1])
+            if jump_1 >= self.min_jump and jump_2 >= self.min_jump:
+                rating_multiplier = self.over_incremental_multiplier
+                if cloud.pitch_lines[line_index][column_index-1] == cloud.pitch_lines[line_index][column_index+1]:
+                    rating_multiplier = rating_multiplier * self.back_again_multiplier
+                cloud.add_tally(line_index, column_index, (jump_1+jump_2)*self.over_incremental_multiplier)
+
+
 class TallyMelodicIntervals(TallyAppBase):
     def __init__(self, interval_ratings=[], over_incremental_multiplier=None, by_pitch_class=False, bidirectional=True, line_weights=None, column_weights=None):
         self.interval_ratings = interval_ratings
@@ -254,6 +272,12 @@ class CloudPitches:
         column_sums = [sum(self.tallies_column(c)) for c in range(self.num_columns)]
         return column_sums.index(min(column_sums))
 
+    def second_worst_column_index(self):
+        column_sums = [sum(self.tallies_column(c)) for c in range(self.num_columns)]
+        worst_index = column_sums.index(min(column_sums))
+        column_sums[worst_index] = abs(self.tally_total) + 1 # pretend the worst column is better than all columns combined
+        return column_sums.index(min(column_sums))
+
     def column_swap2_weighted(self, column_index):
         tallies_column = self.tallies_column(column_index)
         # RESEARCH THIS STATEMENT... HOW DOES IT WORK?
@@ -268,6 +292,13 @@ class CloudPitches:
                 break
             if random.randrange(0,2) == 0:
                 swap1 = indeces_sorted[i]
+
+    def column_swap2(self, column_index):
+        swap1 = random.randrange(self.num_lines)
+        swap2 = swap1
+        while swap2 != swap1:
+            swap2 = random.randrange(self.num_lines)
+        self.pitch_lines[swap1][column_index], self.pitch_lines[swap2][column_index] = self.pitch_lines[swap2][column_index], self.pitch_lines[swap1][column_index]
 
     def move_into_ranges(self):
         if self.pitch_ranges is not None:
@@ -291,24 +322,57 @@ class CloudPitches:
         for c in range(self.num_columns):
             self.randomize_column(c)
 
-    def rearrange_try(self):
-        try_type_number = random.randrange(0,5)
+    # one thought could be to swap 2 in columns before/after worst or 2nd worst column...
+    def rearrange_try(self, depth):
+        try_type_number = random.randrange(0+depth,8+depth)
+        # these are roughly ordered from most eratic/dramatic to most direct... at a lower depth, the
+        # more eratic/dramatic ones will be attempted...
         if try_type_number == 0:
-            # completely randomize the worst column
-            self.randomize_column(self.worst_column_index())
+            # completely randomize some random column and swap 2 in worst and 2nd worst columns (not weighed)
+            self.randomize_column(random.randrange(self.num_columns))
+            self.column_swap2(self.worst_column_index())
+            self.column_swap2(self.second_worst_column_index())
         elif try_type_number == 1:
-            # swap 2 (weighted) in the worst column
-            self.column_swap2_weighted(self.worst_column_index())
+            # completely randomize the second worst column and swap 2 in worst column
+            self.randomize_column(self.second_worst_column_index())
+            self.column_swap2(self.worst_column_index())
         elif try_type_number == 2:
+            # completely randomize the worst column and swap 2 in 2nd worst column
+            self.randomize_column(self.worst_column_index())
+            self.column_swap2(self.second_worst_column_index())
+        elif try_type_number == 3:
             # swap 2 (weighted) in all columns
             for i in range(self.num_columns):
-                self.column_swap2_weighted(i)
-        elif try_type_number == 3:
-            # completely randomize some random column
-            self.randomize_column(random.randrange(self.num_columns))
+                self.column_swap2_weighted(i)        
         elif try_type_number == 4:
-            # swap 2 (weighted) in some random column
+            # swap 2 (weighted) in some random column  ... and swap 2 (not weighted) in worst column
+            # (this option is ALWAYS a possibility)
             self.column_swap2_weighted(random.randrange(self.num_columns))
+            self.column_swap2(self.worst_column_index())
+        elif try_type_number == 5 or try_type_number:          
+            # swap 2 (weighted) in only the second worst column
+            # (this option is ALWAYS a possibility)
+            self.column_swap2_weighted(self.second_worst_column_index())
+        elif try_type_number == 6 or try_type_number == 11:
+            # swap 2 (weighted) in the worst column
+            # (this option is ALWAYS a possibility)
+            self.column_swap2_weighted(self.worst_column_index())
+        elif try_type_number == 7:
+            # swap 2 (not weighted) in worst column
+            # (this option is ALWAYS a possibility)
+            self.column_swap2(self.worst_column_index())
+        elif try_type_number == 8:
+            # swap 2 (weighted) in some random column 
+            self.column_swap2_weighted(random.randrange(self.num_columns))
+        elif try_type_number == 9:
+            # swap 2 (weighted) in the worst column... twice
+            self.column_swap2_weighted(self.worst_column_index())
+            self.column_swap2_weighted(self.worst_column_index())
+        elif try_type_number == 10:
+            # swap 2 (weighted) in the worst and second worst columns
+            self.column_swap2_weighted(self.worst_column_index())
+            self.column_swap2_weighted(self.second_worst_column_index())
+
         if self.auto_move_into_ranges:
             
             #passable way to move pitches into matching octave
@@ -340,28 +404,34 @@ class CloudPitches:
         # this should get a variety of try type combinations...
         for i in range(2):
             i_try = copy.deepcopy(self)
-            i_try.rearrange_try()
+            i_try.rearrange_try(0)
             i_try.get_tallies()
             if i_try.tally_total > best_try.tally_total:
                 best_try = i_try
             for j in range(2):
                 j_try = copy.deepcopy(i_try)
-                j_try.rearrange_try()
+                j_try.rearrange_try(1)
                 j_try.get_tallies()
                 if j_try.tally_total > best_try.tally_total:
                     best_try = j_try
                 for k in range(2):
                     k_try = copy.deepcopy(j_try)
-                    k_try.rearrange_try()
+                    k_try.rearrange_try(2)
                     k_try.get_tallies()
                     if k_try.tally_total > best_try.tally_total:
                         best_try = k_try
-                    for l in range(3):
+                    for l in range(2):
                         l_try = copy.deepcopy(k_try)
-                        l_try.rearrange_try()
+                        l_try.rearrange_try(3)
                         l_try.get_tallies()
                         if l_try.tally_total > best_try.tally_total:
                             best_try = l_try
+                        for m in range(2):
+                            m_try = copy.deepcopy(l_try)
+                            m_try.rearrange_try(4)
+                            m_try.get_tallies()
+                            if m_try.tally_total > best_try.tally_total:
+                                best_try = m_try
         if best_try is not self:
             self.pitch_lines = best_try.pitch_lines
             self.tallies = best_try.tallies
@@ -415,7 +485,7 @@ class CloudPitches:
             while not stop_event.isSet(): #as long as long as flag is not set 
                 cloud.get_rearranged() # WTF, why doesn't cloud = cloud.get_rearranged() work???
                 print("Total tally:" + str(cloud.tally_total))
-                time.sleep(0.2)
+                time.sleep(0.1)
 
         def _stop_tally():
             print("Stopping tally after this try...")
