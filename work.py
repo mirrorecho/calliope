@@ -74,14 +74,15 @@ class Arrangement:
     # - specify paper/book/misc lilypond output settings
 
 
-    def __init__(self, name="full-score", project=None, title="Full Score"):
+    def __init__(self, name="full-score", project=None, title="Full Score", layout="standard"):
         self.parts = OrderedDict()
         self.score = scoretools.Score([])
         self.output_path = OUTPUT_PATH
+        self.layout = layout
         if project is not None:
             self.project = project
         else:
-            self.project = calliope.works.projects.Project("rwestmusic")
+            self.project = Project("rwestmusic")
         self.title = title
         self.name = name
 
@@ -111,55 +112,102 @@ class Arrangement:
         """
         Makes Lilypond File
         """
+        if self.layout == "standard":
+            #configure the score ... 
+            spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
+            override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
+            override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
+            set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
+            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
 
-        #configure the score ... should this be made more universally aplicable?
-        spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
-        override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
-        override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
-        override(self.score).staff_symbol.thickness = 0.5
-        set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
+            # configure the lilypond file...
+            lilypond_file.global_staff_size = 14
 
-        lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
+            context_block = lilypondfiletools.ContextBlock(
+                #source_context_name="Staff \RemoveEmptyStaves",
+                )
+            override(context_block).vertical_axis_group.remove_first = True
+            lilypond_file.layout_block.items.append(context_block)
 
-        # configure the lilypond file...
-        lilypond_file.global_staff_size = 12
+            # assume we can use default dimensions...
 
-        context_block = lilypondfiletools.ContextBlock(
-            #source_context_name="Staff \RemoveEmptyStaves",
-            )
-        override(context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(context_block)
+            # bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            # lilypond_file.paper_block.bottom_margin = bottom_margin
 
-        slash_separator = indicatortools.LilyPondCommand('slashSeparator')
-        lilypond_file.paper_block.system_separator_markup = slash_separator
+            # top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            # lilypond_file.paper_block.top_margin = top_margin
 
-        bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.bottom_margin = bottom_margin
+            # left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
+            # lilypond_file.paper_block.left_margin = left_margin
 
-        top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.top_margin = top_margin
+            # right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            # lilypond_file.paper_block.right_margin = right_margin
 
-        left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
-        lilypond_file.paper_block.left_margin = left_margin
+            # paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
+            # lilypond_file.paper_block.paper_width = paper_width
 
-        right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.right_margin = right_margin
+            # paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
+            # lilypond_file.paper_block.paper_height = paper_height
 
-        paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
-        lilypond_file.paper_block.paper_width = paper_width
+            system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
+            lilypond_file.paper_block.system_system_spacing = system_system_spacing
 
-        paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
-        lilypond_file.paper_block.paper_height = paper_height
+            lilypond_file.header_block.composer = markuptools.Markup('Randall West')
 
-        system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
-        lilypond_file.paper_block.system_system_spacing = system_system_spacing
+            # TO DO... move "for Taiko and Orchestra" to subtitle
+            lilypond_file.header_block.title = markuptools.Markup(self.title)
 
-        lilypond_file.header_block.composer = markuptools.Markup('Randall West')
+            return lilypond_file
 
-        # TO DO... move "for Taiko and Orchestra" to subtitle
-        lilypond_file.header_block.title = markuptools.Markup(self.title)
+        elif self.layout =="orchestra":
+            #configure the score ... 
+            spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
+            override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
+            override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
+            override(self.score).staff_symbol.thickness = 0.5
+            set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
 
-        return lilypond_file
+            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
+
+            # configure the lilypond file...
+            lilypond_file.global_staff_size = 12
+
+            context_block = lilypondfiletools.ContextBlock(
+                #source_context_name="Staff \RemoveEmptyStaves",
+                )
+            override(context_block).vertical_axis_group.remove_first = True
+            lilypond_file.layout_block.items.append(context_block)
+
+            slash_separator = indicatortools.LilyPondCommand('slashSeparator')
+            lilypond_file.paper_block.system_separator_markup = slash_separator
+
+            bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.bottom_margin = bottom_margin
+
+            top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.top_margin = top_margin
+
+            left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
+            lilypond_file.paper_block.left_margin = left_margin
+
+            right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.right_margin = right_margin
+
+            paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
+            lilypond_file.paper_block.paper_width = paper_width
+
+            paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
+            lilypond_file.paper_block.paper_height = paper_height
+
+            system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
+            lilypond_file.paper_block.system_system_spacing = system_system_spacing
+
+            lilypond_file.header_block.composer = markuptools.Markup('Randall West')
+
+            # TO DO... move "for Taiko and Orchestra" to subtitle
+            lilypond_file.header_block.title = markuptools.Markup(self.title)
+
+            return lilypond_file
 
     def make_pdf(self, subfolder = None, part_names = None):
         """
