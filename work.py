@@ -13,12 +13,13 @@ class Project():
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
 
 ## MAYBE THIS SHOULD INHERIT FROM STAFF...??!
-class Part(scoretools.Container):
+class Part(scoretools.Context):
 
-    def __init__(self, instrument=None, cleff=None):
+    def __init__(self, name, instrument=None, cleff=None):
         self.instrument = instrument
         self.start_cleff = cleff
         super().__init__()
+        self.context_name = name
 
     def make_staff(self):
         staff = scoretools.Staff([])
@@ -39,8 +40,8 @@ class PercussionPart(Part):
 
 class PianoStaffPart(Part):
 
-    def __init__(self, instrument=None):
-        super().__init__(instrument=instrument)
+    def __init__(self, name, instrument=None):
+        super().__init__(name=name, instrument=instrument)
         self.is_simultaneous = True
         self.append(scoretools.Container()) # music for top staff
         self.append(scoretools.Container()) # music for bottom staff
@@ -74,7 +75,7 @@ class Arrangement:
     # - specify paper/book/misc lilypond output settings
 
 
-    def __init__(self, name="full-score", project=None, title="Full Score", layout="standard"):
+    def __init__(self, name="full-score", project=None, title="Full Score", layout="standard", time_signature=TimeSignature( (4,4) ) ):
         self.parts = OrderedDict()
         self.score = scoretools.Score([])
         self.output_path = OUTPUT_PATH
@@ -84,6 +85,7 @@ class Arrangement:
         else:
             self.project = Project("rwestmusic")
         self.title = title
+        self.time_signature = time_signature
         self.name = name
 
     def pdf_path(self, subfolder=None):
@@ -91,13 +93,13 @@ class Arrangement:
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
     def add_part(self, name, instrument=None, cleff=None):
-        self.parts[name] = Part(instrument, cleff)
+        self.parts[name] = Part(name=name, instrument=instrument, cleff=cleff)
 
     def add_perc_part(self, name, instrument=None):
-        self.parts[name] = PercussionPart(instrument)
+        self.parts[name] = PercussionPart(name=name, instrument=instrument)
 
     def add_piano_staff_part(self, name, instrument=None):
-        self.parts[name] = PianoStaffPart(instrument)
+        self.parts[name] = PianoStaffPart(name=name, instrument=instrument)
 
     def make_score(self, part_names = None):
 
@@ -106,7 +108,11 @@ class Arrangement:
         if part_names is None:
             part_names = self.parts
 
-        self.score.extend([self.parts[x].make_staff() for x in part_names])
+        for p in part_names:
+            # NOTE / QUESTION... will this work for piano/multi staff parts...?
+            part_staff = self.parts[p].make_staff()
+            attach(self.time_signature, part_staff)
+            self.score.append(part_staff)
 
     def make_lilypond_file(self):
         """
@@ -114,14 +120,14 @@ class Arrangement:
         """
         if self.layout == "standard":
             #configure the score ... 
-            spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
-            override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
-            override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
+            # spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
+            # override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
+            # override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
             set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
             lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
 
             # configure the lilypond file...
-            lilypond_file.global_staff_size = 14
+            lilypond_file.global_staff_size = 16
 
             context_block = lilypondfiletools.ContextBlock(
                 #source_context_name="Staff \RemoveEmptyStaves",
