@@ -15,6 +15,12 @@ def get_pitch_number(pitch_object):
 def get_pitch_range(low_pitch, high_pitch):
     return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
 
+def transpose_pitches(pitch_stuff, transpose):
+    if isinstance(pitch_stuff, (list, tuple)):
+        return [transpose_pitches(p, transpose) for p in pitch_stuff]
+    else:
+        return get_pitch_number(pitch_stuff) + transpose
+
 def music_from_durations(durations, times=None, split_durations=None, pitches=None):
     # durations is either:
     # - a string with rests and notes (usually c) to be transposed by pitches
