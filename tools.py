@@ -31,18 +31,25 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
     if pitches is not None:
         for i, note in enumerate(iterate(music).by_class(Note)):
             #QUESTION... should we NOT loop around the pitches?
-            if isinstance(pitches[i % len(pitches)], (list, tuple)):
+            pitch_stuff = pitches[i % len(pitches)]
+            if isinstance(pitch_stuff, (list, tuple)):
                 # make a cord, if it's a list or tuple
                 chord_index = music.index(note)
                 written_duration = copy.deepcopy(note.written_duration)
                 written_pitch = note.written_pitch
                 music.remove(note)
                 chord = Chord()
-                chord.note_heads = [get_pitch_number(p) for p in pitches[i % len(pitches)]]
+                chord.note_heads = [get_pitch_number(p) for p in pitch_stuff]
                 chord.written_duration = written_duration
                 music.insert(chord_index, chord)
+            elif pitch_stuff == "x":
+                note.written_pitch = 0
+                x_notes_on = indicatortools.LilyPondCommand('xNotesOn', 'before')
+                x_notes_off = indicatortools.LilyPondCommand('xNotesOff', 'after')
+                attach(x_notes_on, note)
+                attach(x_notes_off, note)
             else:
-                note.written_pitch = get_pitch_number(pitches[i % len(pitches)])
+                note.written_pitch = get_pitch_number(pitch_stuff)
 
     if times is not None:
         music_times = scoretools.Container()
