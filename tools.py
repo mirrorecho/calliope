@@ -1,5 +1,7 @@
 from abjad import *
 
+import copy
+
 # TO DO... could also pass note as pitch object
 def get_pitch_number(pitch_object):
     if isinstance(pitch_object, int):
@@ -29,7 +31,18 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
     if pitches is not None:
         for i, note in enumerate(iterate(music).by_class(Note)):
             #QUESTION... should we NOT loop around the pitches?
-           note.written_pitch += get_pitch_number(pitches[i % len(pitches)])
+            if isinstance(pitches[i % len(pitches)], (list, tuple)):
+                # make a cord, if it's a list or tuple
+                chord_index = music.index(note)
+                written_duration = copy.deepcopy(note.written_duration)
+                written_pitch = note.written_pitch
+                music.remove(note)
+                chord = Chord()
+                chord.note_heads = [get_pitch_number(p) for p in pitches[i % len(pitches)]]
+                chord.written_duration = written_duration
+                music.insert(chord_index, chord)
+            else:
+                note.written_pitch = get_pitch_number(pitches[i % len(pitches)])
 
     if times is not None:
         music_times = scoretools.Container()

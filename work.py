@@ -13,30 +13,37 @@ class Project():
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
 
 ## MAYBE THIS SHOULD INHERIT FROM STAFF...??!
-class Part(scoretools.Context):
+class Part(Staff):
 
-    def __init__(self, name, instrument=None, cleff=None):
-        self.instrument = instrument
-        self.start_cleff = cleff
-        super().__init__()
-        self.context_name = name
+    def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+        super().__init__(name=name, context_name=context_name) # why doesn't context name work?
+
+        # these attribbutes even needed?
+        self.instrument = instrument 
+        self.context_name = context_name # TO DO... understand what these contexts are doing
+        self.name = name
+        self.start_clef = clef
+
+        attach(self.instrument, self)
+        
+        if clef is not None:
+            attach(Clef(name=clef), self)
+
 
     def make_staff(self):
-        staff = scoretools.Staff([])
-        attach(self.instrument, staff)
-        if self.start_cleff is not None:
-            attach(Clef(name=self.start_cleff), staff)
-        staff.extend(self)
-        return staff
+        return self
 
 class PercussionPart(Part):
+    def __init__(self, name, instrument=None, clef=None):
+        super().__init__(name, instrument, clef, 'RhythmicStaff')
+
     
-    def make_staff(self):
-        # question... what about hi/low type of things... better to explicitly specify number of staff lines? 
-        staff = scoretools.Staff([], context_name='RhythmicStaff')
-        attach(self.instrument, staff)
-        staff.extend(self)
-        return staff
+    # def make_staff(self):
+    #     # question... what about hi/low type of things... better to explicitly specify number of staff lines? 
+    #     staff = scoretools.Staff([], context_name='RhythmicStaff')
+    #     attach(self.instrument, staff)
+    #     staff.extend(self)
+    #     return staff
 
 class PianoStaffPart(Part):
 
@@ -54,7 +61,7 @@ class PianoStaffPart(Part):
 
         attach(self.instrument, staff_group)
 
-        # should we always attach this cleff here?
+        # should we always attach this clef here?
         attach(Clef(name='bass'), staff_group[1])
 
         staff_group[0].extend(self[0])
@@ -92,8 +99,8 @@ class Arrangement:
         subfolder = subfolder + "/" if subfolder is not None else ""
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
-    def add_part(self, name, instrument=None, cleff=None):
-        self.parts[name] = Part(name=name, instrument=instrument, cleff=cleff)
+    def add_part(self, name, instrument=None, clef=None):
+        self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
 
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument)
@@ -222,6 +229,7 @@ class Arrangement:
         """
         self.make_score(part_names=part_names)
         lilypond_file = self.make_lilypond_file()
+        # print(format(lilypond_file))
         assert '__illustrate__' in dir(lilypond_file)
         result = topleveltools.persist(lilypond_file).as_pdf()
         pdf_file_path = result[0]
@@ -247,7 +255,7 @@ class Arrangement:
         pdf_file_path = self.make_pdf(part_names=part_names)
         systemtools.IOManager.open_file(pdf_file_path)
 
-    def append_arrangement(self, arrangement, divider=False):
+    def append_arrangement(self, arrangement, divider=False, fill_rests=True, fill_skips=False):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
         for part_name in self.parts:
