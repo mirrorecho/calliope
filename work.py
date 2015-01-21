@@ -100,6 +100,8 @@ class Arrangement:
         self.empty_measures = Container("R1 " * 8)
 
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
+        # .... NOTE... right now this is a dictionary of strings, but maybe a dictionary of musical containers...
+        #              or even some other abjad object instead of dictionary may be better suited
         self.rhythms = {}
 
         # similarly, for building up 
