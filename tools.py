@@ -21,7 +21,8 @@ def transpose_pitches(pitch_stuff, transpose):
     else:
         return get_pitch_number(pitch_stuff) + transpose
 
-def music_from_durations(durations, times=None, split_durations=None, pitches=None):
+# TO DO: add transpose, and spelling here! (also, could add auto-spelling)
+def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=None, ):
     # durations is either:
     # - a string with rests and notes (usually c) to be transposed by pitches
     # - a music container with rests and notes (usually c) to be transposed by pitches
@@ -35,27 +36,29 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
         music = scoretools.make_leaves([0], durations)
 
     if pitches is not None:
-        for i, note in enumerate(iterate(music).by_class(Note)):
+        for i, note_or_tied_notes in enumerate(iterate(music).by_logical_tie(pitched=True)):
             #QUESTION... should we NOT loop around the pitches?
             pitch_stuff = pitches[i % len(pitches)]
-            if isinstance(pitch_stuff, (list, tuple)):
-                # make a cord, if it's a list or tuple
-                chord_index = music.index(note)
-                written_duration = copy.deepcopy(note.written_duration)
-                written_pitch = note.written_pitch
-                music.remove(note)
-                chord = Chord()
-                chord.note_heads = [get_pitch_number(p) for p in pitch_stuff]
-                chord.written_duration = written_duration
-                music.insert(chord_index, chord)
-            elif pitch_stuff == "x":
-                note.written_pitch = 0
-                x_notes_on = indicatortools.LilyPondCommand('xNotesOn', 'before')
-                x_notes_off = indicatortools.LilyPondCommand('xNotesOff', 'after')
-                attach(x_notes_on, note)
-                attach(x_notes_off, note)
-            else:
-                note.written_pitch = get_pitch_number(pitch_stuff)
+            for note in note_or_tied_notes:
+                # assuming everyting in the logical tie is a note than can be transposed...
+                if isinstance(pitch_stuff, (list, tuple)):
+                    # make a cord, if it's a list or tuple
+                    chord_index = music.index(note)
+                    written_duration = copy.deepcopy(note.written_duration)
+                    written_pitch = note.written_pitch
+                    music.remove(note)
+                    chord = Chord()
+                    chord.note_heads = [get_pitch_number(p) for p in pitch_stuff]
+                    chord.written_duration = written_duration
+                    music.insert(chord_index, chord)
+                elif pitch_stuff == "x":
+                    note.written_pitch = 0
+                    x_notes_on = indicatortools.LilyPondCommand('xNotesOn', 'before')
+                    x_notes_off = indicatortools.LilyPondCommand('xNotesOff', 'after')
+                    attach(x_notes_on, note)
+                    attach(x_notes_off, note)
+                else:
+                    note.written_pitch = get_pitch_number(pitch_stuff)
 
     if times is not None:
         music_times = scoretools.Container()
