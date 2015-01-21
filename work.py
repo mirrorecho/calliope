@@ -133,6 +133,12 @@ class Arrangement:
     def add_piano_staff_part(self, name, instrument=None):
         self.parts[name] = PianoStaffPart(name=name, instrument=instrument)
 
+    def prepare_score(self):
+        """ this is a hook that derived classes can override to modify the score before 
+        going to print """
+        pass
+
+
     def make_score(self, part_names = None):
 
         self.score = scoretools.Score([])
@@ -145,6 +151,9 @@ class Arrangement:
             part_staff = self.parts[p].make_staff()
             attach(self.time_signature, part_staff)
             self.score.append(part_staff)
+
+        self.prepare_score()
+
 
     def make_lilypond_file(self):
         """
