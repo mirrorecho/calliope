@@ -22,7 +22,7 @@ def transpose_pitches(pitch_stuff, transpose):
         return get_pitch_number(pitch_stuff) + transpose
 
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
-def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=None, ):
+def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=0, respell=None):
     # durations is either:
     # - a string with rests and notes (usually c) to be transposed by pitches
     # - a music container with rests and notes (usually c) to be transposed by pitches
@@ -45,10 +45,9 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
                     # make a cord, if it's a list or tuple
                     chord_index = music.index(note)
                     written_duration = copy.deepcopy(note.written_duration)
-                    written_pitch = note.written_pitch
                     music.remove(note)
                     chord = Chord()
-                    chord.note_heads = [get_pitch_number(p) for p in pitch_stuff]
+                    chord.note_heads = [get_pitch_number(p) + transpose for p in pitch_stuff]
                     chord.written_duration = written_duration
                     music.insert(chord_index, chord)
                 elif pitch_stuff == "x":
@@ -58,7 +57,7 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
                     attach(x_notes_on, note)
                     attach(x_notes_off, note)
                 else:
-                    note.written_pitch = get_pitch_number(pitch_stuff)
+                    note.written_pitch = get_pitch_number(pitch_stuff) + transpose
 
     if times is not None:
         music_times = scoretools.Container()
@@ -73,4 +72,13 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
                         fracture_spanners=False,
                         tie_split_notes=True,
                         )
+    
+    #
+    if respell == "flats":
+        mutate(music).respell_with_flats()
+    elif respell == "sharps":
+        mutate(music).respell_with_sharps()
+    elif respell == "auto":
+        print("AUTO RESPELL NOT SUPPORTED YET...")
+    
     return music

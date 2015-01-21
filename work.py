@@ -95,6 +95,31 @@ class Arrangement:
         self.time_signature = time_signature
         self.name = name
 
+        # right now this is being used to deterimne the length (i.e. to fil with rests)
+        # ... some better way to handle?
+        self.empty_measures = Container("R1 " * 8)
+
+        # useful for building up little rhythmic phrases and then arranging them by passing a list of names
+        self.rhythms = {}
+
+        # similarly, for building up 
+        self.pitch_material = {}
+
+    def arrange_music(self, part_names, rhythms=[], rhythm_strings=[], pitch_material=[None], respell_sets=[None], transpose_sets=[0]):
+        for i, part_name in enumerate(part_names):
+            pitches = pitch_sets[i % len(pitch_sets)]
+            durations = duration_sets[i % len(duration_sets)]
+            respell = respell_sets[i % len(respell_sets)]
+            transpose=transpose_sets[i % len(transpose_sets)]
+
+            # TO DO... could pass along split durations here...
+            self.parts[part_name].extend(music_from_durations(durations=durations, pitches=pitches, transpose=transpose, respell=respell))
+
+    def fill_empty_parts_with_rests(self):
+        for part_name in self.parts:
+            if len(self.parts[part_name]) == 0:
+                self.parts[part_name].extend(copy.deepcopy(self.empty_measures))
+
     def pdf_path(self, subfolder=None):
         subfolder = subfolder + "/" if subfolder is not None else ""
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
@@ -137,7 +162,7 @@ class Arrangement:
             lilypond_file.global_staff_size = 16
 
             context_block = lilypondfiletools.ContextBlock(
-                #source_context_name="Staff \RemoveEmptyStaves",
+                source_context_name="Staff \RemoveEmptyStaves",
                 )
             override(context_block).vertical_axis_group.remove_first = True
             lilypond_file.layout_block.items.append(context_block)
@@ -252,11 +277,20 @@ class Arrangement:
         but uses arrangement-specific file path/name instead of the abjad default 
         and pdf filename does NOT increment
         """
+        print("")
+        print("---------------------------------------------------------------------------")
+        print("Creating PDF...")
+        print("---------------------------------------------------------------------------")
+        print("")
+
         pdf_file_path = self.make_pdf(part_names=part_names)
         systemtools.IOManager.open_file(pdf_file_path)
 
     def append_arrangement(self, arrangement, divider=False, fill_rests=True, fill_skips=False):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
+
+        self.fill_empty_parts_with_rests()
+        arrangement.fill_empty_parts_with_rests()
 
         for part_name in self.parts:
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
