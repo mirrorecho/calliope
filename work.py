@@ -102,17 +102,37 @@ class Arrangement:
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
         # .... NOTE... right now this is a dictionary of strings, but maybe a dictionary of musical containers...
         #              or even some other abjad object instead of dictionary may be better suited
-        self.rhythms = {}
+
+        self.material = {}
+        self.material["pitch"] = {}
+        self.material["rhythm"] = {}
 
         # similarly, for building up 
         self.pitch_material = {}
 
+
+        (
+        part_names=["part1", "part2"],
+        rhythms=[
+            "rhythm1",
+            ["rhythm2","rhtyhm2_A"],
+            ]
+        # OR
+        rhythms = "rhythm_stack"
+        # OR
+        rhythm_
+
+        pitch_material = ["pitch_row_A", "pitch_row_B"]
+        # OR
+        pitch_material = "pictches_YO"
+        )
+
     def arrange_music(self, part_names, rhythms=[], rhythm_strings=[], pitch_material=[None], respell_sets=[None], transpose_sets=[0]):
         for i, part_name in enumerate(part_names):
-            pitches = pitch_sets[i % len(pitch_sets)]
+            pitches = pitch_material[i % len(pitch_sets)]
             durations = duration_sets[i % len(duration_sets)]
             respell = respell_sets[i % len(respell_sets)]
-            transpose=transpose_sets[i % len(transpose_sets)]
+            transpose = transpose_sets[i % len(transpose_sets)]
 
             # TO DO... could pass along split durations here...
             self.parts[part_name].extend(music_from_durations(durations=durations, pitches=pitches, transpose=transpose, respell=respell))
