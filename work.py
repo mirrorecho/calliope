@@ -13,25 +13,42 @@ class Project():
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
 
 ## MAYBE THIS SHOULD INHERIT FROM STAFF...??!
-class Part(Staff):
+# class Part(Staff):
+
+#     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+#         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
+
+#         # these attribbutes even needed?
+#         self.instrument = instrument 
+#         self.context_name = context_name # TO DO... understand what these contexts are doing
+#         self.name = name
+#         self.start_clef = clef
+
+#         attach(self.instrument, self)
+        
+#         if clef is not None:
+#             attach(Clef(name=clef), self)
+
+
+#     def make_staff(self):
+#         return self
+
+class Part(scoretools.Context):
 
     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
-        super().__init__(name=name, context_name=context_name) # why doesn't context name work?
-
-        # these attribbutes even needed?
-        self.instrument = instrument 
-        self.context_name = context_name # TO DO... understand what these contexts are doing
-        self.name = name
+        self.instrument = instrument
         self.start_clef = clef
-
-        attach(self.instrument, self)
-        
-        if clef is not None:
-            attach(Clef(name=clef), self)
-
+        super().__init__()
+        self.context_name = name
 
     def make_staff(self):
-        return self
+        staff = scoretools.Staff([])
+        attach(self.instrument, staff)
+        if self.start_clef is not None:
+            attach(Clef(name=self.start_clef), staff)
+        staff.extend(self)
+        return staff
+
 
 class PercussionPart(Part):
     def __init__(self, name, instrument=None, clef=None):
@@ -111,21 +128,21 @@ class Arrangement:
         self.pitch_material = {}
 
 
-        (
-        part_names=["part1", "part2"],
-        rhythms=[
-            "rhythm1",
-            ["rhythm2","rhtyhm2_A"],
-            ]
-        # OR
-        rhythms = "rhythm_stack"
-        # OR
-        rhythm_
+        # (
+        # part_names=["part1", "part2"],
+        # rhythms=[
+        #     "rhythm1",
+        #     ["rhythm2","rhtyhm2_A"],
+        #     ]
+        # # OR
+        # rhythms = "rhythm_stack"
+        # # OR
+        # rhythm_
 
-        pitch_material = ["pitch_row_A", "pitch_row_B"]
-        # OR
-        pitch_material = "pictches_YO"
-        )
+        # pitch_material = ["pitch_row_A", "pitch_row_B"]
+        # # OR
+        # pitch_material = "pictches_YO"
+        # )
 
     def arrange_music(self, part_names, rhythms=[], rhythm_strings=[], pitch_material=[None], respell_sets=[None], transpose_sets=[0]):
         for i, part_name in enumerate(part_names):
