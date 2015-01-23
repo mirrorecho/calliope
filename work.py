@@ -2,10 +2,14 @@ from abjad import *
 from collections import OrderedDict
 from shutil import copyfile
 
+import copy
+
 from calliope.settings import *
 from calliope.tools import music_from_durations
 
-# TO DO... use assertions...
+# TO DO... 
+# - use assertions...
+# - question is it OK to treat material like strings (add it with other strings?)... or should it be more abstract?
 
 class Project():
     def __init__(self, name, title="", output_path=OUTPUT_PATH):
@@ -163,7 +167,11 @@ class Arrangement:
                     arrange_rhythm = rhythms[i % len(rhythms)]
                 else:
                     arrange_rhythm = "R1 "
-                    print("Warning... unexpected type of rhythms past... should be list (replacing with rest)")
+                    print("----------------------------------------------")
+                    print("WARNING... unexpected type of rhythms passed when attempting to arrange to " + ", ".join(part_names))
+                    print("Exected list, got " + type(rhythms).__name__)
+                    print("Replacing with rest...")
+                    print("----------------------------------------------")
             elif isinstance(rhythm_material, str):
                 # then the rhythm material should be the name of a rhythm list... get the right rhythm
                 rhythm_list = self.material["rhythm"][rhythm_material]
