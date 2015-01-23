@@ -22,7 +22,7 @@ class Project():
 # Parts inherit from Staff?
 class Part(Staff):
 
-    def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+    def __init__(self, name, instrument=None, clef=None, context_name='Staff', time_signature=None):
         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
 
         # these attribbutes even needed?
@@ -31,6 +31,12 @@ class Part(Staff):
         self.name = name
         self.start_clef = clef
 
+        if time_signature is not None:
+            # if len(self) > 0:
+            #     attach(copy.deepcopy(time_signature), self[0])
+            # else:
+            attach(copy.deepcopy(time_signature), self)
+        
         attach(self.instrument, self)
         
         if clef is not None:
@@ -59,8 +65,8 @@ class Part(Staff):
 
 
 class PercussionPart(Part):
-    def __init__(self, name, instrument=None, clef=None):
-        super().__init__(name, instrument, clef, 'RhythmicStaff')
+    def __init__(self, name, instrument=None, clef=None, context_name='RhythmicStaff', time_signature=None):
+        super().__init__(name, instrument=instrument, clef=clef, context_name=context_name, time_signature=time_signature)
 
     
     # def make_staff(self):
@@ -72,8 +78,8 @@ class PercussionPart(Part):
 
 class PianoStaffPart(Part):
 
-    def __init__(self, name, instrument=None):
-        super().__init__(name=name, instrument=instrument)
+    def __init__(self, name, instrument=None, time_signature=None):
+        super().__init__(name=name, instrument=instrument, time_signature=time_signature)
         self.is_simultaneous = True
         self.append(scoretools.Container()) # music for top staff
         self.append(scoretools.Container()) # music for bottom staff
@@ -118,6 +124,8 @@ class Arrangement:
             self.project = Project("rwestmusic")
         self.title = title
         self.time_signature = time_signature
+        self.last_time_signature = time_signature # the last time signature... useful for appending
+            # new arrangements and deciding if a new time signature indication is needed or not
         self.name = name
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
@@ -221,13 +229,13 @@ class Arrangement:
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
     def add_part(self, name, instrument=None, clef=None):
-        self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
+        self.parts[name] = Part(name=name, instrument=instrument, clef=clef, time_signature=self.time_signature)
 
     def add_perc_part(self, name, instrument=None):
-        self.parts[name] = PercussionPart(name=name, instrument=instrument)
+        self.parts[name] = PercussionPart(name=name, instrument=instrument, time_signature=self.time_signature)
 
     def add_piano_staff_part(self, name, instrument=None):
-        self.parts[name] = PianoStaffPart(name=name, instrument=instrument)
+        self.parts[name] = PianoStaffPart(name=name, instrument=instrument, time_signature=self.time_signature)
 
     def prepare_score(self):
         """ this is a hook that derived classes can override to modify the score before 
@@ -245,7 +253,6 @@ class Arrangement:
         for p in part_names:
             # NOTE / QUESTION... will this work for piano/multi staff parts...?
             part_staff = self.parts[p].make_staff()
-            attach(self.time_signature, part_staff)
             self.score.append(part_staff)
 
         self.prepare_score()
@@ -266,11 +273,17 @@ class Arrangement:
             # configure the lilypond file...
             lilypond_file.global_staff_size = 16
 
-            context_block = lilypondfiletools.ContextBlock(
-                source_context_name="Staff \RemoveEmptyStaves",
+            staff_context_block = lilypondfiletools.ContextBlock(
+                source_context_name="Staff \\RemoveEmptyStaves",
                 )
-            override(context_block).vertical_axis_group.remove_first = True
-            lilypond_file.layout_block.items.append(context_block)
+            override(staff_context_block).vertical_axis_group.remove_first = True
+            lilypond_file.layout_block.items.append(staff_context_block)
+
+            rhythmic_staff_context_block = lilypondfiletools.ContextBlock(
+                source_context_name="RhythmicStaff \\RemoveEmptyStaves",
+                )
+            override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
+            lilypond_file.layout_block.items.append(rhythmic_staff_context_block)
 
             # assume we can use default dimensions...
 
@@ -398,6 +411,12 @@ class Arrangement:
         arrangement.fill_empty_parts_with_rests()
 
         for part_name in self.parts:
+            if arrangement.time_signature != self.last_time_signature:
+                # time signatures attached to staff are not copied over with extend... 
+                # so attach arrangement's time signature to the music inside the staff
+                # first so that it is copied 
+                attach(arrangement.time_signature, arrangement.parts[part_name][0])
+
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             if self.parts[part_name].is_simultaneous:
                 for i, part_line in enumerate(self.parts[part_name]):
@@ -411,6 +430,7 @@ class Arrangement:
                     bar_line = indicatortools.BarLine("||")
                     attach(bar_line, self.parts[part_name][-1])
 
+        self.last_time_signature = arrangement.time_signature
 
 
 
