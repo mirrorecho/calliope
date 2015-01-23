@@ -3,6 +3,9 @@ from collections import OrderedDict
 from shutil import copyfile
 
 from calliope.settings import *
+from calliope.tools import music_from_durations
+
+# TO DO... use assertions...
 
 class Project():
     def __init__(self, name, title="", output_path=OUTPUT_PATH):
@@ -12,42 +15,43 @@ class Project():
         self.pdf_path = self.project_path + "/" + PDF_SUBFOLDER
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
 
-## MAYBE THIS SHOULD INHERIT FROM STAFF...??!
-# class Part(Staff):
-
-#     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
-#         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
-
-#         # these attribbutes even needed?
-#         self.instrument = instrument 
-#         self.context_name = context_name # TO DO... understand what these contexts are doing
-#         self.name = name
-#         self.start_clef = clef
-
-#         attach(self.instrument, self)
-        
-#         if clef is not None:
-#             attach(Clef(name=clef), self)
-
-
-#     def make_staff(self):
-#         return self
-
-class Part(scoretools.Context):
+# Parts inherit from Staff?
+class Part(Staff):
 
     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
-        self.instrument = instrument
+        super().__init__(name=name, context_name=context_name) # why doesn't context name work?
+
+        # these attribbutes even needed?
+        self.instrument = instrument 
+        self.context_name = context_name # TO DO... understand what these contexts are doing
+        self.name = name
         self.start_clef = clef
-        super().__init__()
-        self.context_name = name
+
+        attach(self.instrument, self)
+        
+        if clef is not None:
+            attach(Clef(name=clef), self)
+
 
     def make_staff(self):
-        staff = scoretools.Staff([])
-        attach(self.instrument, staff)
-        if self.start_clef is not None:
-            attach(Clef(name=self.start_clef), staff)
-        staff.extend(self)
-        return staff
+        return self
+
+# TO USE FOR SONGS TEMPORARILY
+# class Part(scoretools.Context):
+
+#     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+#         self.instrument = instrument
+#         self.start_clef = clef
+#         super().__init__()
+#         self.context_name = name
+
+#     def make_staff(self):
+#         staff = scoretools.Staff([])
+#         attach(self.instrument, staff)
+#         if self.start_clef is not None:
+#             attach(Clef(name=self.start_clef), staff)
+#         staff.extend(self)
+#         return staff
 
 
 class PercussionPart(Part):
@@ -124,35 +128,80 @@ class Arrangement:
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
 
-        # similarly, for building up 
-        self.pitch_material = {}
-
+        # # similarly, for building up 
+        # self.pitch_material = {}
 
         # (
         # part_names=["part1", "part2"],
-        # rhythms=[
-        #     "rhythm1",
-        #     ["rhythm2","rhtyhm2_A"],
+        
+        # rhythms = ["r4^part1 c2.","r4^part2 c4 c4 c4"]
+        # # OR
+        # rhythm_material=[
+        #     ["rhythm1_A","rhythm1_B"],
+        #     ["rhythm2_A","rhythm2_B"],
         #     ]
         # # OR
-        # rhythms = "rhythm_stack"
+        # rhythm_material=["rhythm1","rhythm2"]
         # # OR
-        # rhythm_
+        # rhythm_material="rhythm_matrix"
 
+        # # if pitches passed, it must be a list of pitch row lists 
+        # pitches = [["A4", "C#4"]]
+        # # OR
         # pitch_material = ["pitch_row_A", "pitch_row_B"]
         # # OR
-        # pitch_material = "pictches_YO"
+        # pitch_material = "pitches_matrix"
         # )
 
-    def arrange_music(self, part_names, rhythms=[], rhythm_strings=[], pitch_material=[None], respell_sets=[None], transpose_sets=[0]):
+    def arrange_music(self, part_names, rhythms=None, rhythm_material=None, pitches=None, pitch_material=None, respell=[None], transpose=[0]):
         for i, part_name in enumerate(part_names):
-            pitches = pitch_material[i % len(pitch_sets)]
-            durations = duration_sets[i % len(duration_sets)]
-            respell = respell_sets[i % len(respell_sets)]
-            transpose = transpose_sets[i % len(transpose_sets)]
+
+            # TO DO... could tidy up this logic...
+            if rhythms is not None:
+                if isinstance(rhythms, (list, tuple)):
+                    # then this should be a list of the actual rhythms
+                    arrange_rhythm = rhythms[i % len(rhythms)]
+                else:
+                    arrange_rhythm = "R1 "
+                    print("Warning... unexpected type of rhythms past... should be list (replacing with rest)")
+            elif isinstance(rhythm_material, str):
+                # then the rhythm material should be the name of a rhythm list... get the right rhythm
+                rhythm_list = self.material["rhythm"][rhythm_material]
+                arrange_rhythm = rhythm_list[i % len(rhythm_list)]
+            elif isinstance(rhythm_material, (list, tuple)):
+                # then the rhythm material should either be a list or matrix of rhythm names
+                rhythm_stuff = rhythm_material[i % len(rhythm_material)]
+                if isinstance(rhythm_stuff, str):
+                    # then this the name of rhythm material 
+                    arrange_rhythm = self.material["rhythm"][rhythm_stuff]
+                elif isinstance(rhythm_stuff, (list, tuple)):
+                    arrange_rhythm = " ".join([self.material["rhythm"][r] for r in rhythm_stuff])
+                    # then this is a list of rhythm material names ( in a row )
+                else:
+                    arrange_rhythm = "R1 "
+                    print("Warning... unexpected type of rhythm material passed")
+            else:
+                arrange_rhythm = "R1 "
+                print("Warning... unexpected type of rhythm material passed")
+
+            if pitches is not None:
+                # then this should be a matrix of the actual pitches
+                arrange_pitches = pitches[i % len(pitches)]
+            elif isinstance(pitch_material, str):
+                # then the pitch material should be the name of a pitch matrix... get the right row
+                pitch_matrix = self.material["pitch"][pitch_material]
+                arrange_pitches = pitch_matrix[i % len(pitch_matrix)]
+            elif isinstance(pitch_material, (list, tuple)):
+                # then the pitch material should be the names of a pitch rows...
+                arrange_pitches = self.material["pitch"][pitch_material[i % len(pitch_material)]]
+            else:
+                arrange_pitches = None
+
+            arrange_respell = respell[i % len(respell)]
+            arrange_transpose = transpose[i % len(transpose)]
 
             # TO DO... could pass along split durations here...
-            self.parts[part_name].extend(music_from_durations(durations=durations, pitches=pitches, transpose=transpose, respell=respell))
+            self.parts[part_name].extend(music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell))
 
     def fill_empty_parts_with_rests(self):
         for part_name in self.parts:
