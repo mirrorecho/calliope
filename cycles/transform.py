@@ -1,7 +1,7 @@
 from abjad import *
 from calliope.cycles.cells import IntervalRepeatCell
 from calliope.cloud.pitches import CloudPitches
-from calliope.tools import get_pitch_number, music_from_durations
+from calliope.tools import get_pitch_number, music_from_durations, transpose_pitches
 
 import copy
 
@@ -74,47 +74,42 @@ class TransformBase:
 #     after_durations = None
 #     transposition = 0
 
-class AddData(TransformBase):
+class AddMaterial(TransformBase):
     def apply(self, cycle, previous_cycle):
-        cycle.data[self.name] = self.args["value"]
+        if "material_type" in self.args: 
+            cycle.material[self.args["material_type"]][self.name] = self.args["value"]
+        else:
+            cycle.material[self.name] = self.args["value"]
 
 
-class MakeMusic(TransformBase):
+class ArrangeMusic(TransformBase):
     def apply(self, cycle, previous_cycle):
-        if "pitches" in self.args:
-            pitches = [get_pitch_number(p) for p in cycle.data[self.args["pitches"]]]
-        elif "pitch" in self.args:
-            pitches = [get_pitch_number(cycle.data[self.args["pitch"]])]
-        elif "relative_pitches" in self.args and "start_pitch" in self.args:
-            start_pitch = cycle.data[self.args["start_pitch"]]
-            relative_pitches = cycle.data[self.args["relative_pitches"]]        
-            pitches = [get_pitch_number(start_pitch) + i for i in relative_pitches]
-        else:
-            pitches = None
+        cycle.arrange_music(**self.args)
+ 
+        # if "pitches" in self.args:
+        #     pitches = [get_pitch_number(p) for p in cycle.data[self.args["pitches"]]]
+        # elif "pitch" in self.args:
+        #     pitches = [get_pitch_number(cycle.data[self.args["pitch"]])]
+        # elif "relative_pitches" in self.args and "start_pitch" in self.args:
+        #     start_pitch = cycle.data[self.args["start_pitch"]]
+        #     relative_pitches = cycle.data[self.args["relative_pitches"]]        
+        #     pitches = [get_pitch_number(start_pitch) + i for i in relative_pitches]
+        # else:
+        #     pitches = None
 
-        # better to pull from cycle data instead of just passing parameter???
-        if "times" in self.args:
-            times=self.args["times"]
-        else:
-            times = None
 
-        # split notes accross bar lines (with ties) .... QUESTION... should this happen here or at the arrangement mod?
-        music = music_from_durations(
-                        durations=cycle.data[self.args["durations"]], 
-                        split_durations=cycle.measures_durations, 
-                        pitches=pitches,
-                        times=times)
+        # # split notes accross bar lines (with ties) .... QUESTION... should this happen here or at the arrangement mod?
+        # music = music_from_durations(
+        #                 durations=cycle.data[self.args["durations"]], 
+        #                 split_durations=cycle.measures_durations, 
+        #                 pitches=pitches,
+        #                 times=times)
 
-        if "pitch_range" in self.args:
-            # QUESTION... does this work for chords or to they need to be handled separately?
-            for i, note in enumerate(iterate(music).by_class(Note)):
-                note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], cycle.data[self.args["pitch_range"]])[0]
-        
-        # if a part is specified, then add the music to that... otherwise add it to the data defined by this transform name
-        if "part" in self.args:
-            cycle.arrange_music(self.args["part"], music)
-        else:
-            cycle.data[self.name] = music
+        # # if a part is specified, then add the music to that... otherwise add it to the data defined by this transform name
+        # if "part" in self.args:
+        #     cycle.arrange_music(self.args["part"], music)
+        # else:
+        #     cycle.data[self.name] = music
 
 # handles basic parameters for pitch_lines, duration/durations/durations_lines, and parts... could be extended if needed (transpose, times, pitch_ranges, etc.)
 class MakeMusicLines(TransformBase):
@@ -239,9 +234,9 @@ class AddPitchesFromIntervalRepeatCell(TransformBase):
 class ModTransposePitch(TransformBase):
     def apply(self, cycle, previous_cycle):
         if previous_cycle is not None:
-            previous_pitch = previous_cycle.data[self.name]
-            new_pitch = previous_pitch.transpose(self.args["value"])
-            cycle.data[self.name] = new_pitch
+            previous_pitch = previous_cycle.material["pitch"][self.name]
+            new_pitch = transpose(previous_pitch, self.args["value"])
+            cycle.material["pitch"][self.name] = new_pitch
 
 class ModAddPoint(TransformBase):
     """

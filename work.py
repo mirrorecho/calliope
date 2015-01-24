@@ -8,7 +8,13 @@ from calliope.settings import *
 from calliope.tools import music_from_durations
 
 # TO DO... 
-# - inherit from Score!
+# TODAY
+# - all cycles transformations
+# - arrange relative pitches
+# SOON
+# - speed it up!!!! (minimize # of parts?) ...what's the main bottleneck? inheriting from Score?
+# - some kind of warning/error msg if material doesn't exist in dictionary when arranging
+# - what about cells... are these even useful anymore?
 # - staff groups
 # - allow overlays (parts on parts and material on material)
 # - material dictionary for lines?
@@ -20,7 +26,6 @@ from calliope.tools import music_from_durations
 # - arrange at certain duration
 # - specify paper/book/misc lilypond output settings
 # - fragment bubble could be extended for parts, other copies, etc.
-
 
 
 class Project():
@@ -118,7 +123,8 @@ class Bubble(Score):
             title="Full Score", 
             layout="standard", 
             time_signature=TimeSignature( (4,4) ),
-            measures_durations = [(4,4) for i in range(4)] # should we allow this to be None to be more flexible?
+            measures_durations = [(4,4)]*4, # should we allow this to be None to be more flexible?
+            rest_measures = None,
             ):
         
         super().__init__()
@@ -141,7 +147,16 @@ class Bubble(Score):
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
         # ... some better way to handle?
-        self.rest_measures = scoretools.make_multimeasure_rests(measures_durations)
+        if rest_measures is not None:
+            # useful for specifying rest measures for non assignable measure durations (e.g. something like 9/8)
+            self.rest_measures = rest_measures
+        else:
+            # if any measure duration is not assignable as a multi measure rest (e.g. something like 9/8),
+            # then fall fall back to standard rests instead of multi measure rests
+            if any([not Duration(d).is_assignable for d in measures_durations]):
+                self.rest_measures = scoretools.make_rests(measures_durations)
+            else:
+                self.rest_measures = scoretools.make_multimeasure_rests(measures_durations)
         self.skip_measures = scoretools.make_spacer_skip_measures(measures_durations)
 
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
@@ -177,7 +192,17 @@ class Bubble(Score):
         # pitch_material = "pitches_matrix"
         # )
 
-    def arrange_music(self, part_names, rhythms=None, rhythm_material=None, pitches=None, pitch_material=None, respell=[None], transpose=[0]):
+    def arrange_music(self, 
+                    part_names, 
+                    rhythms=None, 
+                    rhythm_material=None, 
+                    pitches=None, 
+                    pitch_material=None, 
+                    respell=[None], 
+                    transpose=[0],
+                    pitch_range=[None],
+                    split_durations=[None]
+                    ):
         for i, part_name in enumerate(part_names):
 
             # TO DO... could tidy up this logic...
@@ -227,9 +252,19 @@ class Bubble(Score):
 
             arrange_respell = respell[i % len(respell)]
             arrange_transpose = transpose[i % len(transpose)]
+            arrange_pitch_range = pitch_range[i % len(pitch_range)]
+            arrange_split_durations = split_durations[i % len(split_durations)]
+
+            music = music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell, split_durations=arrange_split_durations)
+            
+            if arrange_pitch_range is not None:
+                # QUESTION... does this work for chords or to they need to be handled separately?
+                for i, note in enumerate(iterate(music).by_class(Note)):
+                    note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
 
             # TO DO... could pass along split durations here...
-            self.parts[part_name].extend(music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell))
+            self.parts[part_name].extend(music)
+
 
     def fill_empty_parts_with_skips(self):
         for part_name in self.parts:
@@ -408,6 +443,8 @@ class Bubble(Score):
         similar to abjad's builtin show()... but uses bubble-specific file path/name instead of the abjad default,
         creates and returns pdf filename without showing it, and pdf file name does NOT increment
         """
+        self.prepare_score()
+
         if part_names is not None:
             bubble = self.make_fragment_bubble(part_names)
         else:

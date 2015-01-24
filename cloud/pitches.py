@@ -1,6 +1,6 @@
 from abjad import *
 
-from calliope.work import Arrangement
+from calliope.work import Bubble
 
 import os
 import random
@@ -462,16 +462,16 @@ class CloudPitches:
         self.init_data()
 
     def show(self):
-        arrangement = Arrangement(project=self.project, title="Cloud Pitch Lines: SCORE = " + str(self.tally_total), name="cloud-pitches-show")
+        bubble = Bubble(project=self.project, title="Cloud Pitch Lines: SCORE = " + str(self.tally_total), name="cloud-pitches-show")
         for i, line in enumerate(self.pitch_lines):
-            arrangement.add_part(name="line" + str(i), instrument=instrumenttools.Instrument(instrument_name="Line " + str(i), short_instrument_name=str(i)))
+            bubble.add_part(name="line" + str(i), instrument=instrumenttools.Instrument(instrument_name="Line " + str(i), short_instrument_name=str(i)))
             line_music = scoretools.make_notes(line, durationtools.Duration(1,4))
-            arrangement.parts["line" + str(i)].extend(line_music)
+            bubble.parts["line" + str(i)].extend(line_music)
 
         # TO DO... remove bar lines (or barlines every note?)
         # TO DO... show scores!
 
-        arrangement.show_pdf()
+        bubble.show_pdf()
 
 
     def tally_loop(self, times=9, filepath=None):
