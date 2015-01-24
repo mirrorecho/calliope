@@ -8,8 +8,13 @@ from calliope.settings import *
 from calliope.tools import music_from_durations
 
 # TO DO... 
+# - inherit from Score!
+# - allow overlays (parts on parts and material on material)
+# - rename? Bubble?
+# - material dictionary for lines?
 # - use assertions...
 # - question is it OK to treat material like strings (add it with other strings?)... or should it be more abstract?
+# - use measures durations here....
 
 class Project():
     def __init__(self, name, title="", output_path=OUTPUT_PATH):
@@ -113,7 +118,14 @@ class Arrangement:
     # - specify paper/book/misc lilypond output settings
 
 
-    def __init__(self, name="full-score", project=None, title="Full Score", layout="standard", time_signature=TimeSignature( (4,4) ) ):
+    def __init__(self, 
+            name="full-score", 
+            project=None, 
+            title="Full Score", 
+            layout="standard", 
+            time_signature=TimeSignature( (4,4) ) 
+            measures_durations = [(4,4) for i in range(4)] # should we allow this to be None to be more flexible?
+            ):
         self.parts = OrderedDict()
         self.score = scoretools.Score([])
         self.output_path = OUTPUT_PATH
@@ -127,10 +139,12 @@ class Arrangement:
         self.last_time_signature = time_signature # the last time signature... useful for appending
             # new arrangements and deciding if a new time signature indication is needed or not
         self.name = name
+        self.measures_durations = measures_durations
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
         # ... some better way to handle?
-        self.empty_measures = Container("R1 " * 8)
+        self.rest_measures = scoretools.make_multimeasure_rests(measures_durations)
+        self.skip_measures = scoretools.make_spacer_skip_measures(measures_durations)
 
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
         # .... NOTE... right now this is a dictionary of strings, but maybe a dictionary of musical containers...
@@ -219,10 +233,23 @@ class Arrangement:
             # TO DO... could pass along split durations here...
             self.parts[part_name].extend(music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell))
 
+    def fill_empty_parts_with_skips(self):
+        for part_name, part in self.parts:
+            if part.is_simultaneous:
+                for part_line in part:
+                    if len(part_line) == 0:
+                        part_line.extend(copy.deepcopy(self.skip_measures))
+            elif len(part) == 0:
+                part.extend(copy.deepcopy(self.skip_measures))
+
     def fill_empty_parts_with_rests(self):
-        for part_name in self.parts:
-            if len(self.parts[part_name]) == 0:
-                self.parts[part_name].extend(copy.deepcopy(self.empty_measures))
+        for part_name, part in self.parts:
+            if part.is_simultaneous:
+                for part_line in part:
+                    if len(part_line) == 0:
+                        part_line.extend(copy.deepcopy(self.rest_measures))
+            elif len(part) == 0:
+                part.extend(copy.deepcopy(self.rest_measures))
 
     def pdf_path(self, subfolder=None):
         subfolder = subfolder + "/" if subfolder is not None else ""

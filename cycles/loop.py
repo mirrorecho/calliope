@@ -2,6 +2,7 @@ from abjad import *
 from calliope.work import Arrangement, Part, PianoStaffPart
 from calliope.cycles.transform import AddData
 
+# each cycle can just be an arrangement!
 class Cycle:
     """
     Represents a single cycle
@@ -17,19 +18,6 @@ class Cycle:
         self.arrangement = arrangement_type()
         self.fill_skips()
 
-    def fill_skips(self):
-        """
-        fills empty parts in this cycle's arrangement with measures of full length skips so that cycles align properly
-        """
-        # TO DO... this could be better... 
-        for part_name, part in self.arrangement.parts.items():
-            if part.is_simultaneous:
-                for part_line in part:
-                    if len(part_line) == 0:
-                        part_line.extend(scoretools.make_spacer_skip_measures(self.measures_durations))
-            elif len(part) == 0:
-                part.extend(scoretools.make_spacer_skip_measures(self.measures_durations))
-
     def arrange_music(self, part_name, music, staff_number=None): #staff_number used for piano/multistaff parts
         part = self.arrangement.parts[part_name]
         if part.is_simultaneous:
@@ -43,10 +31,9 @@ class Cycle:
 
 class CycleLoop:
 
-    def __init__(self, measures_durations=[(4,4), (4,4)], arrangement_type=Arrangement):
+    def __init__(self, arrangement_type=Arrangement):
         self.cycles = []
         self.transforms = []
-        self.measures_durations = measures_durations
         self.arrangement_type = arrangement_type
 
     def flag_index(self, flag):
