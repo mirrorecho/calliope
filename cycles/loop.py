@@ -37,6 +37,9 @@ class CycleLoop:
     def arrange_music(self, **kwargs):
         self.add_transform(ArrangeMusic(**kwargs))
 
+    def exec_method(self, name, **kwargs):
+        self.add_transform(ExecMethod(name, **kwargs))
+
     def add_cycle(self, bubble_type=None, index=None, add_flags=[], **kwargs):
         if bubble_type is None:
             bubble_type = self.bubble_type

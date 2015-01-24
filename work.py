@@ -9,11 +9,17 @@ from calliope.tools import music_from_durations
 
 # TO DO... 
 # TODAY
+# - arrange relative pitches (DONE... need to test)
 # - all cycles transformations
-# - arrange relative pitches
+# - easily load cloud pitches into pitch material
 # SOON
 # - speed it up!!!! (minimize # of parts?) ...what's the main bottleneck? inheriting from Score?
 # - some kind of warning/error msg if material doesn't exist in dictionary when arranging
+# - resurrect previous cycle transforms?
+# - - - cloud pitches?
+# - - - copy music?
+# - - - copy pitch?
+# - - - make lines (as raw material... before arranging to parts)?
 # - what about cells... are these even useful anymore?
 # - staff groups
 # - allow overlays (parts on parts and material on material)
@@ -201,7 +207,8 @@ class Bubble(Score):
                     respell=[None], 
                     transpose=[0],
                     pitch_range=[None],
-                    split_durations=[None]
+                    split_durations=[None],
+                    *args, **kwargs
                     ):
         for i, part_name in enumerate(part_names):
 

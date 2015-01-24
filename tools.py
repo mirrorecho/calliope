@@ -21,6 +21,14 @@ def transpose_pitches(pitch_stuff, transpose):
     else:
         return get_pitch_number(pitch_stuff) + transpose
 
+def pitches_from_intervals(intervals, start_pitch=0):
+    """
+    takes a start pitch and list of intervals, and returns a list of pitch numbers
+    """
+    start_pitch_number = get_pitch_number(start_pitch)
+    return [get_pitch_number(sum(intervals[:x+1])) + start_pitch_number for x in range(len(intervals))]
+
+
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
 def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=0, respell=None):
     # durations is either:
