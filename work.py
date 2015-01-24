@@ -9,12 +9,19 @@ from calliope.tools import music_from_durations
 
 # TO DO... 
 # - inherit from Score!
+# - staff groups
 # - allow overlays (parts on parts and material on material)
-# - rename? Bubble?
 # - material dictionary for lines?
 # - use assertions...
 # - question is it OK to treat material like strings (add it with other strings?)... or should it be more abstract?
 # - use measures durations here....
+# - option to hide empty parts/staves
+# - fill parts with rests/skips
+# - arrange at certain duration
+# - specify paper/book/misc lilypond output settings
+# - fragment bubble could be extended for parts, other copies, etc.
+
+
 
 class Project():
     def __init__(self, name, title="", output_path=OUTPUT_PATH):
@@ -46,10 +53,6 @@ class Part(Staff):
         
         if clef is not None:
             attach(Clef(name=clef), self)
-
-
-    def make_staff(self):
-        return self
 
 # TO USE FOR SONGS TEMPORARILY
 # class Part(scoretools.Context):
@@ -105,29 +108,23 @@ class PianoStaffPart(Part):
 
         return staff_group
 
-class Arrangement:
+class Bubble(Score):
     """
-    Represents a collection of parts. Parts should be added in score order.
+    A bubble of musical material!
     """
-
-    # TO DOs:
-    # - get/set length?
-    # - option to hide empty parts/staves
-    # - fill parts with rests/skips
-    # - arrange at certain duration
-    # - specify paper/book/misc lilypond output settings
-
-
     def __init__(self, 
             name="full-score", 
             project=None, 
             title="Full Score", 
             layout="standard", 
-            time_signature=TimeSignature( (4,4) ) 
+            time_signature=TimeSignature( (4,4) ),
             measures_durations = [(4,4) for i in range(4)] # should we allow this to be None to be more flexible?
             ):
-        self.parts = OrderedDict()
-        self.score = scoretools.Score([])
+        
+        super().__init__()
+
+        self.parts = OrderedDict() # assume this is necessary... unless there's some way to get score staves by name
+        
         self.output_path = OUTPUT_PATH
         self.layout = layout
         if project is not None:
@@ -135,9 +132,10 @@ class Arrangement:
         else:
             self.project = Project("rwestmusic")
         self.title = title
+
         self.time_signature = time_signature
         self.last_time_signature = time_signature # the last time signature... useful for appending
-            # new arrangements and deciding if a new time signature indication is needed or not
+            # new bubbles and deciding if a new time signature indication is needed or not
         self.name = name
         self.measures_durations = measures_durations
 
@@ -234,7 +232,8 @@ class Arrangement:
             self.parts[part_name].extend(music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell))
 
     def fill_empty_parts_with_skips(self):
-        for part_name, part in self.parts:
+        for part_name in self.parts:
+            part = self.parts[part_name]
             if part.is_simultaneous:
                 for part_line in part:
                     if len(part_line) == 0:
@@ -243,7 +242,8 @@ class Arrangement:
                 part.extend(copy.deepcopy(self.skip_measures))
 
     def fill_empty_parts_with_rests(self):
-        for part_name, part in self.parts:
+        for part_name in self.parts:
+            part = self.parts[part_name]
             if part.is_simultaneous:
                 for part_line in part:
                     if len(part_line) == 0:
@@ -257,32 +257,21 @@ class Arrangement:
 
     def add_part(self, name, instrument=None, clef=None):
         self.parts[name] = Part(name=name, instrument=instrument, clef=clef, time_signature=self.time_signature)
+        self.append(self.parts[name])
 
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument, time_signature=self.time_signature)
+        self.append(self.parts[name])
 
     def add_piano_staff_part(self, name, instrument=None):
+        # not sure if this works for piano parts...
         self.parts[name] = PianoStaffPart(name=name, instrument=instrument, time_signature=self.time_signature)
+        self.append(self.parts[name])
 
     def prepare_score(self):
         """ this is a hook that derived classes can override to modify the score before 
         going to print """
         pass
-
-
-    def make_score(self, part_names = None):
-
-        self.score = scoretools.Score([])
-
-        if part_names is None:
-            part_names = self.parts
-
-        for p in part_names:
-            # NOTE / QUESTION... will this work for piano/multi staff parts...?
-            part_staff = self.parts[p].make_staff()
-            self.score.append(part_staff)
-
-        self.prepare_score()
 
 
     def make_lilypond_file(self):
@@ -294,8 +283,8 @@ class Arrangement:
             # spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
             # override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
             # override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
-            set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
-            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
+            set_(self).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
+            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
 
             # configure the lilypond file...
             lilypond_file.global_staff_size = 16
@@ -345,12 +334,12 @@ class Arrangement:
         elif self.layout =="orchestra":
             #configure the score ... 
             spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
-            override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
-            override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
-            override(self.score).staff_symbol.thickness = 0.5
-            set_(self.score).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
+            override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
+            override(self).staff_grouper.staff_staff_spacing = spacing_vector
+            override(self).staff_symbol.thickness = 0.5
+            set_(self).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
 
-            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self.score)
+            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
 
             # configure the lilypond file...
             lilypond_file.global_staff_size = 12
@@ -392,13 +381,40 @@ class Arrangement:
 
             return lilypond_file
 
+
+    def make_fragment_bubble(self, part_names):
+        """
+        creates a new bubble instance with a subset of this bubble's parts (ONLY)
+        """
+        # not the most elegent solution... but this should work...
+        bubble = Bubble(
+            name=self.name + "-fragment", 
+            project=self.project, 
+            title=self.title, 
+            layout=self.layout, 
+            time_signature=self.time_signature,
+            measures_durations = self.measures_durations)
+
+        for p in part_names:
+            # is it OK that we're not making a copy of this...??
+            bubble.parts[p] = self.parts[p]
+            bubble.append(bubble.parts[p])
+
+        return bubble
+
+
     def make_pdf(self, subfolder = None, part_names = None):
         """
-        similar to abjad's builtin show()... but uses arrangement-specific file path/name instead of the abjad default,
+        similar to abjad's builtin show()... but uses bubble-specific file path/name instead of the abjad default,
         creates and returns pdf filename without showing it, and pdf file name does NOT increment
         """
-        self.make_score(part_names=part_names)
-        lilypond_file = self.make_lilypond_file()
+        if part_names is not None:
+            bubble = self.make_fragment_bubble(part_names)
+        else:
+            bubble = self
+
+        lilypond_file = bubble.make_lilypond_file()
+
         # print(format(lilypond_file))
         assert '__illustrate__' in dir(lilypond_file)
         result = topleveltools.persist(lilypond_file).as_pdf()
@@ -409,7 +425,7 @@ class Arrangement:
         if success:
             # not sure why save_last_pdf_as doesn't work (UnicodeDecodeError)... so just using copyfile instead
             #systemtools.IOManager.save_last_pdf_as(project_pdf_file_path)
-            project_pdf_file_path = self.pdf_path(subfolder)
+            project_pdf_file_path = bubble.pdf_path(subfolder)
             copyfile(pdf_file_path, project_pdf_file_path)
 
             return project_pdf_file_path
@@ -419,7 +435,7 @@ class Arrangement:
     def show_pdf(self, part_names = None):
         """
         calls make_pdf and then shows the pdf: similar to abjad's builtin show() method... 
-        but uses arrangement-specific file path/name instead of the abjad default 
+        but uses bubble-specific file path/name instead of the abjad default 
         and pdf filename does NOT increment
         """
         print("")
@@ -431,33 +447,33 @@ class Arrangement:
         pdf_file_path = self.make_pdf(part_names=part_names)
         systemtools.IOManager.open_file(pdf_file_path)
 
-    def append_arrangement(self, arrangement, divider=False, fill_rests=True, fill_skips=False):
+    def append_bubble(self, bubble, divider=False, fill_rests=True, fill_skips=False):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
         self.fill_empty_parts_with_rests()
-        arrangement.fill_empty_parts_with_rests()
+        bubble.fill_empty_parts_with_rests()
 
         for part_name in self.parts:
-            if arrangement.time_signature != self.last_time_signature:
+            if bubble.time_signature != self.last_time_signature:
                 # time signatures attached to staff are not copied over with extend... 
-                # so attach arrangement's time signature to the music inside the staff
+                # so attach bubble's time signature to the music inside the staff
                 # first so that it is copied 
-                attach(arrangement.time_signature, arrangement.parts[part_name][0])
+                attach(bubble.time_signature, bubble.parts[part_name][0])
 
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             if self.parts[part_name].is_simultaneous:
                 for i, part_line in enumerate(self.parts[part_name]):
-                    part_line.extend(arrangement.parts[part_name][i])
+                    part_line.extend(bubble.parts[part_name][i])
                     if divider:
                         bar_line = indicatortools.BarLine("||")
                         attach(bar_line, part_line[-1])
             else:
-                self.parts[part_name].extend(arrangement.parts[part_name])
+                self.parts[part_name].extend(bubble.parts[part_name])
                 if divider:
                     bar_line = indicatortools.BarLine("||")
                     attach(bar_line, self.parts[part_name][-1])
 
-        self.last_time_signature = arrangement.time_signature
+        self.last_time_signature = bubble.time_signature
 
 
 
