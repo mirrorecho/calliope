@@ -88,7 +88,7 @@ class ArrangeMusic(TransformBase):
 class ExecMethod(TransformBase):
     def apply(self, cycle, previous_cycle):
         method = getattr(cycle, self.name)
-        method(**args)
+        method(**self.args)
 
 class ModAddPoint(TransformBase):
     """

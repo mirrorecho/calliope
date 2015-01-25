@@ -1,6 +1,6 @@
 from abjad import *
 from calliope.work import Bubble, Part, PianoStaffPart
-from calliope.cycles.transform import AddMaterial, ArrangeMusic
+from calliope.cycles.transform import AddMaterial, ArrangeMusic, ExecMethod
 
 
 class CycleLoop:
@@ -40,7 +40,7 @@ class CycleLoop:
     def exec_method(self, name, **kwargs):
         self.add_transform(ExecMethod(name, **kwargs))
 
-    def add_cycle(self, bubble_type=None, index=None, add_flags=[], **kwargs):
+    def add_cycle(self, bubble_type=None, index=None, flags=[], **kwargs):
         if bubble_type is None:
             bubble_type = self.bubble_type
         cycle = bubble_type(**kwargs)
@@ -48,17 +48,17 @@ class CycleLoop:
             self.cycles.append(cycle)
         else:
             self.cycles.insert(index, cycle)
-        cycle.flags = add_flags
+        cycle.flags = flags
 
-    def add_cycle_before(self, flag, bubble_type=None, add_flags=[]):
-        index = self.flag_index(flag)
+    def add_cycle_before(self, before_flag, bubble_type=None, flags=[]):
+        index = self.flag_index(before_flag)
         if index is not None:
-            self.add_cycle(bubble_type, index, add_flags)
+            self.add_cycle(bubble_type, index, flags)
 
-    def add_cycle_after(self, flag, bubble_type=None, add_flags=[]):
-        index = self.flag_index(flag)
+    def add_cycle_after(self, after_flag, bubble_type=None, flags=[]):
+        index = self.flag_index(after_flag)
         if index is not None:
-            self.add_cycle(bubble_type, index + 1, add_flags)
+            self.add_cycle(bubble_type, index + 1, flags)
 
     def apply_transforms(self):
         for i, cycle in enumerate(self.cycles):
@@ -69,7 +69,7 @@ class CycleLoop:
 
     def make_bubble(self):
         bubble = self.bubble_type(measures_durations=[])
-        for cycle in self.cycles[:]:
+        for cycle in self.cycles[:3]:
             bubble.append_bubble(cycle, divider=True)
         return bubble
 
