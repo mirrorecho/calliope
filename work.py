@@ -95,29 +95,30 @@ class PercussionPart(Part):
     #     staff.extend(self)
     #     return staff
 
-class PianoStaffPart(Part):
-
-    def __init__(self, name, instrument=None, time_signature=None):
-        super().__init__(name=name, instrument=instrument, time_signature=time_signature)
+class PianoStaffPart(StaffGroup):
+    def __init__(self, name, instrument=None, clef=None, context_name='StaffGroup', time_signature=None):
+        super().__init__(name=name, context_name=context_name) # why doesn't context name work?
         self.is_simultaneous = True
-        self.append(scoretools.Container()) # music for top staff
-        self.append(scoretools.Container()) # music for bottom staff
+        self.append(scoretools.Staff()) # top staff
+        self.append(scoretools.Staff()) # bottom staff
 
-    def make_staff(self):
-        staff_group = StaffGroup()
-        staff_group.context_name = 'PianoStaff' # should the context name always be piano staff??
-        staff_group.append(Staff([]))
-        staff_group.append(Staff([]))
+        # these attribbutes even needed?
+        self.instrument = instrument 
+        self.context_name = context_name # TO DO... understand what these contexts are doing
+        self.name = name
+        self.start_clef = clef
 
-        attach(self.instrument, staff_group)
+        if time_signature is not None:
+            # if len(self) > 0:
+            #     attach(copy.deepcopy(time_signature), self[0])
+            # else:
+            attach(copy.deepcopy(time_signature), self)
+        
+        attach(self.instrument, self)
+        
+        # TO DO ... able to override treble/bass clefs
+        attach(Clef(name='bass'), self[1])
 
-        # should we always attach this clef here?
-        attach(Clef(name='bass'), staff_group[1])
-
-        staff_group[0].extend(self[0])
-        staff_group[1].extend(self[1])
-
-        return staff_group
 
 class Bubble(Score):
     """
