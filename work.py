@@ -9,8 +9,10 @@ from calliope.tools import music_from_durations
 
 # TO DO... 
 # TODAY
+# - easily view any cycle or cycles...
+# - - - easily view a cross section of parts accross cycles
 # - arrange relative pitches (DONE... need to test)
-# - all cycles transformations
+# - all cycles transformations (DONE... need to work with it more)
 # - easily load cloud pitches into pitch material
 # SOON
 # - speed it up!!!! (minimize # of parts?) ...what's the main bottleneck? inheriting from Score?
@@ -32,6 +34,9 @@ from calliope.tools import music_from_durations
 # - arrange at certain duration
 # - specify paper/book/misc lilypond output settings
 # - fragment bubble could be extended for parts, other copies, etc.
+# LATER (AFTER FEB!)
+# - think about structure of bubbles... how well is it working out? given lilypond's performance?
+
 
 
 class Project():
@@ -459,6 +464,8 @@ class Bubble(Score):
             bubble = self
 
         lilypond_file = bubble.make_lilypond_file()
+
+        print("RUNNING LILYPOND NOW...")
 
         # print(format(lilypond_file))
         assert '__illustrate__' in dir(lilypond_file)

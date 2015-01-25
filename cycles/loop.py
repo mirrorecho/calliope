@@ -69,7 +69,7 @@ class CycleLoop:
 
     def make_bubble(self):
         bubble = self.bubble_type(measures_durations=[])
-        for cycle in self.cycles[:3]:
+        for cycle in self.cycles[:]:
             bubble.append_bubble(cycle, divider=True)
         return bubble
 
