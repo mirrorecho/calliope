@@ -261,7 +261,21 @@ class Bubble(Score):
                 arrange_pitches = pitch_matrix[i % len(pitch_matrix)]
             elif isinstance(pitch_material, (list, tuple)):
                 # then the pitch material should be the names of a pitch rows...
-                arrange_pitches = self.material["pitch"][pitch_material[i % len(pitch_material)]]
+
+                # then the pitch material should either be a list or matrix of rhythm names
+                pitch_stuff = pitch_material[i % len(pitch_material)]
+                if isinstance(pitch_stuff, str):
+                    # then this is the name of pitch material 
+                    arrange_pitches = self.material["pitch"][pitch_stuff]
+                elif isinstance(pitch_stuff, (list, tuple)):
+                    # then this is a list of pitch material names ( in a row )
+                    arrange_pitches=copy.deepcopy(self.material["pitch"][pitch_stuff[0]])
+                    for extend_name in pitch_stuff[1:]:
+                        arrange_pitches.extend(self.material["pitch"][extend_name])
+                else:
+                    arrange_pitch = 0
+                    print("Warning... unexpected type of pitch material passed")
+
             else:
                 arrange_pitches = None
 

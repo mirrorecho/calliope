@@ -166,7 +166,7 @@ class ModTransposePitch(TransformBase):
     def apply(self, cycle, previous_cycle):
         if previous_cycle is not None:
             previous_pitch = previous_cycle.material["pitch"][self.name]
-            new_pitch = transpose(previous_pitch, self.args["value"])
+            new_pitch = transpose_pitches(previous_pitch, self.args["value"])
             cycle.material["pitch"][self.name] = new_pitch
 
 

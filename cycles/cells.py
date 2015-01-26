@@ -16,12 +16,13 @@ class IntervalRepeatCell:
     def make_pitches(self, pitch_range = None):
 
         # the last interval is for the start of the next repetition, so get pitches for intervals before that:
-        self.pitches = pitches_from_intervals(self.intervals[:-1])
+        self.pitches = pitches_from_intervals(intervals=self.intervals[:-1], start_pitch=self.start_pitch)
 
         if self.pitch_range is not None:
             self.pitches = pitchtools.transpose_pitch_expr_into_pitch_range(self.pitches, self.pitch_range)
+            # TO DO... does this work for copying? (i.e. returning pitch object)... need to convert bak
+            # to list of #s?
 
-    # TO DO... make leaves (e.g. use rests/skips)
     def next(self, pitch_range = None):
         # the new start pitch (for the next go-around) is just the sum of all the intervals:
         self.start_pitch += sum(self.intervals)

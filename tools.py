@@ -15,6 +15,32 @@ def get_pitch_number(pitch_object):
 def get_pitch_range(low_pitch, high_pitch):
     return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
 
+def get_pitch_ranges(
+            num_lines=1,
+            low_pitches=[0],
+            high_intervals=[11],
+            increments=[[1]],
+            times=24,
+            ):
+    
+    pitch_ranges=[]
+    for l in range(num_lines):
+        pitch_range = []
+        low_pitch=low_pitches[l % len(low_pitches)]
+        high_pitch=low_pitch+high_intervals[l % len(high_intervals)]
+        increments_line=increments[l % len(increments)]
+        for c in range(times):
+            pitch_range.append(get_pitch_range(
+                low_pitch,
+                high_pitch,
+                ))
+            increment=increments_line[c % len(increments_line)]
+            low_pitch+=increment
+            high_pitch+=increment
+        pitch_ranges.append(pitch_range)
+    return pitch_ranges
+    
+
 def transpose_pitches(pitch_stuff, transpose):
     if isinstance(pitch_stuff, (list, tuple)):
         return [transpose_pitches(p, transpose) for p in pitch_stuff]
