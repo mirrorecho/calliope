@@ -67,10 +67,13 @@ class CycleLoop:
                 if transform.is_active(i, len(self.cycles), cycle.flags):
                     transform.apply(cycle, previous_cycle)
 
-    def make_bubble(self):
+    def make_bubble(self, iters=None, flags=None, part_names=None):
         bubble = self.bubble_type(measures_durations=[])
-        for cycle in self.cycles[:]:
-            bubble.append_bubble(cycle, divider=True)
+        if part_names is not None:
+            bubble = bubble.make_fragment_bubble(part_names)
+        for i,cycle in enumerate(self.cycles):
+            if (iters is None or i in iters) and (flags is None or any([f in cycle.flags for f in flags])):
+                bubble.append_bubble(cycle, divider=True)
         return bubble
 
 

@@ -132,6 +132,12 @@ class MakeMusicFromHits(TransformBase):
             #                     pitches=[pitch])
             #     cycle.arrange_music(part_name, music)
 
+class AddStaff(TransformBase):
+    def apply(self, cycle, previous_cycle):
+        instrument = self.args["instrument"]
+        clef = None if "clef" not in self.args else self.args["clef"]
+        cycle.add_part(name=self.name, instrument=instrument, clef=clef, score_append=False)
+        cycle.parts[self.args["add_to"]].append(cycle.parts[self.name])
 
 class ArrangeMusicFromIntervalRepeatCell(TransformBase):
     def apply(self, cycle, previous_cycle):

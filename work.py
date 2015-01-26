@@ -34,6 +34,7 @@ from calliope.tools import music_from_durations
 # - arrange at certain duration
 # - specify paper/book/misc lilypond output settings
 # - fragment bubble could be extended for parts, other copies, etc.
+# - function for writing string harmonic
 # LATER (AFTER FEB!)
 # - think about structure of bubbles... how well is it working out? given lilypond's performance?
 
@@ -214,6 +215,7 @@ class Bubble(Score):
                     transpose=[0],
                     pitch_range=[None],
                     split_durations=[None],
+                    pitch_offset=[0],
                     *args, **kwargs
                     ):
         for i, part_name in enumerate(part_names):
@@ -267,8 +269,16 @@ class Bubble(Score):
             arrange_transpose = transpose[i % len(transpose)]
             arrange_pitch_range = pitch_range[i % len(pitch_range)]
             arrange_split_durations = split_durations[i % len(split_durations)]
+            arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
 
-            music = music_from_durations(durations=arrange_rhythm, pitches=arrange_pitches, transpose=arrange_transpose, respell=arrange_respell, split_durations=arrange_split_durations)
+            music = music_from_durations(
+                durations=arrange_rhythm, 
+                pitches=arrange_pitches, 
+                transpose=arrange_transpose, 
+                respell=arrange_respell, 
+                split_durations=arrange_split_durations,
+                pitch_offset=arrange_pitch_offset
+                )
             
             if arrange_pitch_range is not None:
                 # QUESTION... does this work for chords or to they need to be handled separately?
@@ -303,9 +313,10 @@ class Bubble(Score):
         subfolder = subfolder + "/" if subfolder is not None else ""
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
-    def add_part(self, name, instrument=None, clef=None):
+    def add_part(self, name, instrument=None, clef=None, score_append=True):
         self.parts[name] = Part(name=name, instrument=instrument, clef=clef, time_signature=self.time_signature)
-        self.append(self.parts[name])
+        if score_append:
+            self.append(self.parts[name])
 
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument, time_signature=self.time_signature)
@@ -390,7 +401,7 @@ class Bubble(Score):
             lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
 
             # configure the lilypond file...
-            lilypond_file.global_staff_size = 12
+            lilypond_file.global_staff_size = 14
 
             context_block = lilypondfiletools.ContextBlock(
                 #source_context_name="Staff \RemoveEmptyStaves",
