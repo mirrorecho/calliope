@@ -51,7 +51,7 @@ class Project():
 # Parts inherit from Staff?
 class Part(Staff):
 
-    def __init__(self, name, instrument=None, clef=None, context_name='Staff', time_signature=None):
+    def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
 
         # these attribbutes even needed?
@@ -60,11 +60,11 @@ class Part(Staff):
         self.name = name
         self.start_clef = clef
 
-        if time_signature is not None:
-            # if len(self) > 0:
-            #     attach(copy.deepcopy(time_signature), self[0])
-            # else:
-            attach(copy.deepcopy(time_signature), self)
+        # if time_signature is not None:
+        #     # if len(self) > 0:
+        #     #     attach(copy.deepcopy(time_signature), self[0])
+        #     # else:
+        #     attach(copy.deepcopy(time_signature), self)
         
         attach(self.instrument, self)
         
@@ -90,8 +90,8 @@ class Part(Staff):
 
 
 class PercussionPart(Part):
-    def __init__(self, name, instrument=None, clef=None, context_name='RhythmicStaff', time_signature=None):
-        super().__init__(name, instrument=instrument, clef=clef, context_name=context_name, time_signature=time_signature)
+    def __init__(self, name, instrument=None, clef=None, context_name='RhythmicStaff'):
+        super().__init__(name, instrument=instrument, clef=clef, context_name=context_name)
 
     
     # def make_staff(self):
@@ -101,6 +101,7 @@ class PercussionPart(Part):
     #     staff.extend(self)
     #     return staff
 
+# TO DO.. I ASSUME THIS NO LONGER WORKS!
 class PianoStaffPart(StaffGroup):
     def __init__(self, name, instrument=None, clef=None, context_name='StaffGroup', time_signature=None):
         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
@@ -135,7 +136,6 @@ class Bubble(Score):
             project=None, 
             title="Full Score", 
             layout="standard", 
-            time_signature=TimeSignature( (4,4) ),
             measures_durations = [(4,4)]*4, # should we allow this to be None to be more flexible?
             rest_measures = None,
             ):
@@ -152,9 +152,7 @@ class Bubble(Score):
             self.project = Project("rwestmusic")
         self.title = title
 
-        self.time_signature = time_signature
-        self.last_time_signature = time_signature # the last time signature... useful for appending
-            # new bubbles and deciding if a new time signature indication is needed or not
+        self.time_signatures = [TimeSignature(d) for d in measures_durations]
         self.name = name
         self.measures_durations = measures_durations
 
@@ -170,8 +168,7 @@ class Bubble(Score):
                 self.rest_measures = scoretools.make_rests(measures_durations)
             else:
                 self.rest_measures = scoretools.make_multimeasure_rests(measures_durations)
-        self.skip_measures = scoretools.make_spacer_skip_measures(measures_durations)
-
+        
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
         # .... NOTE... right now this is a dictionary of strings, but maybe a dictionary of musical containers...
         #              or even some other abjad object instead of dictionary may be better suited
@@ -179,31 +176,6 @@ class Bubble(Score):
         self.material = {}
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
-
-        # # similarly, for building up 
-        # self.pitch_material = {}
-
-        # (
-        # part_names=["part1", "part2"],
-        
-        # rhythms = ["r4^part1 c2.","r4^part2 c4 c4 c4"]
-        # # OR
-        # rhythm_material=[
-        #     ["rhythm1_A","rhythm1_B"],
-        #     ["rhythm2_A","rhythm2_B"],
-        #     ]
-        # # OR
-        # rhythm_material=["rhythm1","rhythm2"]
-        # # OR
-        # rhythm_material="rhythm_matrix"
-
-        # # if pitches passed, it must be a list of pitch row lists 
-        # pitches = [["A4", "C#4"]]
-        # # OR
-        # pitch_material = ["pitch_row_A", "pitch_row_B"]
-        # # OR
-        # pitch_material = "pitches_matrix"
-        # )
 
     def arrange_music(self, 
                     part_names, 
@@ -300,7 +272,7 @@ class Bubble(Score):
                     note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
 
             # TO DO... could pass along split durations here...
-            self.parts[part_name].extend(music)
+            mutate(self.parts[part_name]).replace_measure_contents(music)
 
 
     def fill_empty_parts_with_skips(self):
@@ -328,18 +300,25 @@ class Bubble(Score):
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
     def add_part(self, name, instrument=None, clef=None, score_append=True):
-        self.parts[name] = Part(name=name, instrument=instrument, clef=clef, time_signature=self.time_signature)
+        self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
+        
+        if len(self.measures_durations) > 0:
+            self.parts[name].extend(scoretools.make_spacer_skip_measures(self.measures_durations))
+            rest_container = Container(copy.deepcopy(self.rest_measures))
+            mutate(self.parts[name]).replace_measure_contents(rest_container)
+
         if score_append:
             self.append(self.parts[name])
 
     def add_perc_part(self, name, instrument=None):
-        self.parts[name] = PercussionPart(name=name, instrument=instrument, time_signature=self.time_signature)
+        self.parts[name] = PercussionPart(name=name, instrument=instrument)
         self.append(self.parts[name])
 
-    def add_piano_staff_part(self, name, instrument=None):
-        # not sure if this works for piano parts...
-        self.parts[name] = PianoStaffPart(name=name, instrument=instrument, time_signature=self.time_signature)
-        self.append(self.parts[name])
+    # doesn't work anymore....
+    # def add_piano_staff_part(self, name, instrument=None):
+    #     # not sure if this works for piano parts...
+    #     self.parts[name] = PianoStaffPart(name=name, instrument=instrument, time_signature=self.time_signature)
+    #     self.append(self.parts[name])
 
     def prepare_score(self):
         """ this is a hook that derived classes can override to modify the score before 
@@ -527,30 +506,31 @@ class Bubble(Score):
     def append_bubble(self, bubble, divider=False, fill_rests=True, fill_skips=False):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
-        self.fill_empty_parts_with_rests()
-        bubble.fill_empty_parts_with_rests()
+        # assume this isn't needed anymore...
+        # self.fill_empty_parts_with_rests()
+        # bubble.fill_empty_parts_with_rests()
 
+        # assume this isn't needed anymore...
         for part_name in self.parts:
-            if bubble.time_signature != self.last_time_signature:
-                # time signatures attached to staff are not copied over with extend... 
-                # so attach bubble's time signature to the music inside the staff
-                # first so that it is copied 
-                attach(bubble.time_signature, bubble.parts[part_name][0])
+        #     if bubble.time_signatures[0] != self.time_signatures[-1]:
+        #         # time signatures attached to staff are not copied over with extend... 
+        #         # so attach bubble's time signature to the music inside the staff
+        #         # first so that it is copied 
+        #         attach(bubble.time_signature[0], bubble.parts[part_name][0])
 
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             if self.parts[part_name].is_simultaneous:
                 for i, part_line in enumerate(self.parts[part_name]):
                     part_line.extend(bubble.parts[part_name][i])
-                    if divider:
+                    if divider and len(part_line) > 0:
                         bar_line = indicatortools.BarLine("||")
                         attach(bar_line, part_line[-1])
             else:
                 self.parts[part_name].extend(bubble.parts[part_name])
-                if divider:
+                if divider and len(self.parts[part_name]) > 0:
                     bar_line = indicatortools.BarLine("||")
                     attach(bar_line, self.parts[part_name][-1])
 
-        self.last_time_signature = bubble.time_signature
 
 
 
