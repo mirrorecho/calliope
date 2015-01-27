@@ -64,7 +64,12 @@ class CycleLoop:
         for i, cycle in enumerate(self.cycles):
             for transform in self.transforms:
                 previous_cycle = self.cycles[i-1] if i > 0 else None
-                if transform.is_active(i, len(self.cycles), cycle.flags):
+                next_cycle = self.cycles[i+1] if i < len(self.cycles)-1 else None
+                if transform.is_active(i, len(self.cycles), 
+                    cycle.flags,
+                    previous_flags= previous_cycle.flags if previous_cycle is not None else [],
+                    next_flags= next_cycle.flags if next_cycle is not None else [],
+                    ):
                     transform.apply(cycle, previous_cycle)
 
     def make_bubble(self, iters=None, flags=None, part_names=None):

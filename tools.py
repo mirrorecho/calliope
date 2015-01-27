@@ -26,7 +26,7 @@ def get_pitch_ranges(
     pitch_ranges=[]
     for l in range(num_lines):
         pitch_range = []
-        low_pitch=low_pitches[l % len(low_pitches)]
+        low_pitch=get_pitch_number(low_pitches[l % len(low_pitches)])
         high_pitch=low_pitch+high_intervals[l % len(high_intervals)]
         increments_line=increments[l % len(increments)]
         for c in range(times):

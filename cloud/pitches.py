@@ -58,17 +58,25 @@ class TallyRepeatedJumps(TallyAppBase):
 
 
 class TallyMelodicIntervals(TallyAppBase):
-    def __init__(self, interval_ratings=[], over_incremental_multiplier=None, by_pitch_class=False, bidirectional=True, line_weights=None, column_weights=None):
+    def __init__(self, interval_ratings=[], over_incremental_multiplier=None, by_pitch_class=False, bidirectional=True, line_weights=None, column_weights=None, down_rating=0, up_rating=0):
         self.interval_ratings = interval_ratings
         self.by_pitch_class = by_pitch_class
         self.bidirectional = bidirectional
         self.over_incremental_multiplier = over_incremental_multiplier
+        self.up_rating=up_rating
+        self.down_rating=down_rating
         super().__init__(line_weights=line_weights, column_weights=column_weights)
 
     def tally_pitch(self, cloud, line_index, column_index):
         # only makes sense starting from 2nd column:
         if column_index > 0:
             melodic_interval = cloud.pitch_lines[line_index][column_index] - cloud.pitch_lines[line_index][column_index-1]
+            
+            if self.up_rating and melodic_interval:
+                cloud.add_tally(line_index, column_index, self.up_rating)
+            if self.down_rating and melodic_interval:
+                cloud.add_tally(line_index, column_index, self.down_rating)
+
             if self.bidirectional:
                 melodic_interval = abs(melodic_interval)
             if self.by_pitch_class:
@@ -531,7 +539,7 @@ class CloudPitches:
 
         elif k == "s":
             cloud.save(filepath)
-            print("Saved!")
+            print("Saved to " + filepath + "!")
             cloud = CloudPitches.tally_loop(cloud)
 
         elif k == "q":

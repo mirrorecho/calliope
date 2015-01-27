@@ -7,19 +7,7 @@ import copy
 
 class TransformBase:
 
-    name = ""
-
-    start_flag = None
-    stop_flag = None
-    start_iter = None # the cycle iteration to start on... if negative, will count from the end (e.g. -1 will start on the last cycle, -2 on the second to last)
-    stop_iter = None # the cycle iteration to stop on... likewise, if negative, will count from the end
-    apply_flags = []
-    
-    is_loop_active = False
-
-    args = {}
-
-    def __init__(self, name=None, stop_flag=None, start_flag=None, start_iter=None, stop_iter=None, apply_flags=[], skip_flags=[], **kwargs):
+    def __init__(self, name=None, stop_flag=None, start_flag=None, start_iter=None, stop_iter=None, apply_flags=[], apply_before_flags=[], apply_after_flags=[], skip_flags=[], **kwargs):
         self.name = name
         
         self.start_flag = start_flag
@@ -27,17 +15,20 @@ class TransformBase:
         self.start_iter = start_iter
         self.stop_iter = stop_iter
         self.apply_flags = apply_flags
+        self.apply_before_flags=apply_before_flags
+        self.apply_after_flags=apply_after_flags
         self.skip_flags = skip_flags
+        self.is_loop_active = False
 
         # TO DO... add skip flags?
 
-        # if no start is specified, start at 0:
-        if start_iter is None and start_flag is None and len(apply_flags) == 0:
+        # if no start is specified, start at 0 (this is a little messy...):
+        if start_iter is None and start_flag is None and len(apply_flags) == 0 and len(apply_before_flags)==0 and len(apply_after_flags)==0:
             self.start_iter = 0
 
         self.args = kwargs
 
-    def is_active(self, loop_iter, loop_total, flags):
+    def is_active(self, loop_iter, loop_total, flags, previous_flags=[],next_flags=[]):
         # make "loop inactive" if this cycle is flagged with the loop stop flag or iteration 
         # (note we give priority to stopping over starting... if they ever both apply)
         if (
@@ -57,6 +48,8 @@ class TransformBase:
         return ((
                     self.is_loop_active 
                     or any(f in self.apply_flags for f in flags)
+                    or any(f in self.apply_after_flags for f in previous_flags)
+                    or any(f in self.apply_before_flags for f in next_flags)
                 ) 
                 and not any(f in self.skip_flags for f in flags)
                 ) 
