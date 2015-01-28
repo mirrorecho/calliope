@@ -138,6 +138,7 @@ class Bubble(Score):
             layout="standard", 
             measures_durations = [(4,4)]*4, # should we allow this to be None to be more flexible?
             rest_measures = None,
+            odd_meters = False
             ):
         
         super().__init__()
@@ -152,9 +153,12 @@ class Bubble(Score):
             self.project = Project("rwestmusic")
         self.title = title
 
+        self.free = False
+
         self.time_signatures = [TimeSignature(d) for d in measures_durations]
         self.name = name
         self.measures_durations = measures_durations
+        self.odd_meters = odd_meters
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
         # ... some better way to handle?
@@ -168,7 +172,7 @@ class Bubble(Score):
                 self.rest_measures = scoretools.make_rests(measures_durations)
             else:
                 self.rest_measures = scoretools.make_multimeasure_rests(measures_durations)
-        
+
         # useful for building up little rhythmic phrases and then arranging them by passing a list of names
         # .... NOTE... right now this is a dictionary of strings, but maybe a dictionary of musical containers...
         #              or even some other abjad object instead of dictionary may be better suited
@@ -190,6 +194,7 @@ class Bubble(Score):
                     pitch_offset=[0],
                     *args, **kwargs
                     ):
+        #print("starting arrange...")
         for i, part_name in enumerate(part_names):
 
             # TO DO... could tidy up this logic...
@@ -272,18 +277,46 @@ class Bubble(Score):
                     note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
 
             # TO DO... could pass along split durations here...
-            mutate(self.parts[part_name]).replace_measure_contents(music)
+            
+            if self.free:
+                # free music has a single variable length measure
+                self.parts[part_name][0].append(music)
+            elif self.odd_meters:
+                # changing odd meters requires this stupid hack:
+                funny_dumbass_measure = Measure((1,8))
+                funny_dumbass_measure.extend(music)
+                odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
+                self.parts[part_name].extend(odd_measures)
+            else:
+                self.parts[part_name].extend(music)
 
+            #part = self.parts[part_name]
+            #part[0].extend(music)
+            #mutate(part[0]).split(self.measures_durations)
+            #scoretools.append_spacer_skips_to_underfull_measures_in_expr(part)
+            #mutate(part[0]).split(self.measures_durations)
+            #part.
+            #print("finished arrange...")
 
     def fill_empty_parts_with_skips(self):
-        for part_name in self.parts:
-            part = self.parts[part_name]
+        for part_name, part in self.parts.items():
             if part.is_simultaneous:
-                for part_line in part:
-                    if len(part_line) == 0:
-                        part_line.extend(copy.deepcopy(self.skip_measures))
-            elif len(part) == 0:
-                part.extend(copy.deepcopy(self.skip_measures))
+                print("filling empty rests on piano parts not supported...")
+                # for part_line in part:
+                #     if len(part.select_leaves()) == 0:
+                #         part_line.extend(scoretools.make_spacer_skip_measures(self.measures_durations))
+            elif len(part.select_leaves()) == 0:
+                #if self.odd_meters:
+                # for d in self.measures_durations:
+                #     part.append(scoretools.Skip(d))
+                # else:
+                part.extend(scoretools.make_spacer_skip_measures(self.measures_durations))
+                # c2 = Container()
+                # c2.extend(c.select_leaves())
+                # skips_string = format(c2)
+                # #print(skips_string)
+                # if self.odd_meters:
+                #     part.extend("r1")
 
     def fill_empty_parts_with_rests(self):
         for part_name in self.parts:
@@ -292,27 +325,36 @@ class Bubble(Score):
                 for part_line in part:
                     if len(part_line) == 0:
                         part_line.extend(copy.deepcopy(self.rest_measures))
-            elif len(part) == 0:
-                part.extend(copy.deepcopy(self.rest_measures))
+            elif len(part.select_leaves()) == 0:
+                for d in self.measures_durations:
+                    part.extend(copy.deepcopy(self.rest_measures))
 
     def pdf_path(self, subfolder=None):
         subfolder = subfolder + "/" if subfolder is not None else ""
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
-    def add_part(self, name, instrument=None, clef=None, score_append=True):
+    def add_part(self, name, instrument=None, clef=None):
         self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
-        
-        if len(self.measures_durations) > 0:
-            self.parts[name].extend(scoretools.make_spacer_skip_measures(self.measures_durations))
-            rest_container = Container(copy.deepcopy(self.rest_measures))
-            mutate(self.parts[name]).replace_measure_contents(rest_container)
+        #self.parts[name].append(self.rest_measures)
 
-        if score_append:
-            self.append(self.parts[name])
+        if len(self.time_signatures) > 0:
+            attach(copy.deepcopy(self.time_signatures[0]), self.parts[name])
+
+        # for m in self.measures_durations:
+        #     self.parts[name].append(Measure(m))
+
+        # if score_append:
+        #self.append(self.parts[name])
 
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument)
-        self.append(self.parts[name])
+        # for m in self.measures_durations:
+        #     self.parts[name].append(Measure(m))
+        # self.parts[name].append(self.rest_measures)
+        if len(self.time_signatures) > 0:
+            attach(copy.deepcopy(self.time_signatures[0]), self.parts[name])
+
+        #self.append(self.parts[name])
 
     # doesn't work anymore....
     # def add_piano_staff_part(self, name, instrument=None):
@@ -444,7 +486,6 @@ class Bubble(Score):
             project=self.project, 
             title=self.title, 
             layout=self.layout, 
-            time_signature=self.time_signature,
             measures_durations = self.measures_durations)
 
         for p in part_names:
@@ -455,12 +496,22 @@ class Bubble(Score):
         return bubble
 
 
-    def make_pdf(self, subfolder = None, part_names = None):
+    def make_score(self):
+        for part_name, part in self.parts.items():
+            self.append(part)
+
+        self.prepare_score()
+
+
+    def make_pdf(self, subfolder = None, part_names = None, fill_skips=False):
         """
         similar to abjad's builtin show()... but uses bubble-specific file path/name instead of the abjad default,
         creates and returns pdf filename without showing it, and pdf file name does NOT increment
         """
-        self.prepare_score()
+        self.make_score()
+
+        if fill_skips:
+            scoretools.append_spacer_skips_to_underfull_measures_in_expr(self)
 
         if part_names is not None:
             bubble = self.make_fragment_bubble(part_names)
@@ -503,34 +554,58 @@ class Bubble(Score):
         pdf_file_path = self.make_pdf(part_names=part_names)
         systemtools.IOManager.open_file(pdf_file_path)
 
-    def append_bubble(self, bubble, divider=False, fill_rests=True, fill_skips=False):
+    def append_bubble(self, bubble, divider=False, fill_rests=False, fill_skips=True, fill_self=True):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
+        print("adding bubble...")
         # assume this isn't needed anymore...
-        # self.fill_empty_parts_with_rests()
-        # bubble.fill_empty_parts_with_rests()
+        if bubble.free:
+            bubble.align_parts()
+        if fill_rests:
+            if fill_self:
+                self.fill_empty_parts_with_rests()
+            bubble.fill_empty_parts_with_rests()
+        if fill_skips:
+            if fill_self:
+                self.fill_empty_parts_with_skips()
+            bubble.fill_empty_parts_with_skips()
 
-        # assume this isn't needed anymore...
+
         for part_name in self.parts:
-        #     if bubble.time_signatures[0] != self.time_signatures[-1]:
-        #         # time signatures attached to staff are not copied over with extend... 
-        #         # so attach bubble's time signature to the music inside the staff
-        #         # first so that it is copied 
-        #         attach(bubble.time_signature[0], bubble.parts[part_name][0])
+            if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
+                # time signatures attached to staff are not copied over with extend... 
+                # so attach bubble's time signature to the music inside the staff
+                # first so that it is copied 
+                
+                # if odd meters, then the time signatures are already in the measures...
+                if not bubble.odd_meters and not bubble.free:
+                    attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
 
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             if self.parts[part_name].is_simultaneous:
-                for i, part_line in enumerate(self.parts[part_name]):
-                    part_line.extend(bubble.parts[part_name][i])
-                    if divider and len(part_line) > 0:
-                        bar_line = indicatortools.BarLine("||")
-                        attach(bar_line, part_line[-1])
+                print("simultaneous bubble appends not supported....")
+                # for i, part_line in enumerate(self.parts[part_name]):
+                #     if divider and len(part_line) > 0:
+                #         bar_line = indicatortools.BarLine("||")
+                #         attach(bar_line, part_line[-1])
+                #     part_line.extend(bubble.parts[part_name][i])
+
             else:
-                self.parts[part_name].extend(bubble.parts[part_name])
                 if divider and len(self.parts[part_name]) > 0:
                     bar_line = indicatortools.BarLine("||")
-                    attach(bar_line, self.parts[part_name][-1])
+                    # TO DO... THIS IS TERRIBLE!
+                    # So haky!!!!
+                    try:
+                        if isinstance(self.parts[part_name][-1], Measure) and len(self.parts[part_name][-1])>0:
+                            attach(bar_line, self.parts[part_name][-1][-1])
+                        else:
+                            attach(bar_line, self.parts[part_name][-1])
+                    except:
+                        pass
+                self.parts[part_name].extend(bubble.parts[part_name])
 
+        self.measures_durations += bubble.measures_durations
+        self.time_signatures += bubble.time_signatures
 
 
 
