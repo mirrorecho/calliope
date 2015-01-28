@@ -557,7 +557,6 @@ class Bubble(Score):
     def append_bubble(self, bubble, divider=False, fill_rests=False, fill_skips=True, fill_self=True):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
-        print("adding bubble...")
         # assume this isn't needed anymore...
         if bubble.free:
             bubble.align_parts()

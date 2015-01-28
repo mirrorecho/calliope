@@ -7,23 +7,40 @@ import copy
 
 class TransformBase:
 
-    def __init__(self, name=None, stop_flag=None, start_flag=None, start_iter=None, stop_iter=None, apply_flags=[], apply_before_flags=[], apply_after_flags=[], skip_flags=[], **kwargs):
+    def __init__(self, name=None, stop_flag=None, start_flag=None, start_iter=None, stop_iter=None, apply_flags=None, apply_before_flags=None, apply_after_flags=None, skip_flags=None, **kwargs):
         self.name = name
         
         self.start_flag = start_flag
         self.stop_flag = stop_flag
         self.start_iter = start_iter
         self.stop_iter = stop_iter
-        self.apply_flags = apply_flags
-        self.apply_before_flags=apply_before_flags
-        self.apply_after_flags=apply_after_flags
-        self.skip_flags = skip_flags
+        
+        if apply_flags is None:
+            self.apply_flags=[]
+        else:
+            self.apply_flags = apply_flags
+
+        if apply_before_flags is None:
+            self.apply_before_flags=[]
+        else:
+            self.apply_before_flags=apply_before_flags
+        
+        if apply_after_flags is None:
+            self.apply_after_flags=[]
+        else:
+            self.apply_after_flags=apply_after_flags
+        
+        if skip_flags is None:
+            self.skip_flags=[]
+        else:
+            self.skip_flags = skip_flags
+        
         self.is_loop_active = False
 
         # TO DO... add skip flags?
 
         # if no start is specified, start at 0 (this is a little messy...):
-        if start_iter is None and start_flag is None and len(apply_flags) == 0 and len(apply_before_flags)==0 and len(apply_after_flags)==0:
+        if start_iter is None and start_flag is None and apply_flags is None and apply_before_flags is None and apply_after_flags is None:
             self.start_iter = 0
 
         self.args = kwargs
@@ -114,9 +131,9 @@ class MakeMusicFromHits(TransformBase):
                 talea.append(1)
             talea.append(hits[len(hits)-1] - (cycle_length -1) ) # adds final rest (could be 0)
             talea = [t for t in talea if t!=0] # (gets rid of 0-length rests)
-            durations = scoretools.Container()
-            durations.extend(scoretools.make_leaves_from_talea(talea, self.args["denominator"]))
-            cycle.arrange_music(durations=durations, **self.args)
+            rhythms = scoretools.Container()
+            rhythms.extend(scoretools.make_leaves_from_talea(talea, self.args["denominator"]))
+            cycle.arrange_music(rhythms=[rhythms], split_durations=[cycle.measures_durations], **self.args)
             # SHOULD NOT NEED THIS...
             # for part_name, pitch in zip(self.args["part_names"], cycle.data[self.args["pitches"]]):
             #     music = music_from_durations(

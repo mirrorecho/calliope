@@ -78,6 +78,7 @@ class CycleLoop:
             bubble = bubble.make_fragment_bubble(part_names)
         for i,cycle in enumerate(self.cycles):
             if (iters is None or i in iters) and (flags is None or any([f in cycle.flags for f in flags])):
+                print("appending cycle to big bubble: #" + str(i))
                 bubble.append_bubble(cycle, divider=True, fill_self=False)
         return bubble
 
