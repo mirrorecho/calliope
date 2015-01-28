@@ -436,7 +436,7 @@ class Bubble(Score):
             lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
 
             # configure the lilypond file...
-            lilypond_file.global_staff_size = 14
+            lilypond_file.global_staff_size = 13
 
             context_block = lilypondfiletools.ContextBlock(
                 #source_context_name="Staff \RemoveEmptyStaves",
