@@ -470,6 +470,8 @@ class CloudPitches:
             setattr(self, pickle_attr, cloud_data[pickle_attr])
         self.init_data()
 
+        print("Loaded cloud pitch data from " + filepath)
+
     def show(self):
         bubble = Bubble(project=self.project, title="Cloud Pitch Lines: SCORE = " + str(self.tally_total), name="cloud-pitches-show")
         for i, line in enumerate(self.pitch_lines):
