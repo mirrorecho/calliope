@@ -22,22 +22,24 @@ def get_pitch_ranges(
             increments=[[1]],
             times=24,
             ):
-    
     pitch_ranges=[]
-    for l in range(num_lines):
-        pitch_range = []
-        low_pitch=get_pitch_number(low_pitches[l % len(low_pitches)])
-        high_pitch=low_pitch+high_intervals[l % len(high_intervals)]
-        increments_line=increments[l % len(increments)]
-        for c in range(times):
-            pitch_range.append(get_pitch_range(
-                low_pitch,
-                high_pitch,
-                ))
-            increment=increments_line[c % len(increments_line)]
-            low_pitch+=increment
-            high_pitch+=increment
-        pitch_ranges.append(pitch_range)
+    if num_lines == 0:
+        print("Warning... trying to get pitch ranges for 0 lines!")
+    else:
+        for l in range(num_lines):
+            pitch_range = []
+            low_pitch=get_pitch_number(low_pitches[l % len(low_pitches)])
+            high_pitch=low_pitch+high_intervals[l % len(high_intervals)]
+            increments_line=increments[l % len(increments)]
+            for c in range(times):
+                pitch_range.append(get_pitch_range(
+                    low_pitch,
+                    high_pitch,
+                    ))
+                increment=increments_line[c % len(increments_line)]
+                low_pitch+=increment
+                high_pitch+=increment
+            pitch_ranges.append(pitch_range)
     return pitch_ranges
     
 
