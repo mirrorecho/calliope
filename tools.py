@@ -2,6 +2,8 @@ from abjad import *
 
 import copy
 
+
+
 # TO DO... could also pass note as pitch object
 def get_pitch_number(pitch_object):
     if isinstance(pitch_object, int):
@@ -14,6 +16,12 @@ def get_pitch_number(pitch_object):
 
 def get_pitch_range(low_pitch, high_pitch):
     return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
+
+def get_music_container(music_object):
+    if isinstance(music_object, scoretools.Container):
+        return music_object
+    else:
+        return scoretools.Container(music_object)
 
 def get_pitch_ranges(
             num_lines=1,
@@ -118,3 +126,78 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
         print("AUTO RESPELL NOT SUPPORTED YET...")
     
     return music
+
+
+def attach_commands(commands, music_object):
+    for c in commands:
+        attach(c, music_object)
+
+
+def line_staff_skip(skip_length=(1,16)):
+
+    #skip = scoretools.Skip(skip_length)
+    
+    skip1 = scoretools.Skip((skip_length[0], skip_length[1]*2))
+    skip2 = scoretools.Skip((skip_length[0], skip_length[1]*2))
+
+    line_staff_commands = [
+        indicatortools.LilyPondCommand("stopStaff", 'before'),
+        indicatortools.LilyPondCommand("""override Staff.StaffSymbol #'line-positions = #'(
+        -0.4 -0.3 -.2 -.1 0 .1 .2 .3 .4
+        ;-0.5 0
+        )""", 'before'),
+        indicatortools.LilyPondCommand("startStaff", 'before'),
+    ]
+
+    normal_staff_commands = [
+        indicatortools.LilyPondCommand("stopStaff", 'after'),
+        indicatortools.LilyPondCommand("override Staff.StaffSymbol #'line-positions = #'(-4 -2 0 2 4)", 'after'),
+        indicatortools.LilyPondCommand("startStaff", 'after'),
+    ]
+
+    attach_commands(line_staff_commands, skip1)
+    attach_commands(normal_staff_commands, skip2)
+    skip_container = Container()
+    skip_container.append(skip1)
+    skip_container.append(skip2)
+
+    return skip_container
+
+# adds the box marks (sans the single line staff before/after)
+def make_box_marks(music_start_item, music_end_item):
+    box_start_commands = [
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'break-align-symbol = #'custos", 'before'),
+        indicatortools.LilyPondCommand("""once \\override Staff.TimeSignature.space-alist =
+            #'((first-note . (fixed-space . 2.0))
+               (right-edge . (extra-space . 0))
+               ;; space after time signature ..
+               (custos . (extra-space . 0)))""", 'before'),
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'text = \\markup { \\filled-box #'(0 . 0.4) #'(-1.4 . 1.4) #0 }", 'before'),
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'break-visibility = #end-of-line-invisible", 'before'),
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'Y-offset = ##f", 'before'),
+        indicatortools.LilyPondCommand("once \\override Staff.BarLine #'space-alist = #'((breathing-sign fixed-space 0))", 'before'),
+        indicatortools.LilyPondCommand("breathe", 'before'),
+        ]
+    box_stop_commands = [
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'text = \markup { \\filled-box #'(0 . 0.4) #'(-1.4 . 1.4) #0 }", 'after'),
+        indicatortools.LilyPondCommand("once \\override BreathingSign #'Y-offset = ##f", 'after'),
+        indicatortools.LilyPondCommand("breathe", 'after'),
+    ]
+    attach_commands(box_start_commands, music_start_item)
+    attach_commands(box_stop_commands, music_end_item)
+
+# can live with this for now... but would be nicer to avoid having to use skips
+def box_music(music, line_before_length=(1,16), line_after_length=(1,16)):
+    music = get_music_container(music)
+    music_selection = music.select_leaves()
+    if len(music_selection) > 0:
+        return_music = Container()
+        return_music.append(line_staff_skip(line_before_length))
+        make_box_marks(music_selection[0], music_selection[-1])
+        return_music.extend(music)
+        return_music.append(line_staff_skip(line_after_length))
+        return return_music
+    else:
+        print("Error... tried to create a box around empty music")
+
+
