@@ -201,8 +201,18 @@ class Bubble(Score):
             # TO DO... could tidy up this logic...
             if rhythms is not None:
                 if isinstance(rhythms, (list, tuple)):
-                    # then this should be a list of the actual rhythms
-                    arrange_rhythm = rhythms[i % len(rhythms)]
+                    # then this should be a list of actual rhythm stuff for each part
+
+                    rhythm_stuff = rhythms[i % len(rhythms)]
+                    
+                    if isinstance(rhythm_stuff, (list, tuple)):
+                        # then this is a list of rhythms for the part that need to be put together in a container
+                        arrange_rhythm = Container()
+                        for r in rhythm_stuff:
+                            arrange_rhythm.extend(copy.deepcopy(r))
+                    else:
+                        # otherwise it's a single rhythm (as a string or container)
+                        arrange_rhythm = rhythm_stuff
                 else:
                     arrange_rhythm = "R1 "
                     print("----------------------------------------------")
