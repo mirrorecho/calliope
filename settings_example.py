@@ -2,4 +2,5 @@
 
 OUTPUT_PATH = "/home/randall/Code/mirrorecho"
 PDF_SUBFOLDER = "pdf"
+LY_SUBFOLDER = "ly"
 DATA_SUBFOLDER = "data"

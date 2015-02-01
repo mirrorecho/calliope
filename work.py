@@ -47,6 +47,7 @@ class Project():
         self.project_path = output_path + "/" + name
         self.pdf_path = self.project_path + "/" + PDF_SUBFOLDER
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
+        self.ly_path = self.project_path + "/" + LY_SUBFOLDER
 
 # Parts inherit from Staff?
 class Part(Staff):
@@ -65,8 +66,6 @@ class Part(Staff):
         #     #     attach(copy.deepcopy(time_signature), self[0])
         #     # else:
         #     attach(copy.deepcopy(time_signature), self)
-        
-        attach(self.instrument, self)
         
         if clef is not None:
             attach(Clef(name=clef), self)
@@ -153,7 +152,8 @@ class Bubble(Score):
             self.project = Project("rwestmusic")
         self.title = title
 
-        self.free = False
+        self.free = False # whether it starts free
+        self.ends_free = False # whether it ends free
 
         self.time_signatures = [TimeSignature(d) for d in measures_durations]
         self.name = name
@@ -347,6 +347,10 @@ class Bubble(Score):
         subfolder = subfolder + "/" if subfolder is not None else ""
         return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
 
+    def ly_path(self, subfolder=None):
+        subfolder = subfolder + "/" if subfolder is not None else ""
+        return self.project.ly_path + "/" + subfolder + self.project.name + "-" + self.name + ".ly"
+
     def add_part(self, name, instrument=None, clef=None):
         self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
         #self.parts[name].append(self.rest_measures)
@@ -487,6 +491,9 @@ class Bubble(Score):
             # TO DO... move "for Taiko and Orchestra" to subtitle
             lilypond_file.header_block.title = markuptools.Markup(self.title)
 
+            with open(self.ly_path(), "w") as ly_file:
+                ly_file.write(format(lilypond_file))
+
             return lilypond_file
 
 
@@ -512,6 +519,13 @@ class Bubble(Score):
 
     def make_score(self):
         for part_name, part in self.parts.items():
+
+            attach(part.instrument, part)
+
+            numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
+            # OK to assume that the part contains stuff?
+            attach(numeric_time_command, part[0])
+
             self.append(part)
 
         self.prepare_score()
@@ -571,7 +585,7 @@ class Bubble(Score):
     def append_bubble(self, bubble, divider=False, fill_rests=False, fill_skips=True, fill_self=True):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
-        # assume this isn't needed anymore...
+        # needed anymore...??
         if bubble.free:
             bubble.align_parts()
         if fill_rests:
@@ -583,6 +597,10 @@ class Bubble(Score):
                 self.fill_empty_parts_with_skips()
             bubble.fill_empty_parts_with_skips()
 
+        # TO DO... combine this with the loop below... should be no reason to loop through all the parts twice
+        if bubble.free:
+            bubble.show_x_time = not self.ends_free
+            bubble.x_time_signatures()
 
         for part_name in self.parts:
             if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
@@ -591,7 +609,8 @@ class Bubble(Score):
                 # first so that it is copied 
                 
                 # if odd meters, then the time signatures are already in the measures...
-                if not bubble.odd_meters and not bubble.free:
+
+                if bubble.odd_meters and not bubble.free:
                     attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
 
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
@@ -619,6 +638,7 @@ class Bubble(Score):
 
         self.measures_durations += bubble.measures_durations
         self.time_signatures += bubble.time_signatures
+        self.ends_free = bubble.free
 
 
 
