@@ -40,6 +40,15 @@ class CycleLoop:
     def exec_method(self, name, **kwargs):
         self.add_transform(ExecMethod(name, **kwargs))
 
+    def attach(self, **kwargs):
+        self.add_transform(ExecMethod("attach", **kwargs))        
+
+    def attach_dynamics(self, **kwargs):
+        self.add_transform(ExecMethod("attach_dynamics", **kwargs)) 
+
+    def attach_articulations(self, **kwargs):
+        self.add_transform(ExecMethod("attach_articulations", **kwargs)) 
+
     def add_cycle(self, bubble_type=None, index=None, flags=[], **kwargs):
         if bubble_type is None:
             bubble_type = self.bubble_type

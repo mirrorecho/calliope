@@ -181,6 +181,42 @@ class Bubble(Score):
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
 
+    def attach(self, attachments, part_names, indices=[[0]], attachment_type=None, *args, **kwargs):
+        # if the dynamics list includes types other than Dynamic, convert those to Dynamic (will often include strings of the dynamics to keep code clean)
+        if attachment_type is not None:
+            for p_i, p_a in enumerate(attachments):
+                for i, a in enumerate(p_a):
+                    if not isinstance(a, attachment_type):
+                        attachments[p_i][i] = attachment_type(a)
+
+        for i, part_name in enumerate(part_names):
+            part_attachments = attachments[i % len(attachments)]
+            part_indices = indices[i % len(indices)]
+            part_material = self.parts[part_name].select_notes_and_chords()
+            part_material_len = len(part_material)
+            for j, n in enumerate(part_indices):
+                if n < part_material_len:
+                    attachment = part_attachments[j % len(part_attachments)]
+                    attach(attachment, part_material[n])
+                else:
+                    print("Warning... attempted to add attachment at indice greater than length of material! Skipping attachment...")
+
+    def attach_dynamics(self, dynamics, *args, **kwargs):
+        self.attach(attachments=dynamics, attachment_type=indicatortools.Dynamic, *args, **kwargs)
+
+    def attach_articulations(self, articulations, *args, **kwargs):
+        self.attach(attachments=articulations, attachment_type=indicatortools.Articulation, *args, **kwargs)
+
+    # note... only supports a single spanner per part at a time
+    def attach_spanners(self, spanners, part_names, indices=((None,None)), *args, **kwargs):
+        for i, part_name in enumerate(part_names):
+            part_spanner = spanner[i % len(spanners)]
+            part_indices = indices[i % len(indices)] # this will be the start and stop of the spanner
+            part_material = self.parts[part_name].select_notes_and_chords()
+
+            attach(part_spanner, part_material[part_indices[0]:part_indices[1]])
+                   
+
     def arrange_music(self, 
                     part_names, 
                     rhythms=None, 
