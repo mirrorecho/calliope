@@ -20,6 +20,11 @@ def get_pitch_range(low_pitch, high_pitch):
 def get_music_container(music_object):
     if isinstance(music_object, scoretools.Container):
         return music_object
+    if isinstance(music_object, (list, tuple)):
+        c = Container()
+        for i in music_object:
+            c.extend(get_music_container(i))
+        return c
     else:
         return scoretools.Container(music_object)
 
