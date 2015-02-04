@@ -49,11 +49,26 @@ class Project():
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
         self.ly_path = self.project_path + "/" + LY_SUBFOLDER
 
-# Parts inherit from Staff?
+
+
 class Part(Staff):
 
-    def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+    def __init__(self, name, instrument=None, clef=None, context_name='Staff', master_part_name=None, resize=0):
         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
+
+        self.master_part_name = master_part_name
+        if master_part_name is not None:
+            self.is_sub_part = True
+        else:
+            self.is_sub_part = False
+
+        #self.prepared = False
+
+        self.sub_part_names =[]
+        self.is_compound = False
+
+        self.subs_replace = False # if true, then the music for the last sub part will be placed on this staff
+        self.resize = resize
 
         # these attribbutes even needed?
         self.instrument = instrument 
@@ -61,31 +76,64 @@ class Part(Staff):
         self.name = name
         self.start_clef = clef
 
+    def append_part(self, new_part, divider=False):
+        if divider and len(self) > 0:
+            bar_line = indicatortools.BarLine("||")
+            # TO DO... THIS IS TERRIBLE!
+            # So haky!!!!
+            try:
+                if isinstance(self[-1], Measure) and len(self[-1])>0:
+                    attach(bar_line, self[-1][-1])
+                else:
+                    attach(bar_line, self[-1])
+            except:
+                pass
+        
+            # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
+            # if self.parts[part_name].is_simultaneous:
+            #     print("simultaneous bubble appends not supported....")
+            #     # for i, part_line in enumerate(self.parts[part_name]):
+            #     #     if divider and len(part_line) > 0:
+            #     #         bar_line = indicatortools.BarLine("||")
+            #     #         attach(bar_line, part_line[-1])
+            #     #     part_line.extend(bubble.parts[part_name][i])
+
+            #  else:
+
+        # TO DO... document this!!!
+        if self.is_compound:
+            if new_part.is_compound:
+                self[-1][-1].extend(new_part[-1][-1])
+            else:
+                self[-1][-1].extend(new_part)
+        else:
+            self.extend(new_part)
+
+        self.is_compound = new_part.is_compound
+
         # if time_signature is not None:
         #     # if len(self) > 0:
         #     #     attach(copy.deepcopy(time_signature), self[0])
         #     # else:
         #     attach(copy.deepcopy(time_signature), self)
-        
-        if clef is not None:
-            attach(Clef(name=clef), self)
+    
 
-# TO USE FOR SONGS TEMPORARILY
-# class Part(scoretools.Context):
+        # TO USE FOR SONGS TEMPORARILY
+        # class Part(scoretools.Context):
 
-#     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
-#         self.instrument = instrument
-#         self.start_clef = clef
-#         super().__init__()
-#         self.context_name = name
+        #     def __init__(self, name, instrument=None, clef=None, context_name='Staff'):
+        #         self.instrument = instrument
+        #         self.start_clef = clef
+        #         super().__init__()
+        #         self.context_name = name
 
-#     def make_staff(self):
-#         staff = scoretools.Staff([])
-#         attach(self.instrument, staff)
-#         if self.start_clef is not None:
-#             attach(Clef(name=self.start_clef), staff)
-#         staff.extend(self)
-#         return staff
+        #     def make_staff(self):
+        #         staff = scoretools.Staff([])
+        #         attach(self.instrument, staff)
+        #         if self.start_clef is not None:
+        #             attach(Clef(name=self.start_clef), staff)
+        #         staff.extend(self)
+        #         return staff
 
 
 class PercussionPart(Part):
@@ -144,6 +192,9 @@ class Bubble(Score):
 
         self.parts = OrderedDict() # assume this is necessary... unless there's some way to get score staves by name
         
+        self.parts_prepared = False # indicates whether all subparts have been made, rests added, instruments added, etc.
+        self.compound_part_names = [] # just an easy way to keep track of this so we don't always have to loop through all the parts
+
         self.output_path = OUTPUT_PATH
         self.layout = layout
         if project is not None:
@@ -216,9 +267,9 @@ class Bubble(Score):
 
             attach(part_spanner, part_material[part_indices[0]:part_indices[1]])
                    
-
     def arrange_music(self, 
                     part_names, 
+                    sub_part_names = None, # should be a list the same length as part_names 
                     rhythms=None, 
                     rhythm_material=None, 
                     pitches=None, 
@@ -400,6 +451,21 @@ class Bubble(Score):
         # if score_append:
         #self.append(self.parts[name])
 
+    def add_sub_part(self, part_name, master_part_name, instrument=None, clef=None, replace_master_part = True):
+        if instrument is None:
+            instrument = copy.deepcopy(self.parts[master_part_name].instrument)
+        self.parts[part_name] = Part(name=part_name, instrument=instrument, clef=clef, master_part_name=master_part_name)
+        if self.free:
+            free_measure = Measure(self.measures_durations[0])
+            free_measure.automatically_adjust_time_signature = True
+            self.parts[part_name].append(free_measure)
+            
+        self.parts[master_part_name].sub_part_names.append(part_name)
+        if master_part_name not in self.compound_part_names:
+            self.compound_part_names.append(master_part_name)
+        # note... this applies to the master part for ALL concurrent sub parts
+        self.parts[master_part_name].subs_replace = replace_master_part
+
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument)
         # for m in self.measures_durations:
@@ -554,17 +620,56 @@ class Bubble(Score):
 
 
     def make_score(self):
+
+        self.prepare_parts()
+
         for part_name, part in self.parts.items():
 
-            attach(part.instrument, part)
+            if len(part) > 0:
+                attach(part.instrument, part)
+                numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
+                # OK to assume that the part contains stuff?
+                attach(numeric_time_command, part[0])
 
-            numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
-            # OK to assume that the part contains stuff?
-            attach(numeric_time_command, part[0])
-
-            self.append(part)
+            if not part.is_sub_part:
+                self.append(part)
 
         self.prepare_score()
+
+
+    def prepare_parts(self, existing_compound_part_names=[]):
+        # TO DO... allow filling with skips OR rests
+        if not self.parts_prepared:
+
+            for compound_part_name in self.compound_part_names:
+                if compound_part_name not in existing_compound_part_names:
+                    # this is so appends work out... if compound part already set up, then we shouldn't do anything here...
+
+                    old_part = self.parts[compound_part_name]
+                    self.parts[compound_part_name] = Part(compound_part_name) # TO DO... append instrument, clef, etc.
+                    self.parts[compound_part_name].is_compound = True
+                    
+                    compound_countainer = Container()
+                    compound_countainer.is_simultaneous = True
+
+                    
+                    for sub_part_name in old_part.sub_part_names:
+                        sub_part = self.parts[sub_part_name]
+                        align_command = indicatortools.LilyPondCommand("set Staff.alignAboveContext = #\"" + compound_part_name + "\"", "before")
+                        attach(align_command, sub_part[0])
+                        compound_countainer.append(sub_part)
+                    
+                    # if not old_part.subs_replace:
+                    old_container = Container()
+                    old_container.extend(old_part)
+                    compound_countainer.append(old_container)
+
+                    self.parts[compound_part_name].append(compound_countainer)
+
+                else:
+                    self.parts[compound_part_name].is_compound = True
+
+        self.parts_prepared = True
 
 
     def make_pdf(self, subfolder = None, part_names = None, fill_skips=False):
@@ -574,8 +679,8 @@ class Bubble(Score):
         """
         self.make_score()
 
-        if fill_skips:
-            scoretools.append_spacer_skips_to_underfull_measures_in_expr(self)
+        # if fill_skips:
+        #     scoretools.append_spacer_skips_to_underfull_measures_in_expr(self)
 
         if part_names is not None:
             bubble = self.make_fragment_bubble(part_names)
@@ -621,7 +726,6 @@ class Bubble(Score):
     def append_bubble(self, bubble, divider=False, fill_rests=False, fill_skips=True, fill_self=True):
         # TO DO... divider doesn't work (how to get different kinds of bar lengths in general?)
 
-        # needed anymore...??
         if bubble.free:
             bubble.align_parts()
         if fill_rests:
@@ -633,44 +737,44 @@ class Bubble(Score):
                 self.fill_empty_parts_with_skips()
             bubble.fill_empty_parts_with_skips()
 
-        # TO DO... combine this with the loop below... should be no reason to loop through all the parts twice
+        self.prepare_parts()
+        bubble.prepare_parts(existing_compound_part_names = self.compound_part_names)
+
+        # if fill_rests:
+        #     if fill_self:
+        #         self.fill_empty_parts_with_rests()
+        #     bubble.fill_empty_parts_with_rests()
+        # if fill_skips:
+        #     if fill_self:
+        #         self.fill_empty_parts_with_skips()
+        #     bubble.fill_empty_parts_with_skips()
+
+        # TO DO... maybe combine this with the loop below... should be no reason to loop through all the parts twice
+        # OR .... combine with prepare parts (makes the most sense)
         if bubble.free:
             bubble.show_x_time = not self.ends_free
             bubble.x_time_signatures()
 
+        # ????DOES THIS WORK OUT?
+        for part_name in bubble.parts:
+            if part_name not in self.parts:
+                self.parts[part_name] = bubble.parts[part_name]
+
         for part_name in self.parts:
-            if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
-                # time signatures attached to staff are not copied over with extend... 
-                # so attach bubble's time signature to the music inside the staff
-                # first so that it is copied 
-                
-                # if odd meters, then the time signatures are already in the measures...
+            if part_name in bubble.parts:
+                if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
+                    # time signatures attached to staff are not copied over with extend... 
+                    # so attach bubble's time signature to the music inside the staff
+                    # first so that it is copied 
+                    
+                    # if odd meters, then the time signatures are already in the measures...
 
-                if bubble.odd_meters and not bubble.free:
-                    attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
+                    if bubble.odd_meters and not bubble.free:
+                        attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
 
-            # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
-            if self.parts[part_name].is_simultaneous:
-                print("simultaneous bubble appends not supported....")
-                # for i, part_line in enumerate(self.parts[part_name]):
-                #     if divider and len(part_line) > 0:
-                #         bar_line = indicatortools.BarLine("||")
-                #         attach(bar_line, part_line[-1])
-                #     part_line.extend(bubble.parts[part_name][i])
+            
+                self.parts[part_name].append_part(bubble.parts[part_name])
 
-            else:
-                if divider and len(self.parts[part_name]) > 0:
-                    bar_line = indicatortools.BarLine("||")
-                    # TO DO... THIS IS TERRIBLE!
-                    # So haky!!!!
-                    try:
-                        if isinstance(self.parts[part_name][-1], Measure) and len(self.parts[part_name][-1])>0:
-                            attach(bar_line, self.parts[part_name][-1][-1])
-                        else:
-                            attach(bar_line, self.parts[part_name][-1])
-                    except:
-                        pass
-                self.parts[part_name].extend(bubble.parts[part_name])
 
         self.measures_durations += bubble.measures_durations
         self.time_signatures += bubble.time_signatures

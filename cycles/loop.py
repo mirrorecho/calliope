@@ -34,6 +34,9 @@ class CycleLoop:
     def add_rhythm_material(self, name, value, **kwargs):
         self.add_material(name, value, material_type="rhythm", **kwargs) 
 
+    def add_sub_part(self, **kwargs):
+        self.add_transform(ExecMethod("add_sub_part", **kwargs))
+
     def arrange_music(self, **kwargs):
         self.add_transform(ArrangeMusic(**kwargs))
 
