@@ -226,7 +226,14 @@ def line_staff_continue(continue_lengths):
     
     return line_container
 
-
+# TO DO... auto find best harmonic?
+# TO DO.... make this!
+def make_harmonics(music, 
+            show_pitch_indices=[None], # none shows all
+            harmonic_types=["artificial"], 
+            instrument="violin", 
+            string="G"):
+    return Container(music)
 
 
 # can live with this for now... but would be nicer to avoid having to use skips
