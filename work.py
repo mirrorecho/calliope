@@ -49,7 +49,11 @@ class Project():
         self.data_path = self.project_path + "/" + DATA_SUBFOLDER
         self.ly_path = self.project_path + "/" + LY_SUBFOLDER
 
-
+class PartGroup(scoretools.StaffGroup):
+    def __init__(self, name, part_names):
+        super().__init__(name=name)
+        self.part_names = part_names
+        self.title = None
 
 class Part(Staff):
 
@@ -62,7 +66,12 @@ class Part(Staff):
         else:
             self.is_sub_part = False
 
+        self.sub_show_instrument_instruction = False
+
         #self.prepared = False
+
+        # TO DO EVENTUALLY... BAD BAD ... super hacky work-around for dealing with X time signature attachments and sub parts....
+        self.first_item = None
 
         self.sub_part_names =[]
         self.is_compound = False
@@ -72,9 +81,12 @@ class Part(Staff):
 
         # these attribbutes even needed?
         self.instrument = instrument 
+        self.sub_instrument_name = None
+        self.sub_short_instrument_name = None
         self.context_name = context_name # TO DO... understand what these contexts are doing
         self.name = name
         self.start_clef = clef
+        self.staff_group_name = None
 
     def append_part(self, new_part, divider=False):
         if divider and len(self) > 0:
@@ -210,6 +222,7 @@ class Bubble(Score):
         self.name = name
         self.measures_durations = measures_durations
         self.odd_meters = odd_meters
+        self.staff_groups = OrderedDict()
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
         # ... some better way to handle?
@@ -430,13 +443,27 @@ class Bubble(Score):
                 for d in self.measures_durations:
                     part.extend(copy.deepcopy(self.rest_measures))
 
-    def pdf_path(self, subfolder=None):
-        subfolder = subfolder + "/" if subfolder is not None else ""
-        return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
+    # TO DO... maybe this function should go on the part, not on the bubble
+    def change_instrument(self, part_name, instrument_name, short_instrument_name, show_instruction=True, attach_before=None):
+        instrument_command = indicatortools.LilyPondCommand("set Staff.instrumentName = \\markup { " + instrument_name + " }", "before")
+        short_instrument_command = indicatortools.LilyPondCommand("set Staff.shortInstrumentName = \\markup { " + short_instrument_name + " }", "before")
+        if attach_before is None:
+            if len(self.parts[part_name]) > 0:
+                attach_before = self.parts[part_name][0]
+            else:
+                print("Error: can't attach " + instrument_name + " instrument change to part " + part_name + " because this part is empty.")
+                return
+        attach(instrument_command, attach_before)
+        attach(short_instrument_command, attach_before)
+        if show_instruction:
+            instruction_markup = markuptools.Markup('\italic { "' + instrument_name + '" }', direction=Up)
+            attach(instruction_markup, attach_before)
 
-    def ly_path(self, subfolder=None):
-        subfolder = subfolder + "/" if subfolder is not None else ""
-        return self.project.ly_path + "/" + subfolder + self.project.name + "-" + self.name + ".ly"
+    # NOTE... title not supported yet...
+    def add_staff_group(self, name, part_names, title=None):
+        # TO DO EVENTUALLY... deal with part groups as real material....
+        self.staff_groups[name] = PartGroup(name=name, part_names=part_names)
+        self.staff_groups[name].title = title
 
     def add_part(self, name, instrument=None, clef=None):
         self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
@@ -451,10 +478,21 @@ class Bubble(Score):
         # if score_append:
         #self.append(self.parts[name])
 
-    def add_sub_part(self, part_name, master_part_name, instrument=None, clef=None, replace_master_part = True):
-        if instrument is None:
-            instrument = copy.deepcopy(self.parts[master_part_name].instrument)
+    def add_sub_part(self, part_name, master_part_name, instrument_name=None, short_instrument_name=None, instrument_type=None, show_instrument_instruction=False, clef=None, replace_master_part = True):
+        # # this throws duplicate indicator error for some STUPID reason...
+        # master_instrument = self.parts[master_part_name].instrument
+        # if instrument_type is None:
+        #     instrument_type = type(master_instrument)
+        # if instrument_name is None:
+        #     instrument_name = master_instrument.instrument_name
+        # if short_instrument_name is None:
+        #     short_instrument_name = master_instrument.short_instrument_name
+        # instrument = instrument_type(instrument_name=instrument_name, short_instrument_name=short_instrument_name)
+        instrument = copy.deepcopy(self.parts[master_part_name].instrument)
         self.parts[part_name] = Part(name=part_name, instrument=instrument, clef=clef, master_part_name=master_part_name)
+        self.parts[part_name].sub_instrument_name = instrument_name
+        self.parts[part_name].sub_short_instrument_name = short_instrument_name
+        self.parts[part_name].sub_show_instrument_instruction = show_instrument_instruction
         if self.free:
             free_measure = Measure(self.measures_durations[0])
             free_measure.automatically_adjust_time_signature = True
@@ -512,10 +550,20 @@ class Bubble(Score):
 
         self.prepare_parts()
 
+        # this is a little hacky...
+        for staff_group_name, staff_group in self.staff_groups.items():
+            self.append(staff_group)
+            for part_name in staff_group.part_names:
+                if part_name in self.parts:
+                    self.parts[part_name].staff_group_name = staff_group_name
+                else:
+                    print("Warning... " + part_name + " included in staff group, but does not exist as a part.")
+
         for part_name, part in self.parts.items():
 
             if len(part) > 0:
                 attach(part.instrument, part)
+                # print("Error attaching instrument to part: " + part_name)
                 numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
                 # OK to assume that the part contains stuff?
                 attach(numeric_time_command, part[0])
@@ -524,7 +572,10 @@ class Bubble(Score):
                 attach(Clef(name=part.start_clef), part)
 
             if not part.is_sub_part:
-                self.append(part)
+                if part.staff_group_name is not None:
+                    self.staff_groups[part.staff_group_name].append(part)
+                else:
+                    self.append(part)
 
         self.prepare_score()
 
@@ -533,28 +584,48 @@ class Bubble(Score):
         # TO DO... allow filling with skips OR rests
         if not self.parts_prepared:
 
+            # TO DO EVENTUALLY... not great looping through all the parts here again... to add these
+            # accidental styles, but there was an issue appending this only at the beginning of the
+            # big bubble if the first bubble attached to it was free
+            for part_name, part in self.parts.items():
+                if not self.free and len(part)>0:
+                    accidental_command = indicatortools.LilyPondCommand("context Staff {#(set-accidental-style 'modern)}", "before")
+                    attach(accidental_command, part[0])
+
             for compound_part_name in self.compound_part_names:
+
                 if compound_part_name not in existing_compound_part_names:
                     # this is so appends work out... if compound part already set up, then we shouldn't do anything here...
 
                     old_part = self.parts[compound_part_name]
-                    self.parts[compound_part_name] = Part(compound_part_name) # TO DO... append instrument, clef, etc.
+                    self.parts[compound_part_name] = Part(compound_part_name) # TO DO??... append instrument, clef, etc.
                     self.parts[compound_part_name].is_compound = True
                     
                     compound_countainer = Container()
                     compound_countainer.is_simultaneous = True
 
+                    bottom_part = old_part
                     
-                    for sub_part_name in old_part.sub_part_names:
+                    for i, sub_part_name in enumerate(old_part.sub_part_names):
                         sub_part = self.parts[sub_part_name]
-                        align_command = indicatortools.LilyPondCommand("set Staff.alignAboveContext = #\"" + compound_part_name + "\"", "before")
-                        attach(align_command, sub_part[0])
-                        compound_countainer.append(sub_part)
+                        if sub_part.sub_instrument_name is not None and sub_part.sub_short_instrument_name is not None:
+                            self.change_instrument(part_name=sub_part_name, 
+                                instrument_name=sub_part.sub_instrument_name, 
+                                short_instrument_name=sub_part.sub_short_instrument_name,
+                                show_instruction=sub_part.sub_show_instrument_instruction)
+                        if old_part.subs_replace and i==len(old_part.sub_part_names)-1:
+                            # if this is the past sub part and it's replacing the old master, then specify that, and don't append it
+                            bottom_part = sub_part
+                            # TO DO EVENTUALLY... BAD BAD HACK!
+                            sub_part.first_item = bottom_part[0]
+                        else:
+                            align_command = indicatortools.LilyPondCommand("set Staff.alignAboveContext = #\"" + compound_part_name + "\"", "before")
+                            attach(align_command, sub_part[0])
+                            compound_countainer.append(sub_part)
                     
-                    # if not old_part.subs_replace:
-                    old_container = Container()
-                    old_container.extend(old_part)
-                    compound_countainer.append(old_container)
+                    bottom_container = Container()
+                    bottom_container.extend(sub_part)
+                    compound_countainer.append(bottom_container)
 
                     self.parts[compound_part_name].append(compound_countainer)
 
@@ -678,6 +749,13 @@ class Bubble(Score):
 
 
 
+    def pdf_path(self, subfolder=None):
+        subfolder = subfolder + "/" if subfolder is not None else ""
+        return self.project.pdf_path + "/" + subfolder + self.project.name + "-" + self.name + ".pdf"
+
+    def ly_path(self, subfolder=None):
+        subfolder = subfolder + "/" if subfolder is not None else ""
+        return self.project.ly_path + "/" + subfolder + self.project.name + "-" + self.name + ".ly"
 
 
 
