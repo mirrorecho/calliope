@@ -488,7 +488,10 @@ class Bubble(Score):
         # if short_instrument_name is None:
         #     short_instrument_name = master_instrument.short_instrument_name
         # instrument = instrument_type(instrument_name=instrument_name, short_instrument_name=short_instrument_name)
-        instrument = copy.deepcopy(self.parts[master_part_name].instrument)
+        if instrument_type is None:
+            instrument = copy.deepcopy(self.parts[master_part_name].instrument)
+        else:
+            instrument = instrument_type()
         self.parts[part_name] = Part(name=part_name, instrument=instrument, clef=clef, master_part_name=master_part_name)
         self.parts[part_name].sub_instrument_name = instrument_name
         self.parts[part_name].sub_short_instrument_name = short_instrument_name

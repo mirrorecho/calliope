@@ -281,4 +281,12 @@ def box_music(music, instruction=None, continue_lengths=None):
     else:
         print("Error... tried to create a box around empty music")
 
-
+# TO DO EVENTUALLY... replace by class... also replace within music?
+def replace_pitch(pitch_stuff, pitch, other_pitch):
+    if isinstance(pitch_stuff, (list, tuple)):
+        return [replace_pitch(p, pitch, other_pitch) for p in pitch_stuff]
+    else:
+        if get_pitch_number(pitch) == get_pitch_number(pitch_stuff):
+            return get_pitch_number(other_pitch)
+        else:
+            return get_pitch_number(pitch_stuff)
