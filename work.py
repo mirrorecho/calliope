@@ -245,6 +245,9 @@ class Bubble(Score):
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
 
+    def copy_material(self, material_type, material, copy_to):
+        self.material[material_type][copy_to] = copy.deepcopy(self.material[material_type][material])
+
     def attach(self, attachments, part_names, indices=[[0]], attachment_type=None, *args, **kwargs):
         # if the dynamics list includes types other than Dynamic, convert those to Dynamic (will often include strings of the dynamics to keep code clean)
         if attachment_type is not None:

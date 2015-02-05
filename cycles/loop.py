@@ -52,6 +52,9 @@ class CycleLoop:
     def attach_articulations(self, **kwargs):
         self.add_transform(ExecMethod("attach_articulations", **kwargs)) 
 
+    def copy_material(self, material_type, material, copy_to):
+        self.add_transform(ExecMethod("copy_material", material_type=material_type, material=material, copy_to=copy_to)) 
+
     def add_cycle(self, bubble_type=None, index=None, flags=[], **kwargs):
         if bubble_type is None:
             bubble_type = self.bubble_type
@@ -72,16 +75,25 @@ class CycleLoop:
         if index is not None:
             self.add_cycle(bubble_type, index + 1, flags)
 
-    def apply_transforms(self):
+    def apply_transforms(self, iters=None, flags=None):
         for i, cycle in enumerate(self.cycles):
+            if (iters is None or i in iters) and (flags is None or any([f in cycle.flags for f in flags])):
+                apply_all=True
+                print("Applying ALL transforms for cycle: #" + str(i))
+            else:
+                print("Applying non-critial transforms for cycle: #" + str(i))
+                apply_all=False
             for transform in self.transforms:
-                previous_cycle = self.cycles[i-1] if i > 0 else None
-                next_cycle = self.cycles[i+1] if i < len(self.cycles)-1 else None
+                is_critical = True
+                if isinstance(transform, ArrangeMusic):
+                    is_critical=False
+                    previous_cycle = self.cycles[i-1] if i > 0 else None
+                    next_cycle = self.cycles[i+1] if i < len(self.cycles)-1 else None
                 if transform.is_active(i, len(self.cycles), 
-                    cycle.flags,
-                    previous_flags= previous_cycle.flags if previous_cycle is not None else [],
-                    next_flags= next_cycle.flags if next_cycle is not None else [],
-                    ):
+                            cycle.flags,
+                            previous_flags= previous_cycle.flags if previous_cycle is not None else [],
+                            next_flags= next_cycle.flags if next_cycle is not None else [],
+                            ) and (apply_all or is_critical):
                     transform.apply(cycle, previous_cycle)
 
     def make_bubble(self, iters=None, flags=None, part_names=None):
