@@ -1,4 +1,9 @@
 ##########################################
+# calliope settings file
+settings.py
+
+
+##########################################
 # misc data dump files
 *.dat
 
