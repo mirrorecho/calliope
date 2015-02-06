@@ -68,6 +68,8 @@ class Part(Staff):
 
         self.sub_show_instrument_instruction = False
 
+        self.is_arranged = False # used to indicate whether music has been arranged to this part for a particular bubble
+
         #self.prepared = False
 
         # TO DO EVENTUALLY... BAD BAD ... super hacky work-around for dealing with X time signature attachments and sub parts....
@@ -296,6 +298,8 @@ class Bubble(Score):
                     pitch_range=[None],
                     split_durations=[None],
                     pitch_offset=[0],
+                    replace = [False], # NOT SUPPORTED YET
+                    skip_arranged = [True],
                     *args, **kwargs
                     ):
         #print("starting arrange...")
@@ -378,6 +382,8 @@ class Bubble(Score):
             arrange_pitch_range = pitch_range[i % len(pitch_range)]
             arrange_split_durations = split_durations[i % len(split_durations)]
             arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
+            arrange_replace = replace[i % len(replace)]
+            arrange_skip_arranged = skip_arranged[i % len(skip_arranged)]
 
             music = music_from_durations(
                 durations=arrange_rhythm, 
@@ -395,17 +401,20 @@ class Bubble(Score):
 
             # TO DO... could pass along split durations here...
             
-            if self.free:
-                # free music has a single variable length measure
-                self.parts[part_name][0].append(music)
-            elif self.odd_meters:
-                # changing odd meters requires this stupid hack:
-                funny_dumbass_measure = Measure((1,8))
-                funny_dumbass_measure.extend(music)
-                odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
-                self.parts[part_name].extend(odd_measures)
-            else:
-                self.parts[part_name].extend(music)
+            if (not arrange_skip_arranged) or (not self.parts[part_name].is_arranged):
+                if self.free:
+                    # free music has a single variable length measure
+                    self.parts[part_name][0].append(music)
+                elif self.odd_meters:
+                    # changing odd meters requires this stupid hack:
+                    funny_dumbass_measure = Measure((1,8))
+                    funny_dumbass_measure.extend(music)
+                    odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
+                    self.parts[part_name].extend(odd_measures)
+                else:
+                    self.parts[part_name].extend(music)
+
+            self.parts[part_name].is_arranged = True
 
             #part = self.parts[part_name]
             #part[0].extend(music)

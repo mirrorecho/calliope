@@ -87,8 +87,8 @@ class CycleLoop:
                 is_critical = True
                 if isinstance(transform, ArrangeMusic):
                     is_critical=False
-                    previous_cycle = self.cycles[i-1] if i > 0 else None
-                    next_cycle = self.cycles[i+1] if i < len(self.cycles)-1 else None
+                previous_cycle = self.cycles[i-1] if i > 0 else None
+                next_cycle = self.cycles[i+1] if i < len(self.cycles)-1 else None
                 if transform.is_active(i, len(self.cycles), 
                             cycle.flags,
                             previous_flags= previous_cycle.flags if previous_cycle is not None else [],
