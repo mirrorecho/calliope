@@ -3,7 +3,6 @@ from abjad import *
 import copy
 
 
-
 # TO DO... could also pass note as pitch object
 def get_pitch_number(pitch_object):
     if isinstance(pitch_object, int):
@@ -13,6 +12,9 @@ def get_pitch_number(pitch_object):
     elif isinstance(pitch_object, pitchtools.Pitch):
         return pitch_object.pitch_number
     # TO DO... error handling here?
+
+def get_pitch_hz(pitch):
+    return 261.6 * (2**( get_pitch_number(pitch) /12))
 
 def get_pitch_range(low_pitch, high_pitch):
     return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
@@ -236,9 +238,96 @@ def line_staff_continue(continue_lengths):
 def make_harmonics(music, 
             show_pitch_indices=[None], # none shows all
             harmonic_types=["artificial"], 
-            instrument="violin", 
-            string="G"):
-    return Container(music)
+            # all these have to do with natural harmonics:
+            harmonics=[None],
+            max_partial = 5 ,
+            positions = [1],
+            strings=["G3"]):
+
+    if type(music) is str:
+        music = scoretools.Container(music)
+    # ASSUME THE COPY ISN'T NEEDED
+    # elif isinstance(durations, scoretools.Container):
+    #     music = copy.deepcopy(durations)
+
+    for i, note_or_tied_notes in enumerate(iterate(music).by_logical_tie(pitched=True)):
+        # TO DO EVENTUALLY do we even need this double loop here??
+        for note in note_or_tied_notes:
+            # assuming everyting in the logical tie is a note than can be transposed...
+            
+            harmonic_type = harmonic_types[i % len(harmonic_types)]
+                        
+            if show_pitch_indices[0] is None or i in show_pitch_indices:
+                show_sound_pitch = True
+            else:
+                show_sound_pitch = False
+
+            sound_pitch = note.written_pitch
+            duration = copy.deepcopy(note.written_duration) # is this copy needed?
+            chord_index = music.index(note)
+
+            if harmonic_type == "artificial":
+                # override(note).note_head.style = 'harmonic'
+
+                music.remove(note)
+
+                chord = Chord()
+                chord.note_heads = [sound_pitch-24, sound_pitch-19]
+                chord.note_heads[1].tweak.style = "harmonic"
+                chord.written_duration = duration
+
+                if show_sound_pitch:
+                    chord.note_heads.append(sound_pitch)
+                    chord.note_heads[2].tweak.font_size = -3
+                music.insert(chord_index, chord)
+
+            else:
+
+                harmonic = harmonics[i % len(harmonics)]
+                string = strings[i % len(strings)]
+                position = positions[i % len(positions)]
+
+                show_string_instruction = True
+
+                if harmonic is None:
+                    string_pitch = get_pitch_number(string)
+                    string_hz = get_pitch_hz(string)
+
+                    for h in range(max_partial):
+                        # try the higher harmonics first (lower finger positions)
+                        fundamendal_hz = get_pitch_hz(sound_pitch) / (max_partial - h)
+                        # have to convert back to pitch #s, for comparison since there may be minor discrepancies due to tuning
+                        fundamendal_pitch = pitchtools.NumberedPitch.from_hertz(fundamendal_hz)
+                        if fundamendal_pitch == string_pitch:
+                            harmonic = max_partial - h
+                            break
+
+                if harmonic is None:
+                    print("ERROR: could not find natural harmonic for pitch " + pitchtools.NamedPitch(sound_pitch).pitch_class_octave_label  + "through partial #" + str(max_partial) + " on string " + string)
+                else:
+                    print(harmonic)
+                    finger_hz = string_hz * harmonic / (harmonic - position)
+                    finger_pitch = pitchtools.NumberedPitch.from_hertz(finger_hz).pitch_number
+                    if finger_pitch == sound_pitch:
+                        show_sound_pitch = False
+
+
+
+                    if show_sound_pitch:
+                        music.remove(note)
+                        chord = Chord()
+                        chord.note_heads = [finger_pitch, sound_pitch]
+                        chord.note_heads[0].tweak.style = "harmonic"
+                        chord.note_heads[1].tweak.font_size = -3
+                        chord.written_duration = duration
+                        if show_string_instruction:
+                            string_instruction = markuptools.Markup(string[0] + " string", direction=Up)
+                            attach(string_instruction, chord)
+                        music.insert(chord_index, chord)
+                    else:
+                        override(note).note_head.style = "harmonic"
+            print("made harmonic")
+    return music
 
 
 # can live with this for now... but would be nicer to avoid having to use skips

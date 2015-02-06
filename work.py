@@ -5,7 +5,7 @@ from shutil import copyfile
 import copy
 
 from calliope.settings import *
-from calliope.tools import music_from_durations
+from calliope.tools import music_from_durations, make_harmonics
 
 # TO DO... 
 # TODAY
@@ -276,6 +276,10 @@ class Bubble(Score):
     def attach_articulations(self, articulations, *args, **kwargs):
         self.attach(attachments=articulations, attachment_type=indicatortools.Articulation, *args, **kwargs)
 
+    def attach_markup(self, markup_texts, *args, **kwargs):
+        markups = [[markuptools.Markup(m, direction=Up) for m in m_texts] for m_texts in markup_texts]
+        self.attach(attachments=markups, *args, **kwargs)
+
     # note... only supports a single spanner per part at a time
     def attach_spanners(self, spanners, part_names, indices=((None,None)), *args, **kwargs):
         for i, part_name in enumerate(part_names):
@@ -300,6 +304,8 @@ class Bubble(Score):
                     pitch_offset=[0],
                     replace = [False], # NOT SUPPORTED YET
                     skip_arranged = [True],
+                    harmonics_make = [False],
+                    harmonics_args = [{}],
                     *args, **kwargs
                     ):
         #print("starting arrange...")
@@ -384,6 +390,8 @@ class Bubble(Score):
             arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
             arrange_replace = replace[i % len(replace)]
             arrange_skip_arranged = skip_arranged[i % len(skip_arranged)]
+            arrange_harmonics_make = harmonics_make[i % len(harmonics_make)]
+            arrange_harmonics_args = harmonics_args[i % len(harmonics_args)]
 
             music = music_from_durations(
                 durations=arrange_rhythm, 
@@ -400,6 +408,9 @@ class Bubble(Score):
                     note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
 
             # TO DO... could pass along split durations here...
+
+            if arrange_harmonics_make:
+                make_harmonics(music, **arrange_harmonics_args)
             
             if (not arrange_skip_arranged) or (not self.parts[part_name].is_arranged):
                 if self.free:
@@ -423,6 +434,10 @@ class Bubble(Score):
             #mutate(part[0]).split(self.measures_durations)
             #part.
             #print("finished arrange...")
+
+    # def make_harmonics(self, part_names, *args, **kwargs):
+    #     for part_name in part_names:
+    #         make_harmonics(self.parts[part_name], *args, **kwargs)
 
     def fill_empty_parts_with_skips(self):
         for part_name, part in self.parts.items():
@@ -555,8 +570,9 @@ class Bubble(Score):
 
         for p in part_names:
             # is it OK that we're not making a copy of this...??
-            bubble.parts[p] = self.parts[p]
-            bubble.append(bubble.parts[p])
+            if p in self.parts:
+                bubble.parts[p] = self.parts[p]
+                bubble.append(bubble.parts[p])
 
         return bubble
 
