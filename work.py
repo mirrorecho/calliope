@@ -5,7 +5,7 @@ from shutil import copyfile
 import copy
 
 from calliope.settings import *
-from calliope.tools import music_from_durations, make_harmonics
+from calliope.tools import *
 
 # TO DO... 
 # TODAY
@@ -250,7 +250,10 @@ class Bubble(Score):
     def copy_material(self, material_type, material, copy_to):
         self.material[material_type][copy_to] = copy.deepcopy(self.material[material_type][material])
 
-    def attach(self, attachments, part_names, indices=[[0]], attachment_type=None, *args, **kwargs):
+    def transpose_pitch_material(self, material, transpose):
+        self.material["pitch"][material] = transpose_pitches(self.material["pitch"][material], transpose)
+
+    def attach(self, attachments, part_names, indices=[[0]], notes_only=[True], attachment_type=None, *args, **kwargs):
         # if the dynamics list includes types other than Dynamic, convert those to Dynamic (will often include strings of the dynamics to keep code clean)
         if attachment_type is not None:
             for p_i, p_a in enumerate(attachments):
@@ -261,7 +264,11 @@ class Bubble(Score):
         for i, part_name in enumerate(part_names):
             part_attachments = attachments[i % len(attachments)]
             part_indices = indices[i % len(indices)]
-            part_material = self.parts[part_name].select_notes_and_chords()
+            part_notes_only = notes_only[i % len(notes_only)]
+            if part_notes_only:
+                part_material = self.parts[part_name].select_notes_and_chords()
+            else:
+                part_material = self.parts[part_name].select_leaves()
             part_material_len = len(part_material)
             for j, n in enumerate(part_indices):
                 if n < part_material_len:

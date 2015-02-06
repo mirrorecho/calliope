@@ -49,11 +49,14 @@ class CycleLoop:
     def attach_dynamics(self, **kwargs):
         self.add_transform(ExecMethod("attach_dynamics", **kwargs)) 
 
+    def attach_markup(self, **kwargs):
+        self.add_transform(ExecMethod("attach_markup", **kwargs)) 
+
     def attach_articulations(self, **kwargs):
         self.add_transform(ExecMethod("attach_articulations", **kwargs)) 
 
-    def copy_material(self, material_type, material, copy_to):
-        self.add_transform(ExecMethod("copy_material", material_type=material_type, material=material, copy_to=copy_to)) 
+    def copy_material(self, material_type, material, copy_to, **kwargs):
+        self.add_transform(ExecMethod("copy_material", material_type=material_type, material=material, copy_to=copy_to, **kwargs)) 
 
     def add_cycle(self, bubble_type=None, index=None, flags=[], **kwargs):
         if bubble_type is None:
