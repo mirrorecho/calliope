@@ -11,6 +11,8 @@ def get_pitch_number(pitch_object):
         return pitchtools.NamedPitch(pitch_object).pitch_number
     elif isinstance(pitch_object, pitchtools.Pitch):
         return pitch_object.pitch_number
+    elif isinstance(pitch_object, (list, tuple)):
+        return [get_pitch_number(p) for p in pitch_object]
     # TO DO... error handling here?
 
 def get_pitch_hz(pitch):
