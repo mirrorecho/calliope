@@ -75,7 +75,8 @@ def pitches_from_intervals(intervals, start_pitch=0):
 
 
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
-def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=0, respell=None, pitch_offset=0):
+def music_from_durations(durations, times=None, split_durations=None, pitches=None, 
+    transpose=0, respell=None, pitch_offset=0, pitch_columns=None):
     # durations is either:
     # - a string with rests and notes (usually c) to be transposed by pitches
     # - a music container with rests and notes (usually c) to be transposed by pitches
@@ -91,7 +92,11 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
     if pitches is not None:
         for i, note_or_tied_notes in enumerate(iterate(music).by_logical_tie(pitched=True)):
             #QUESTION... should we NOT loop around the pitches?
-            pitch_stuff = pitches[(i+pitch_offset) % len(pitches)]
+            if pitch_columns is not None:
+                p_i = pitch_columns[i % len(pitch_columns)]
+            else:
+                p_i = i
+            pitch_stuff = pitches[(p_i+pitch_offset) % len(pitches)]
             for note in note_or_tied_notes:
                 # assuming everyting in the logical tie is a note than can be transposed...
                 if isinstance(pitch_stuff, (list, tuple)):

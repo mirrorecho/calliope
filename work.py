@@ -309,6 +309,8 @@ class Bubble(Score):
                     pitch_range=[None],
                     split_durations=[None],
                     pitch_offset=[0],
+                    pitch_rows=[None],
+                    pitch_columns=[None],
                     replace = [False], # NOT SUPPORTED YET
                     skip_arranged = [True],
                     harmonics_make = [False],
@@ -360,23 +362,29 @@ class Bubble(Score):
                 arrange_rhythm = "R1 "
                 print("Warning... unexpected type of rhythm material passed")
 
+            arrange_pitch_rows = pitch_rows[i % len(pitch_rows)]
+            if arrange_pitch_rows is not None:
+                p_i = arrange_pitch_rows
+            else:
+                p_i = i
+
             if pitches is not None:
-                # then this should be a matrix of the actual pitches
-                arrange_pitches = pitches[i % len(pitches)]
+                # then this should be a matrix of the actual pitches, so just get our row of pitches:
+                arrange_pitches = pitches[p_i % len(pitches)]
             elif isinstance(pitch_material, str):
-                # then the pitch material should be the name of a pitch matrix... get the right row
+                # then the pitch material should be the name of a pitch matrix... get the right row from the material
                 pitch_matrix = self.material["pitch"][pitch_material]
-                arrange_pitches = pitch_matrix[i % len(pitch_matrix)]
+                arrange_pitches = pitch_matrix[p_i % len(pitch_matrix)]
             elif isinstance(pitch_material, (list, tuple)):
                 # then the pitch material should be the names of a pitch rows...
-
-                # then the pitch material should either be a list or matrix of rhythm names
-                pitch_stuff = pitch_material[i % len(pitch_material)]
+                # get the material name or list of names for our row:
+                pitch_stuff = pitch_material[p_i % len(pitch_material)]
+                
                 if isinstance(pitch_stuff, str):
                     # then this is the name of pitch material 
                     arrange_pitches = self.material["pitch"][pitch_stuff]
                 elif isinstance(pitch_stuff, (list, tuple)):
-                    # then this is a list of pitch material names ( in a row )
+                    # then this is a list of pitch material names ( to be extended into a single row )
                     arrange_pitches=copy.deepcopy(self.material["pitch"][pitch_stuff[0]])
                     for extend_name in pitch_stuff[1:]:
                         arrange_pitches.extend(self.material["pitch"][extend_name])
@@ -399,6 +407,7 @@ class Bubble(Score):
             arrange_skip_arranged = skip_arranged[i % len(skip_arranged)]
             arrange_harmonics_make = harmonics_make[i % len(harmonics_make)]
             arrange_harmonics_args = harmonics_args[i % len(harmonics_args)]
+            arrange_pitch_columns = pitch_columns[i % len(pitch_columns)]
 
             music = music_from_durations(
                 durations=arrange_rhythm, 
@@ -406,7 +415,8 @@ class Bubble(Score):
                 transpose=arrange_transpose, 
                 respell=arrange_respell, 
                 split_durations=arrange_split_durations,
-                pitch_offset=arrange_pitch_offset
+                pitch_offset=arrange_pitch_offset,
+                pitch_columns = arrange_pitch_columns
                 )
             
             if arrange_pitch_range is not None:
