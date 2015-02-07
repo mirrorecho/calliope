@@ -478,7 +478,7 @@ class Bubble(Score):
                     part.extend(copy.deepcopy(self.rest_measures))
 
     # TO DO... maybe this function should go on the part, not on the bubble
-    def change_instrument(self, part_name, instrument_name, short_instrument_name, show_instruction=True, attach_before=None):
+    def change_instrument(self, part_name, instrument_name, short_instrument_name, show_instruction=True, instruction_text=None, attach_before=None):
         instrument_command = indicatortools.LilyPondCommand("set Staff.instrumentName = \\markup { " + instrument_name + " }", "before")
         short_instrument_command = indicatortools.LilyPondCommand("set Staff.shortInstrumentName = \\markup { " + short_instrument_name + " }", "before")
         if attach_before is None:
@@ -490,7 +490,9 @@ class Bubble(Score):
         attach(instrument_command, attach_before)
         attach(short_instrument_command, attach_before)
         if show_instruction:
-            instruction_markup = markuptools.Markup('\italic { "' + instrument_name + '" }', direction=Up)
+            if instruction_text is None:
+                instruction_text = instrument_name
+            instruction_markup = markuptools.Markup('\italic { "' + instruction_text + '" }', direction=Up)
             attach(instruction_markup, attach_before)
 
     # NOTE... title not supported yet...
