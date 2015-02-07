@@ -246,6 +246,7 @@ class Bubble(Score):
         self.material = {}
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
+        self.material["part"] = {}
 
     def copy_material(self, material_type, material, copy_to):
         self.material[material_type][copy_to] = copy.deepcopy(self.material[material_type][material])
@@ -297,8 +298,8 @@ class Bubble(Score):
             attach(part_spanner, part_material[part_indices[0]:part_indices[1]])
                    
     def arrange_music(self, 
-                    part_names, 
-                    sub_part_names = None, # should be a list the same length as part_names 
+                    part_names = None,
+                    part_material = None, 
                     rhythms=None, 
                     rhythm_material=None, 
                     pitches=None, 
@@ -318,6 +319,9 @@ class Bubble(Score):
                     *args, **kwargs
                     ):
         #print("starting arrange...")
+        if part_names is None:
+            part_names = self.material["part"][part_material]
+
         for i, part_name in enumerate(part_names):
 
             # TO DO... could tidy up this logic...
