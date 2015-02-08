@@ -308,6 +308,7 @@ class Bubble(Score):
                     respell_material=None, # respell material must be the name of a list
                     transpose=[0],
                     pitch_range=[None],
+                    pitch_range_material = None,
                     split_durations=[None],
                     pitch_offset=[0],
                     pitch_rows=[None],
@@ -404,7 +405,11 @@ class Bubble(Score):
             arrange_respell = respell[i % len(respell)]
 
             arrange_transpose = transpose[i % len(transpose)]
+            
+            if pitch_range_material is not None:
+                pitch_range = self.material[pitch_range_material]
             arrange_pitch_range = pitch_range[i % len(pitch_range)]
+            
             arrange_split_durations = split_durations[i % len(split_durations)]
             arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
             arrange_replace = replace[i % len(replace)]
