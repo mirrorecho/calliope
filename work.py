@@ -679,7 +679,6 @@ class Bubble(Score):
                             # TO DO EVENTUALLY... BAD BAD HACK!
                             sub_part.first_item = bottom_part[0]
                         else:
-                            print("ALIGNING ABOVE...")
                             align_command = indicatortools.LilyPondCommand("set Staff.alignAboveContext = #\"" + compound_part_name + "\"", "before")
                             attach(align_command, sub_part[0])
                             compound_countainer.append(sub_part)

@@ -2,6 +2,13 @@ from abjad import *
 
 import copy
 
+def remove_pitch_repetitions(pitch_row):
+    ret_row = []
+    for i, p in enumerate(pitch_row):
+        if i == 0 or get_pitch_number( p ) != get_pitch_number( pitch_row[i-1] ):
+            ret_row.append(p)
+    return ret_row
+
 
 # TO DO... could also pass note as pitch object
 def get_pitch_number(pitch_object):
