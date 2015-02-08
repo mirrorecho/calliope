@@ -91,18 +91,9 @@ class Part(Staff):
         self.staff_group_name = None
 
     def append_part(self, new_part, divider=False):
-        if divider and len(self) > 0:
-            bar_line = indicatortools.BarLine("||")
-            # TO DO... THIS IS TERRIBLE!
-            # So haky!!!!
-            try:
-                if isinstance(self[-1], Measure) and len(self[-1])>0:
-                    attach(bar_line, self[-1][-1])
-                else:
-                    attach(bar_line, self[-1])
-            except:
-                pass
         
+
+
             # if simultaneous lines (staves... e.g. piano/hap) in the part, then extend each line/staff
             # if self.parts[part_name].is_simultaneous:
             #     print("simultaneous bubble appends not supported....")
@@ -199,7 +190,8 @@ class Bubble(Score):
             layout="standard", 
             measures_durations = [(4,4)]*4, # should we allow this to be None to be more flexible?
             rest_measures = None,
-            odd_meters = False
+            odd_meters = False,
+            tempo = ((1, 4), 120)
             ):
         
         super().__init__()
@@ -225,6 +217,7 @@ class Bubble(Score):
         self.measures_durations = measures_durations
         self.odd_meters = odd_meters
         self.staff_groups = OrderedDict()
+        self.tempo = Tempo(tempo[0], tempo[1])
 
         # right now this is being used to deterimne the length (i.e. to fil with rests)
         # ... some better way to handle?
@@ -631,6 +624,8 @@ class Bubble(Score):
             if part.start_clef is not None:
                 attach(Clef(name=part.start_clef), part)
 
+            attach(self.tempo, part)
+
             if not part.is_sub_part:
                 if part.staff_group_name is not None:
                     self.staff_groups[part.staff_group_name].append(part)
@@ -651,6 +646,7 @@ class Bubble(Score):
                 if not self.free and len(part)>0:
                     accidental_command = indicatortools.LilyPondCommand("context Staff {#(set-accidental-style 'modern)}", "before")
                     attach(accidental_command, part[0])
+
 
             for compound_part_name in self.compound_part_names:
 
@@ -783,7 +779,25 @@ class Bubble(Score):
             if part_name not in self.parts:
                 self.parts[part_name] = bubble.parts[part_name]
 
-        for part_name in self.parts:
+        for part_name, part in self.parts.items():
+            
+            if self.ends_free and bubble.free:
+                bar_line = indicatortools.BarLine(";")
+                divider=True
+            else:
+                bar_line = indicatortools.BarLine("||")
+
+            if divider and len(part) > 0:
+                # TO DO... THIS IS TERRIBLE!
+                # So haky!!!!
+                try:
+                    if isinstance(part[-1], Measure) and len(part[-1])>0:
+                        attach(bar_line, part[-1][-1])
+                    else:
+                        attach(bar_line, part[-1])
+                except:
+                    pass
+
             if part_name in bubble.parts:
                 if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
                     # time signatures attached to staff are not copied over with extend... 
@@ -796,7 +810,7 @@ class Bubble(Score):
                         attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
 
             
-                self.parts[part_name].append_part(bubble.parts[part_name])
+                self.parts[part_name].append_part(bubble.parts[part_name], divider=divider)
 
 
         self.measures_durations += bubble.measures_durations
