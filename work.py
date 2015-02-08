@@ -533,7 +533,8 @@ class Bubble(Score):
         # if score_append:
         #self.append(self.parts[name])
 
-    def add_sub_part(self, part_name, master_part_name, instrument_name=None, short_instrument_name=None, instrument_type=None, show_instrument_instruction=False, clef=None, replace_master_part = True):
+    def add_sub_part(self, part_name, master_part_name, instrument_name=None, short_instrument_name=None, instrument_type=None, 
+        show_instrument_instruction=False, clef=None, replace_master_part = True):
         # # this throws duplicate indicator error for some STUPID reason...
         # master_instrument = self.parts[master_part_name].instrument
         # if instrument_type is None:
@@ -678,12 +679,13 @@ class Bubble(Score):
                             # TO DO EVENTUALLY... BAD BAD HACK!
                             sub_part.first_item = bottom_part[0]
                         else:
+                            print("ALIGNING ABOVE...")
                             align_command = indicatortools.LilyPondCommand("set Staff.alignAboveContext = #\"" + compound_part_name + "\"", "before")
                             attach(align_command, sub_part[0])
                             compound_countainer.append(sub_part)
                     
                     bottom_container = Container()
-                    bottom_container.extend(sub_part)
+                    bottom_container.extend(bottom_part)
                     compound_countainer.append(bottom_container)
 
                     self.parts[compound_part_name].append(compound_countainer)
