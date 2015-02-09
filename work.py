@@ -418,13 +418,14 @@ class Bubble(Score):
                 respell=arrange_respell, 
                 split_durations=arrange_split_durations,
                 pitch_offset=arrange_pitch_offset,
-                pitch_columns = arrange_pitch_columns
+                pitch_columns = arrange_pitch_columns,
+                pitch_range = arrange_pitch_range
                 )
             
-            if arrange_pitch_range is not None:
-                # QUESTION... does this work for chords or to they need to be handled separately?
-                for i, note in enumerate(iterate(music).by_class(Note)):
-                    note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
+            # if arrange_pitch_range is not None:
+            #     # QUESTION... does this work for chords or to they need to be handled separately?
+            #     for i, note in enumerate(iterate(music).by_class(Note)):
+            #         note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
 
             # TO DO... could pass along split durations here...
 
@@ -437,10 +438,17 @@ class Bubble(Score):
                     self.parts[part_name][0].append(music)
                 elif self.odd_meters:
                     # changing odd meters requires this stupid hack:
-                    funny_dumbass_measure = Measure((1,8))
+                    rtm = "( 24/8  ((10/8  (3/8 3/8 2/8 2/8))   (7/8 (3/8 2/8 2/8))  (7/8 (2/8 2/8 3/8)) ) )"
+                    meter = metertools.Meter(rtm)
+
+
+                    funny_dumbass_measure = Measure((24,8))
                     funny_dumbass_measure.extend(music)
-                    odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
-                    self.parts[part_name].extend(odd_measures)
+                    # odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
+                    odd_measures = mutate(funny_dumbass_measure[:]).rewrite_meter(meter)
+                    show(odd_measures)
+
+                    # self.parts[part_name].extend(odd_measures)
                 else:
                     self.parts[part_name].extend(music)
 
