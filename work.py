@@ -212,6 +212,11 @@ class Bubble(Score):
         self.free = False # whether it starts free
         self.ends_free = False # whether it ends free
 
+        if odd_meters:
+            # for now, we're making the odd measures ONE BIG measure with a single time signature
+            num_time = sum([d[0] for d in measures_durations])
+            measures_durations = [(num_time, measures_durations[0][1])]
+
         self.time_signatures = [TimeSignature(d) for d in measures_durations]
         self.name = name
         self.measures_durations = measures_durations
@@ -436,19 +441,20 @@ class Bubble(Score):
                 if self.free:
                     # free music has a single variable length measure
                     self.parts[part_name][0].append(music)
-                elif self.odd_meters:
-                    # changing odd meters requires this stupid hack:
-                    rtm = "( 24/8  ((10/8  (3/8 3/8 2/8 2/8))   (7/8 (3/8 2/8 2/8))  (7/8 (2/8 2/8 3/8)) ) )"
-                    meter = metertools.Meter(rtm)
+                # MAYBE COME BACK TO THIS...
+                # elif self.odd_meters:
+                #     # changing odd meters requires this stupid hack:
+                #     rtm = "( 24/8  ((10/8  (3/8 3/8 2/8 2/8))   (7/8 (3/8 2/8 2/8))  (7/8 (2/8 2/8 3/8)) ) )"
+                #     meter = metertools.Meter(rtm)
 
 
-                    funny_dumbass_measure = Measure((24,8))
-                    funny_dumbass_measure.extend(music)
-                    # odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
-                    odd_measures = mutate(funny_dumbass_measure[:]).rewrite_meter(meter)
-                    show(odd_measures)
+                #     funny_dumbass_measure = Measure((24,8))
+                #     funny_dumbass_measure.extend(music)
+                #     # odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
+                #     odd_measures = mutate(funny_dumbass_measure[:]).rewrite_meter(meter)
+                #     show(odd_measures)
 
-                    # self.parts[part_name].extend(odd_measures)
+                #     # self.parts[part_name].extend(odd_measures)
                 else:
                     self.parts[part_name].extend(music)
 
@@ -807,15 +813,16 @@ class Bubble(Score):
                     pass
 
             if part_name in bubble.parts:
-                if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
+                # if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
+                    
                     # time signatures attached to staff are not copied over with extend... 
                     # so attach bubble's time signature to the music inside the staff
                     # first so that it is copied 
                     
                     # if odd meters, then the time signatures are already in the measures...
 
-                    if bubble.odd_meters and not bubble.free:
-                        attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
+                    # if bubble.odd_meters and not bubble.free:
+                    #     attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
 
             
                 self.parts[part_name].append_part(bubble.parts[part_name], divider=divider)
@@ -950,3 +957,11 @@ class Bubble(Score):
 
             return lilypond_file
 
+
+
+    def make_parts(part_names=None):
+        if part_names is None:
+            part_names = self.parts:
+
+        for part_name in part_names:
+            part = self.parts[part_name]
