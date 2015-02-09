@@ -167,11 +167,11 @@ class PianoStaffPart(StaffGroup):
         self.name = name
         self.start_clef = clef
 
-        if time_signature is not None:
-            # if len(self) > 0:
-            #     attach(copy.deepcopy(time_signature), self[0])
-            # else:
-            attach(copy.deepcopy(time_signature), self)
+        # if time_signature is not None:
+        #     # if len(self) > 0:
+        #     #     attach(copy.deepcopy(time_signature), self[0])
+        #     # else:
+        #     attach(copy.deepcopy(time_signature), self)
         
         attach(self.instrument, self)
         
@@ -592,17 +592,30 @@ class Bubble(Score):
         pass
 
 
-    def make_fragment_bubble(self, part_names):
+    def make_fragment_bubble(self, part_names, bubble_type=None, layout=None, bubble_name=None, group_staves = True):
         """
         creates a new bubble instance with a subset of this bubble's parts (ONLY)
         """
         # not the most elegent solution... but this should work...
+        if layout is None:
+            layout = self.layout
+        if bubble_name is None:
+            bubble_name = self.name + "-fragment"
+
+        # DOESN'T WORK...
+        # if bubble_type is None:
+        #     bubble_type = type(self)
+
         bubble = Bubble(
-            name=self.name + "-fragment", 
+            name=bubble_name, 
             project=self.project, 
             title=self.title, 
-            layout=self.layout, 
-            measures_durations = self.measures_durations)
+            layout=layout, 
+            measures_durations = self.measures_durations
+            )
+
+        if group_staves:
+            bubble.add_staff_group(name="part_staves", part_names=part_names)
 
         for p in part_names:
             # is it OK that we're not making a copy of this...??
@@ -819,11 +832,17 @@ class Bubble(Score):
                     # so attach bubble's time signature to the music inside the staff
                     # first so that it is copied 
                     
-                    # if odd meters, then the time signatures are already in the measures...
 
                     # if bubble.odd_meters and not bubble.free:
-                    #     attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
-
+                # if len(self.time_signatures)>0 and bubble.time_signatures[0] != self.time_signatures[-1]:
+                #     attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name])
+                #     print("attaching time...")
+                try:
+                    if bubble.time_signatures[0] != self.time_signatures[-1]:
+                        attach(copy.deepcopy(bubble.time_signatures[0]), bubble.parts[part_name][0])
+                except:
+                    pass
+                    # WHAT A HACK!
             
                 self.parts[part_name].append_part(bubble.parts[part_name], divider=divider)
 
@@ -959,9 +978,43 @@ class Bubble(Score):
 
 
 
-    def make_parts(part_names=None):
+    def make_parts(self, part_names=None, transpose=True, layout="standard", work_name=None):
         if part_names is None:
-            part_names = self.parts:
+            part_names = self.parts
+        
+        if work_name is None:
+            work_name = self.name
 
-        for part_name in part_names:
-            part = self.parts[part_name]
+        for part_stuff in part_names:
+            if isinstance(part_stuff, (list,tuple)):
+                make_part_names = part_stuff
+                my_name = "-".join(part_stuff)
+            else:
+                my_name = part_stuff
+                make_part_names = [part_stuff]
+
+            print(make_part_names)
+            part_bubble=self.make_fragment_bubble(
+                part_names=make_part_names, 
+                bubble_type=type(self),
+                bubble_name=work_name + "-" + my_name, 
+                layout=layout)
+            
+            if transpose:
+                for part_name, part in part_bubble.parts.items():
+                    if part_name in ["clarinet1","clarinet2"]:
+                        # instrumenttools.transpose_from_sounding_pitch_to_written_pitch(part)
+                        mutate(part).transpose("+M2")
+                    elif part_name in ["horn1","horn2","horn3","horn4"]:
+                        mutate(part).transpose("+P5")
+
+
+            if work_name is None:
+                work_name = self.name
+            print("Making part: " + part_name)
+            part_bubble.make_pdf(subfolder="parts")
+
+
+
+
+
