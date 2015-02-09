@@ -191,10 +191,13 @@ class Bubble(Score):
             measures_durations = [(4,4)]*4, # should we allow this to be None to be more flexible?
             rest_measures = None,
             odd_meters = False,
-            tempo = ((1, 4), 120)
+            tempo = ((1, 4), 120),
+            rehearsal_mark = None,
             ):
         
         super().__init__()
+
+        self.rehearsal_mark = rehearsal_mark
 
         self.parts = OrderedDict() # assume this is necessary... unless there's some way to get score staves by name
         
@@ -534,6 +537,11 @@ class Bubble(Score):
         if len(self.time_signatures) > 0:
             attach(copy.deepcopy(self.time_signatures[0]), self.parts[name])
 
+        # if self.rehearsal_mark is not None:
+        #     r_command = indicatortools.LilyPondCommand('mark \\default', 'before')
+        #     attach(r_command, self.parts[name])
+
+
         # for m in self.measures_durations:
         #     self.parts[name].append(Measure(m))
 
@@ -570,6 +578,10 @@ class Bubble(Score):
         # note... this applies to the master part for ALL concurrent sub parts
         self.parts[master_part_name].subs_replace = replace_master_part
 
+        # if self.rehearsal_mark is not None:
+        #     r_command = indicatortools.LilyPondCommand('mark \\default', 'before')
+        #     attach(r_command, self.parts[part_name])
+
     def add_perc_part(self, name, instrument=None):
         self.parts[name] = PercussionPart(name=name, instrument=instrument)
         # for m in self.measures_durations:
@@ -577,6 +589,10 @@ class Bubble(Score):
         # self.parts[name].append(self.rest_measures)
         if len(self.time_signatures) > 0:
             attach(copy.deepcopy(self.time_signatures[0]), self.parts[name])
+
+        # if self.rehearsal_mark is not None:
+        #     r_command = indicatortools.LilyPondCommand('mark \\default', 'before')
+        #     attach(r_command, self.parts[name])
 
         #self.append(self.parts[name])
 
@@ -664,6 +680,7 @@ class Bubble(Score):
 
     def prepare_parts(self, existing_compound_part_names=[]):
         # TO DO... allow filling with skips OR rests
+
         if not self.parts_prepared:
 
             # TO DO EVENTUALLY... not great looping through all the parts here again... to add these
@@ -824,6 +841,20 @@ class Bubble(Score):
                         attach(bar_line, part[-1])
                 except:
                     pass
+
+            # sim very hacky!
+            if bubble.rehearsal_mark is not None:
+                r_command = indicatortools.LilyPondCommand('mark "' + bubble.rehearsal_mark + '"', 'after')
+                try:
+                    if isinstance(part[-1], Measure) and len(part[-1])>0:
+                        attach(r_command, part[-1][-1])
+                    else:
+                        attach(r_command, part[-1])
+                except:
+                    print("ERROR ATTACHING REHEARSAL MARK: " + bubble.rehearsal_mark)
+                    pass
+                
+                
 
             if part_name in bubble.parts:
                 # if len(bubble.time_signatures) > 0 and len(self.time_signatures) > 0 and len(bubble.parts[part_name]) > 0 and bubble.time_signatures[0] != self.time_signatures[-1]:
