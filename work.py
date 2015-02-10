@@ -57,7 +57,7 @@ class PartGroup(scoretools.StaffGroup):
 
 class Part(Staff):
 
-    def __init__(self, name, instrument=None, clef=None, context_name='Staff', master_part_name=None, resize=0):
+    def __init__(self, name, ly_name=None, instrument=None, clef=None, context_name='Staff', master_part_name=None, resize=0):
         super().__init__(name=name, context_name=context_name) # why doesn't context name work?
 
         self.master_part_name = master_part_name
@@ -74,6 +74,8 @@ class Part(Staff):
 
         # TO DO EVENTUALLY... BAD BAD ... super hacky work-around for dealing with X time signature attachments and sub parts....
         self.first_item = None
+
+        self.ly_name = ly_name
 
         self.sub_part_names =[]
         self.is_compound = False
@@ -142,8 +144,8 @@ class Part(Staff):
 
 
 class PercussionPart(Part):
-    def __init__(self, name, instrument=None, clef=None, context_name='RhythmicStaff'):
-        super().__init__(name, instrument=instrument, clef=clef, context_name=context_name)
+    def __init__(self, name, instrument=None, clef=None, context_name='RhythmicStaff', ly_name=None):
+        super().__init__(name, instrument=instrument, clef=clef, context_name=context_name, ly_name=ly_name)
 
     
     # def make_staff(self):
@@ -192,12 +194,16 @@ class Bubble(Score):
             rest_measures = None,
             odd_meters = False,
             tempo = ((1, 4), 120),
-            rehearsal_mark = None,
+            rehearsal_mark = None
             ):
         
         super().__init__()
 
-        self.rehearsal_mark = rehearsal_mark
+        self.ly_prepends = []
+        self.ly_appends = []
+
+        # self.rehearsal_mark = rehearsal_mark
+        self.rehearsal_mark = None
 
         self.parts = OrderedDict() # assume this is necessary... unless there's some way to get score staves by name
         
@@ -248,6 +254,60 @@ class Bubble(Score):
         self.material["pitch"] = {}
         self.material["rhythm"] = {}
         self.material["part"] = {}
+
+    def make_ly_includes(self, ly_folder, sections=["A","B"]):
+        bubbles_ly = ""
+        folder = self.project.project_path + "/" + ly_folder + "/music/"
+
+        # make the ly includes for each section:
+        for section in sections:
+            bubbles_ly += "\\include \"music/section" + section + ".ly\" \n"
+
+        bubbles_ly +="\n"
+
+        # default each section for each to blank... necessary?
+        # for part_name, part in self.parts.items():
+        #     for section in sections:
+        #         with open(folder + "bubbles.ly", "w") as bubbles_file:
+        #             bubbles_file.write(bubbles_ly)
+
+        #         bubbles_ly += part.ly_name + section + " = { } \n"
+        
+        for part_name, part in self.parts.items():
+            bubbles_ly += part.ly_name + " = { \n"
+
+            # add each section to each part
+            for section in sections:
+                bubbles_ly += "\\" + part.ly_name + section + "\n"
+            bubbles_ly += "} \n"
+
+            with open(folder + "bubbles.ly", "w") as bubbles_file:
+                bubbles_file.write(bubbles_ly)
+
+    def make_ly_music(self, ly_folder, section_name="A", final_bar="||"):
+        section_ly = ""
+        folder = self.project.project_path + "/" + ly_folder + "/music/"
+        print("Making LY MUSIC....")
+        for part_name, part in self.parts.items():
+            # print("... for part " + part_name)
+            c = Container()
+            c.extend(part)
+            section_ly += part.ly_name + section_name + " = {  \n"
+            section_ly += "\\calliopeRehearsalMark " + section_name + " \n "
+
+            for l in self.ly_prepends:
+                section_ly += l + " \n "
+            
+            section_ly += format(c).replace("%%% "," ")
+            
+            for l in self.ly_appends:
+                section_ly += l + " \n "
+            
+            section_ly += "\\bar \"" + final_bar + "\" \n"
+            section_ly += "} \n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \n"
+            section_ly +="  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n \n \n"
+        with open(folder + "section" + section_name + ".ly", "w") as section_file:
+            section_file.write(section_ly)
 
     def copy_material(self, material_type, material, copy_to):
         self.material[material_type][copy_to] = copy.deepcopy(self.material[material_type][material])
@@ -325,143 +385,148 @@ class Bubble(Score):
             part_names = self.material["part"][part_material]
 
         for i, part_name in enumerate(part_names):
+            if part_name in self.parts:
 
-            # TO DO... could tidy up this logic...
-            if rhythms is not None:
-                if isinstance(rhythms, (list, tuple)):
-                    # then this should be a list of actual rhythm stuff for each part
 
-                    rhythm_stuff = rhythms[i % len(rhythms)]
-                    
-                    if isinstance(rhythm_stuff, (list, tuple)):
-                        # then this is a list of rhythms for the part that need to be put together in a container
-                        arrange_rhythm = Container()
-                        for r in rhythm_stuff:
-                            arrange_rhythm.extend(copy.deepcopy(r))
+                # TO DO... could tidy up this logic...
+                if rhythms is not None:
+                    if isinstance(rhythms, (list, tuple)):
+                        # then this should be a list of actual rhythm stuff for each part
+
+                        rhythm_stuff = rhythms[i % len(rhythms)]
+                        
+                        if isinstance(rhythm_stuff, (list, tuple)):
+                            # then this is a list of rhythms for the part that need to be put together in a container
+                            arrange_rhythm = Container()
+                            for r in rhythm_stuff:
+                                arrange_rhythm.extend(copy.deepcopy(r))
+                        else:
+                            # otherwise it's a single rhythm (as a string or container)
+                            arrange_rhythm = rhythm_stuff
                     else:
-                        # otherwise it's a single rhythm (as a string or container)
-                        arrange_rhythm = rhythm_stuff
-                else:
-                    arrange_rhythm = "R1 "
-                    print("----------------------------------------------")
-                    print("WARNING... unexpected type of rhythms passed when attempting to arrange to " + ", ".join(part_names))
-                    print("Exected list, got " + type(rhythms).__name__)
-                    print("Replacing with rest...")
-                    print("----------------------------------------------")
-            elif isinstance(rhythm_material, str):
-                # then the rhythm material should be the name of a rhythm list... get the right rhythm
-                rhythm_list = self.material["rhythm"][rhythm_material]
-                arrange_rhythm = rhythm_list[i % len(rhythm_list)]
-            elif isinstance(rhythm_material, (list, tuple)):
-                # then the rhythm material should either be a list or matrix of rhythm names
-                rhythm_stuff = rhythm_material[i % len(rhythm_material)]
-                if isinstance(rhythm_stuff, str):
-                    # then this the name of rhythm material 
-                    arrange_rhythm = self.material["rhythm"][rhythm_stuff]
-                elif isinstance(rhythm_stuff, (list, tuple)):
-                    arrange_rhythm = " ".join([self.material["rhythm"][r] for r in rhythm_stuff])
-                    # then this is a list of rhythm material names ( in a row )
+                        arrange_rhythm = "R1 "
+                        print("----------------------------------------------")
+                        print("WARNING... unexpected type of rhythms passed when attempting to arrange to " + ", ".join(part_names))
+                        print("Exected list, got " + type(rhythms).__name__)
+                        print("Replacing with rest...")
+                        print("----------------------------------------------")
+                elif isinstance(rhythm_material, str):
+                    # then the rhythm material should be the name of a rhythm list... get the right rhythm
+                    rhythm_list = self.material["rhythm"][rhythm_material]
+                    arrange_rhythm = rhythm_list[i % len(rhythm_list)]
+                elif isinstance(rhythm_material, (list, tuple)):
+                    # then the rhythm material should either be a list or matrix of rhythm names
+                    rhythm_stuff = rhythm_material[i % len(rhythm_material)]
+                    if isinstance(rhythm_stuff, str):
+                        # then this the name of rhythm material 
+                        arrange_rhythm = self.material["rhythm"][rhythm_stuff]
+                    elif isinstance(rhythm_stuff, (list, tuple)):
+                        arrange_rhythm = " ".join([self.material["rhythm"][r] for r in rhythm_stuff])
+                        # then this is a list of rhythm material names ( in a row )
+                    else:
+                        arrange_rhythm = "R1 "
+                        print("Warning... unexpected type of rhythm material passed")
                 else:
                     arrange_rhythm = "R1 "
                     print("Warning... unexpected type of rhythm material passed")
-            else:
-                arrange_rhythm = "R1 "
-                print("Warning... unexpected type of rhythm material passed")
 
-            arrange_pitch_rows = pitch_rows[i % len(pitch_rows)]
-            if arrange_pitch_rows is not None:
-                p_i = arrange_pitch_rows
-            else:
-                p_i = i
+                arrange_pitch_rows = pitch_rows[i % len(pitch_rows)]
+                if arrange_pitch_rows is not None:
+                    p_i = arrange_pitch_rows
+                else:
+                    p_i = i
 
-            if pitches is not None:
-                # then this should be a matrix of the actual pitches, so just get our row of pitches:
-                arrange_pitches = pitches[p_i % len(pitches)]
-            elif isinstance(pitch_material, str):
-                # then the pitch material should be the name of a pitch matrix... get the right row from the material
-                pitch_matrix = self.material["pitch"][pitch_material]
-                arrange_pitches = pitch_matrix[p_i % len(pitch_matrix)]
-            elif isinstance(pitch_material, (list, tuple)):
-                # then the pitch material should be the names of a pitch rows...
-                # get the material name or list of names for our row:
-                pitch_stuff = pitch_material[p_i % len(pitch_material)]
+                if pitches is not None:
+                    # then this should be a matrix of the actual pitches, so just get our row of pitches:
+                    arrange_pitches = pitches[p_i % len(pitches)]
+                elif isinstance(pitch_material, str):
+                    # then the pitch material should be the name of a pitch matrix... get the right row from the material
+                    pitch_matrix = self.material["pitch"][pitch_material]
+                    arrange_pitches = pitch_matrix[p_i % len(pitch_matrix)]
+                elif isinstance(pitch_material, (list, tuple)):
+                    # then the pitch material should be the names of a pitch rows...
+                    # get the material name or list of names for our row:
+                    pitch_stuff = pitch_material[p_i % len(pitch_material)]
+                    
+                    if isinstance(pitch_stuff, str):
+                        # then this is the name of pitch material 
+                        arrange_pitches = self.material["pitch"][pitch_stuff]
+                    elif isinstance(pitch_stuff, (list, tuple)):
+                        # then this is a list of pitch material names ( to be extended into a single row )
+                        arrange_pitches=copy.deepcopy(self.material["pitch"][pitch_stuff[0]])
+                        for extend_name in pitch_stuff[1:]:
+                            arrange_pitches.extend(self.material["pitch"][extend_name])
+                    else:
+                        arrange_pitch = 0
+                        print("Warning... unexpected type of pitch material passed")
+
+                else:
+                    arrange_pitches = None
+
+                if respell_material is not None:
+                    respell = self.material[respell_material]   
+                arrange_respell = respell[i % len(respell)]
+
+                arrange_transpose = transpose[i % len(transpose)]
                 
-                if isinstance(pitch_stuff, str):
-                    # then this is the name of pitch material 
-                    arrange_pitches = self.material["pitch"][pitch_stuff]
-                elif isinstance(pitch_stuff, (list, tuple)):
-                    # then this is a list of pitch material names ( to be extended into a single row )
-                    arrange_pitches=copy.deepcopy(self.material["pitch"][pitch_stuff[0]])
-                    for extend_name in pitch_stuff[1:]:
-                        arrange_pitches.extend(self.material["pitch"][extend_name])
-                else:
-                    arrange_pitch = 0
-                    print("Warning... unexpected type of pitch material passed")
+                if pitch_range_material is not None:
+                    pitch_range = self.material[pitch_range_material]
+                arrange_pitch_range = pitch_range[i % len(pitch_range)]
+                
+                arrange_split_durations = split_durations[i % len(split_durations)]
+                arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
+                arrange_replace = replace[i % len(replace)]
+                arrange_skip_arranged = skip_arranged[i % len(skip_arranged)]
+                arrange_harmonics_make = harmonics_make[i % len(harmonics_make)]
+                arrange_harmonics_args = harmonics_args[i % len(harmonics_args)]
+                arrange_pitch_columns = pitch_columns[i % len(pitch_columns)]
 
+                music = music_from_durations(
+                    durations=arrange_rhythm, 
+                    pitches=arrange_pitches, 
+                    transpose=arrange_transpose, 
+                    respell=arrange_respell, 
+                    split_durations=arrange_split_durations,
+                    pitch_offset=arrange_pitch_offset,
+                    pitch_columns = arrange_pitch_columns,
+                    pitch_range = arrange_pitch_range
+                    )
+                
+                # if arrange_pitch_range is not None:
+                #     # QUESTION... does this work for chords or to they need to be handled separately?
+                #     for i, note in enumerate(iterate(music).by_class(Note)):
+                #         note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
+
+                # TO DO... could pass along split durations here...
+
+                if arrange_harmonics_make:
+                    make_harmonics(music, **arrange_harmonics_args)
+                
+                if (not arrange_skip_arranged) or (not self.parts[part_name].is_arranged):
+                    if self.free:
+                        # free music has a single variable length measure
+                        self.parts[part_name][0].append(music)
+                    # MAYBE COME BACK TO THIS...
+                    # elif self.odd_meters:
+                    #     # changing odd meters requires this stupid hack:
+                    #     rtm = "( 24/8  ((10/8  (3/8 3/8 2/8 2/8))   (7/8 (3/8 2/8 2/8))  (7/8 (2/8 2/8 3/8)) ) )"
+                    #     meter = metertools.Meter(rtm)
+
+
+                    #     funny_dumbass_measure = Measure((24,8))
+                    #     funny_dumbass_measure.extend(music)
+                    #     # odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
+                    #     odd_measures = mutate(funny_dumbass_measure[:]).rewrite_meter(meter)
+                    #     show(odd_measures)
+
+                    #     # self.parts[part_name].extend(odd_measures)
+                    else:
+                        self.parts[part_name].extend(music)
+
+                self.parts[part_name].is_arranged = True
             else:
-                arrange_pitches = None
-
-            if respell_material is not None:
-                respell = self.material[respell_material]   
-            arrange_respell = respell[i % len(respell)]
-
-            arrange_transpose = transpose[i % len(transpose)]
-            
-            if pitch_range_material is not None:
-                pitch_range = self.material[pitch_range_material]
-            arrange_pitch_range = pitch_range[i % len(pitch_range)]
-            
-            arrange_split_durations = split_durations[i % len(split_durations)]
-            arrange_pitch_offset = pitch_offset[i % len(pitch_offset)]
-            arrange_replace = replace[i % len(replace)]
-            arrange_skip_arranged = skip_arranged[i % len(skip_arranged)]
-            arrange_harmonics_make = harmonics_make[i % len(harmonics_make)]
-            arrange_harmonics_args = harmonics_args[i % len(harmonics_args)]
-            arrange_pitch_columns = pitch_columns[i % len(pitch_columns)]
-
-            music = music_from_durations(
-                durations=arrange_rhythm, 
-                pitches=arrange_pitches, 
-                transpose=arrange_transpose, 
-                respell=arrange_respell, 
-                split_durations=arrange_split_durations,
-                pitch_offset=arrange_pitch_offset,
-                pitch_columns = arrange_pitch_columns,
-                pitch_range = arrange_pitch_range
-                )
-            
-            # if arrange_pitch_range is not None:
-            #     # QUESTION... does this work for chords or to they need to be handled separately?
-            #     for i, note in enumerate(iterate(music).by_class(Note)):
-            #         note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], arrange_pitch_range)[0]
-
-            # TO DO... could pass along split durations here...
-
-            if arrange_harmonics_make:
-                make_harmonics(music, **arrange_harmonics_args)
-            
-            if (not arrange_skip_arranged) or (not self.parts[part_name].is_arranged):
-                if self.free:
-                    # free music has a single variable length measure
-                    self.parts[part_name][0].append(music)
-                # MAYBE COME BACK TO THIS...
-                # elif self.odd_meters:
-                #     # changing odd meters requires this stupid hack:
-                #     rtm = "( 24/8  ((10/8  (3/8 3/8 2/8 2/8))   (7/8 (3/8 2/8 2/8))  (7/8 (2/8 2/8 3/8)) ) )"
-                #     meter = metertools.Meter(rtm)
-
-
-                #     funny_dumbass_measure = Measure((24,8))
-                #     funny_dumbass_measure.extend(music)
-                #     # odd_measures = mutate(funny_dumbass_measure).split(self.measures_durations)
-                #     odd_measures = mutate(funny_dumbass_measure[:]).rewrite_meter(meter)
-                #     show(odd_measures)
-
-                #     # self.parts[part_name].extend(odd_measures)
-                else:
-                    self.parts[part_name].extend(music)
-
-            self.parts[part_name].is_arranged = True
+                print("ERROR---------------------------------------------")
+                print("trying to arrange to part " + part_name + ", but this part doesn't exist in this bubble")
 
             #part = self.parts[part_name]
             #part[0].extend(music)
@@ -530,8 +595,8 @@ class Bubble(Score):
         self.staff_groups[name] = PartGroup(name=name, part_names=part_names)
         self.staff_groups[name].title = title
 
-    def add_part(self, name, instrument=None, clef=None):
-        self.parts[name] = Part(name=name, instrument=instrument, clef=clef)
+    def add_part(self, name, instrument=None, clef=None, ly_name=None):
+        self.parts[name] = Part(name=name, instrument=instrument, clef=clef, ly_name=ly_name)
         #self.parts[name].append(self.rest_measures)
 
         if len(self.time_signatures) > 0:
@@ -548,6 +613,7 @@ class Bubble(Score):
         # if score_append:
         #self.append(self.parts[name])
 
+    # TO DO ... IS ly_name needed here?
     def add_sub_part(self, part_name, master_part_name, instrument_name=None, short_instrument_name=None, instrument_type=None, 
         show_instrument_instruction=False, clef=None, replace_master_part = True):
         # # this throws duplicate indicator error for some STUPID reason...
@@ -559,6 +625,8 @@ class Bubble(Score):
         # if short_instrument_name is None:
         #     short_instrument_name = master_instrument.short_instrument_name
         # instrument = instrument_type(instrument_name=instrument_name, short_instrument_name=short_instrument_name)
+        
+        print(clef)
         if instrument_type is None:
             instrument = copy.deepcopy(self.parts[master_part_name].instrument)
         else:
@@ -582,8 +650,8 @@ class Bubble(Score):
         #     r_command = indicatortools.LilyPondCommand('mark \\default', 'before')
         #     attach(r_command, self.parts[part_name])
 
-    def add_perc_part(self, name, instrument=None):
-        self.parts[name] = PercussionPart(name=name, instrument=instrument)
+    def add_perc_part(self, name, instrument=None, ly_name=None):
+        self.parts[name] = PercussionPart(name=name, instrument=instrument, ly_name=ly_name)
         # for m in self.measures_durations:
         #     self.parts[name].append(Measure(m))
         # self.parts[name].append(self.rest_measures)
@@ -608,7 +676,7 @@ class Bubble(Score):
         pass
 
 
-    def make_fragment_bubble(self, part_names, bubble_type=None, layout=None, bubble_name=None, group_staves = True):
+    def make_fragment_bubble(self, part_names, bubble_type=None, layout=None, bubble_name=None, group_staves = True, title=None):
         """
         creates a new bubble instance with a subset of this bubble's parts (ONLY)
         """
@@ -621,11 +689,13 @@ class Bubble(Score):
         # DOESN'T WORK...
         # if bubble_type is None:
         #     bubble_type = type(self)
+        if title is None:
+            title = self.title
 
         bubble = Bubble(
             name=bubble_name, 
             project=self.project, 
-            title=self.title, 
+            title=title, 
             layout=layout, 
             measures_durations = self.measures_durations
             )
@@ -657,23 +727,40 @@ class Bubble(Score):
 
         for part_name, part in self.parts.items():
 
+
             if len(part) > 0:
-                attach(part.instrument, part)
-                # print("Error attaching instrument to part: " + part_name)
-                numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
-                # OK to assume that the part contains stuff?
-                attach(numeric_time_command, part[0])
 
-            if part.start_clef is not None:
-                attach(Clef(name=part.start_clef), part)
+                try:
+                    attach(part.instrument, part)
+                except: 
+                    print("ERROR attaching instrument to part: " + part_name)
+                
+                try:
+                    numeric_time_command = indicatortools.LilyPondCommand("numericTimeSignature","before")
+                    # OK to assume that the part contains stuff?
+                    attach(numeric_time_command, part[0])
+                except: 
+                    print("ERROR attaching time signature to part: " + part_name)
 
-            attach(self.tempo, part)
+            try:
+                if part.start_clef is not None:
+                    attach(Clef(name=part.start_clef), part)
+            except: 
+                print("ERROR attaching clef to part: " + part_name)
 
-            if not part.is_sub_part:
-                if part.staff_group_name is not None:
-                    self.staff_groups[part.staff_group_name].append(part)
-                else:
-                    self.append(part)
+            try:
+                attach(self.tempo, part)
+            except: 
+                print("ERROR attaching TEMPO to part: " + part_name)
+
+            try:
+                if not part.is_sub_part:
+                    if part.staff_group_name is not None:
+                        self.staff_groups[part.staff_group_name].append(part)
+                    else:
+                        self.append(part)
+            except: 
+                print("ERROR adding part to staff group: " + part_name)
 
         self.prepare_score()
 
@@ -686,10 +773,13 @@ class Bubble(Score):
             # TO DO EVENTUALLY... not great looping through all the parts here again... to add these
             # accidental styles, but there was an issue appending this only at the beginning of the
             # big bubble if the first bubble attached to it was free
-            for part_name, part in self.parts.items():
-                if not self.free and len(part)>0:
-                    accidental_command = indicatortools.LilyPondCommand("context Staff {#(set-accidental-style 'modern)}", "before")
-                    attach(accidental_command, part[0])
+
+            # DOING THIS MANUALLY NOW...
+            # HACK HACK
+            # for part_name, part in self.parts.items():
+            #     if not self.free and len(part)>0:
+            #         accidental_command = indicatortools.LilyPondCommand("context Staff {#(set-accidental-style 'modern)}", "before")
+            #         attach(accidental_command, part[0])
 
 
             for compound_part_name in self.compound_part_names:
@@ -749,6 +839,8 @@ class Bubble(Score):
             bubble = self.make_fragment_bubble(part_names)
         else:
             bubble = self
+
+        bubble.add_final_bar_line()
 
         lilypond_file = bubble.make_lilypond_file(hide_empty=hide_empty)
 
@@ -903,13 +995,18 @@ class Bubble(Score):
         """
         Makes Lilypond File
         """
+
+        set_(self).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
+        
+        # tagline = "Copyright 2015 Randall West."
+        tagline = ""
+
         if self.layout == "standard":
             #configure the score ... 
             # spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
             # override(self.score).vertical_axis_group.staff_staff_spacing = spacing_vector
             # override(self.score).staff_grouper.staff_staff_spacing = spacing_vector
-            set_(self).mark_formatter = schemetools.Scheme('format-mark-box-numbers')
-            lilypond_file = lilypondfiletools.make_basic_lilypond_file(self)
 
             # configure the lilypond file...
             lilypond_file.global_staff_size = 16
@@ -931,7 +1028,23 @@ class Bubble(Score):
             override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
             lilypond_file.layout_block.items.append(rhythmic_staff_context_block)
 
-            # assume we can use default dimensions...
+            bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.bottom_margin = bottom_margin
+
+            top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.top_margin = top_margin
+
+            left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
+            lilypond_file.paper_block.left_margin = left_margin
+
+            right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+            lilypond_file.paper_block.right_margin = right_margin
+
+            paper_width = lilypondfiletools.LilyPondDimension(8.5, 'in')
+            lilypond_file.paper_block.paper_width = paper_width
+
+            paper_height = lilypondfiletools.LilyPondDimension(11, 'in')
+            lilypond_file.paper_block.paper_height = paper_height
 
             system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
             lilypond_file.paper_block.system_system_spacing = system_system_spacing
@@ -940,6 +1053,7 @@ class Bubble(Score):
 
             # TO DO... move "for Taiko and Orchestra" to subtitle
             lilypond_file.header_block.title = markuptools.Markup(self.title)
+            lilypond_file.header_block.tagline = markuptools.Markup(tagline)
 
             return lilypond_file
 
@@ -1001,6 +1115,7 @@ class Bubble(Score):
 
             # TO DO... move "for Taiko and Orchestra" to subtitle
             lilypond_file.header_block.title = markuptools.Markup(self.title)
+            lilypond_file.header_block.tagline = markuptools.Markup(tagline)
 
             with open(self.ly_path(), "w") as ly_file:
                 ly_file.write(format(lilypond_file))
@@ -1028,9 +1143,23 @@ class Bubble(Score):
             part_bubble=self.make_fragment_bubble(
                 part_names=make_part_names, 
                 bubble_type=type(self),
+                # title = self.title + " - " + my_name,
                 bubble_name=work_name + "-" + my_name, 
                 layout=layout)
             
+            # FUCKING HACK...
+            if len(make_part_names) == 1:
+                for part_name, part in part_bubble.parts.items():
+                    try:
+                        inst = inspect_(part).get_indicator(instrumenttools.Instrument)
+                    except:
+                        try:
+                            for n in part:
+                                inst = inspect_(n).get_indicator(instrumenttools.Instrument)
+                                detach(inst, part)
+                        except:
+                            pass
+
             if transpose:
                 for part_name, part in part_bubble.parts.items():
                     if part_name in ["clarinet1","clarinet2"]:
