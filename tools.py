@@ -326,7 +326,7 @@ def line_staff_skip(position="grace", continue_staff=False):
         skip_container.append(before_staff_normal_skip)
     return skip_container
 
-def line_staff_continue(continue_lengths):
+def line_staff_continue(continue_lengths, is_percussion=False):
     # (we're assuming that the staff has already been converted to a line)
     line_container = Container()
     for d in continue_lengths:
@@ -345,19 +345,23 @@ def line_staff_continue(continue_lengths):
         line_container.append(half_continue_leaf2)
 
     # now return the staff to normal
-    attach_commands(staff_line_commands(()), line_container[-1] )
+    if is_percussion:
+        attach_commands(staff_line_commands((0,)), line_container[-1] )
+    else:
+        attach_commands(staff_line_commands(()), line_container[-1] )
     
     return line_container
 
 
 
 # can live with this for now... but would be nicer to avoid having to use skips
-def box_music(music, instruction=None, continue_lengths=None):
+def box_music(music, instruction=None, continue_lengths=None, is_percussion=False):
     music = get_music_container(music)
     music_selection = music.select_leaves()
     if len(music_selection) > 0:
 
-        attach(line_staff_skip(), music_selection[0])
+        if not is_percussion:
+            attach(line_staff_skip(), music_selection[0])
 
         if instruction is not None:
             instruction_markup = markuptools.Markup('\italic { "' + instruction + '" }', direction=Up)
@@ -368,28 +372,13 @@ def box_music(music, instruction=None, continue_lengths=None):
         attach(line_staff_skip(position="after", continue_staff=continue_line_staff), music_selection[-1])
 
         if continue_line_staff:
-            music.extend(line_staff_continue(continue_lengths))
+            music.extend(line_staff_continue(continue_lengths, is_percussion=is_percussion))
 
         return music
-
-
-        # return_music = Container()
-        # padding_div_length=(padding_length[0],padding_length[1]*4)
-        
-        # return_music.append(hidden_leaf(padding_div_length))
-        # return_music.append(line_staff_skip())
-
-        # make_box_marks(music_selection[0], music_selection[-1])
-        # return_music.extend(music)
-        
-        # return_music.append(line_staff_skip())
-        # return_music.append(hidden_leaf(padding_div_length))
-
-
-        # return return_music
-
     else:
         print("Error... tried to create a box around empty music")
+
+
 
 # TO DO EVENTUALLY... replace by class... also replace within music?
 def replace_pitch(pitch_stuff, pitch, other_pitch):
