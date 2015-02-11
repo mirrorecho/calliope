@@ -79,7 +79,10 @@ class CycleLoop:
         if index is not None:
             self.add_cycle(bubble_type, index + 1, flags)
 
-    def make_ly_music(self, ly_folder, section_name, iters, final_bar="||", ly_prepends=None, ly_appends=None):
+    def make_ly_music(self, ly_folder, section_name, iters, final_bar="||", 
+        ly_prepends=None, ly_appends=None, run_iters=None):
+        if run_iters is not None:
+            iters = run_iters + iters
         self.apply_transforms(iters=iters)
         bubble = self.make_bubble(iters=iters, divider=False)
         if ly_prepends is not None:
