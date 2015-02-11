@@ -289,23 +289,24 @@ class Bubble(Score):
         folder = self.project.project_path + "/" + ly_folder + "/music/"
         print("Making LY MUSIC....")
         for part_name, part in self.parts.items():
-            # print("... for part " + part_name)
-            c = Container()
-            c.extend(part)
-            section_ly += part.ly_name + section_name + " = {  \n"
-            section_ly += "\\calliopeRehearsalMark " + section_name + " \n "
+            if not part.is_sub_part:
+                # print("... for part " + part_name)
+                c = Container()
+                c.extend(part)
+                section_ly += part.ly_name + section_name + " = {  \n"
+                section_ly += "\\calliopeRehearsalMark " + section_name + " \n "
 
-            for l in self.ly_prepends:
-                section_ly += l + " \n "
-            
-            section_ly += format(c).replace("%%% "," ")
-            
-            for l in self.ly_appends:
-                section_ly += l + " \n "
-            
-            section_ly += "\\bar \"" + final_bar + "\" \n"
-            section_ly += "} \n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \n"
-            section_ly +="  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n \n \n"
+                for l in self.ly_prepends:
+                    section_ly += l + " \n "
+                
+                section_ly += format(c).replace("%%% "," ")
+                
+                for l in self.ly_appends:
+                    section_ly += l + " \n "
+                
+                section_ly += "\\bar \"" + final_bar + "\" \n"
+                section_ly += "} \n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \n"
+                section_ly +="  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n \n \n"
         with open(folder + "section" + section_name + ".ly", "w") as section_file:
             section_file.write(section_ly)
 
