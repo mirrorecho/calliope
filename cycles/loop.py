@@ -97,8 +97,8 @@ class CycleLoop:
         bubble.show_pdf()
 
     def apply_transforms(self, iters=None, flags=None):
-        start_iter = iters[0]
-        stop_iter = iters[len(iters)-1] + 1
+        start_iter = 0
+        stop_iter = 50
         for i, cycle in enumerate(self.cycles[start_iter:stop_iter]):
             print("Applying transforms for cycle: #" + str(i))
             # if (iters is None or i in iters) and (flags is None or any([f in cycle.flags for f in flags])):
