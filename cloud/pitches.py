@@ -311,8 +311,8 @@ class CloudPitches:
     def move_into_ranges(self):
         if self.pitch_ranges is not None:
             for l in range(self.num_lines):
+                range_line = self.pitch_ranges[l % len(self.pitch_ranges)]
                 for c in range(self.num_columns):
-                    range_line = self.pitch_ranges[l % len(self.pitch_ranges)]
                     self.pitch_lines[l][c] = pitchtools.transpose_pitch_expr_into_pitch_range([self.pitch_lines[l][c]], range_line[c % len(range_line)])[0]
         else:
             print("Tried moving pitches into ranges, but pitch_ranges is None")

@@ -2,6 +2,12 @@ from abjad import *
 
 import copy
 
+def remove_pitch_repetitions(pitch_row):
+    ret_row = []
+    for i, p in enumerate(pitch_row):
+        if i == 0 or get_pitch_number( p ) != get_pitch_number( pitch_row[i-1] ):
+            ret_row.append(p)
+    return ret_row
 
 
 # TO DO... could also pass note as pitch object
@@ -12,7 +18,12 @@ def get_pitch_number(pitch_object):
         return pitchtools.NamedPitch(pitch_object).pitch_number
     elif isinstance(pitch_object, pitchtools.Pitch):
         return pitch_object.pitch_number
+    elif isinstance(pitch_object, (list, tuple)):
+        return [get_pitch_number(p) for p in pitch_object]
     # TO DO... error handling here?
+
+def get_pitch_hz(pitch):
+    return 261.6 * (2**( get_pitch_number(pitch) /12))
 
 def get_pitch_range(low_pitch, high_pitch):
     return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
@@ -71,7 +82,8 @@ def pitches_from_intervals(intervals, start_pitch=0):
 
 
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
-def music_from_durations(durations, times=None, split_durations=None, pitches=None, transpose=0, respell=None, pitch_offset=0):
+def music_from_durations(durations, times=None, split_durations=None, pitches=None, 
+    transpose=0, respell=None, pitch_offset=0, pitch_columns=None, pitch_range=None):
     # durations is either:
     # - a string with rests and notes (usually c) to be transposed by pitches
     # - a music container with rests and notes (usually c) to be transposed by pitches
@@ -87,7 +99,11 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
     if pitches is not None:
         for i, note_or_tied_notes in enumerate(iterate(music).by_logical_tie(pitched=True)):
             #QUESTION... should we NOT loop around the pitches?
-            pitch_stuff = pitches[(i+pitch_offset) % len(pitches)]
+            if pitch_columns is not None:
+                p_i = pitch_columns[i % len(pitch_columns)]
+            else:
+                p_i = i
+            pitch_stuff = pitches[(p_i+pitch_offset) % len(pitches)]
             for note in note_or_tied_notes:
                 # assuming everyting in the logical tie is a note than can be transposed...
                 if isinstance(pitch_stuff, (list, tuple)):
@@ -107,6 +123,10 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
                     attach(x_notes_off, note)
                 else:
                     note.written_pitch = get_pitch_number(pitch_stuff) + transpose
+
+                if pitch_range is not None:
+                    note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], pitch_range)[0]
+
 
     if times is not None:
         music_times = scoretools.Container()
@@ -131,6 +151,103 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
         print("AUTO RESPELL NOT SUPPORTED YET...")
     
     return music
+
+# TO DO... auto find best harmonic?
+# TO DO.... make this!
+def make_harmonics(music, 
+            show_pitch_indices=[None], # none shows all
+            harmonic_types=["artificial"], 
+            # all these have to do with natural harmonics:
+            harmonics=[None],
+            max_partial = 5 ,
+            positions = [1],
+            strings=["G3"]):
+
+    if type(music) is str:
+        music = scoretools.Container(music)
+    # ASSUME THE COPY ISN'T NEEDED
+    # elif isinstance(durations, scoretools.Container):
+    #     music = copy.deepcopy(durations)
+
+    for i, note_or_tied_notes in enumerate(iterate(music).by_logical_tie(pitched=True)):
+        # TO DO EVENTUALLY do we even need this double loop here??
+        for note in note_or_tied_notes:
+            # assuming everyting in the logical tie is a note than can be transposed...
+            
+            harmonic_type = harmonic_types[i % len(harmonic_types)]
+                        
+            if show_pitch_indices[0] is None or i in show_pitch_indices:
+                show_sound_pitch = True
+            else:
+                show_sound_pitch = False
+
+            sound_pitch = note.written_pitch
+            duration = copy.deepcopy(note.written_duration) # is this copy needed?
+            chord_index = music.index(note)
+
+            if harmonic_type == "artificial":
+                # override(note).note_head.style = 'harmonic'
+
+                music.remove(note)
+
+                chord = Chord()
+                chord.note_heads = [sound_pitch-24, sound_pitch-19]
+                chord.note_heads[1].tweak.style = "harmonic"
+                chord.written_duration = duration
+
+                if show_sound_pitch:
+                    chord.note_heads.append(sound_pitch)
+                    chord.note_heads[2].tweak.font_size = -3
+                music.insert(chord_index, chord)
+
+            else:
+
+                harmonic = harmonics[i % len(harmonics)]
+                string = strings[i % len(strings)]
+                position = positions[i % len(positions)]
+
+                show_string_instruction = True
+
+                if harmonic is None:
+                    string_pitch = get_pitch_number(string)
+                    string_hz = get_pitch_hz(string)
+
+                    for h in range(max_partial):
+                        # try the higher harmonics first (lower finger positions)
+                        fundamendal_hz = get_pitch_hz(sound_pitch) / (max_partial - h)
+                        # have to convert back to pitch #s, for comparison since there may be minor discrepancies due to tuning
+                        fundamendal_pitch = pitchtools.NumberedPitch.from_hertz(fundamendal_hz)
+                        if fundamendal_pitch == string_pitch:
+                            harmonic = max_partial - h
+                            break
+
+                if harmonic is None:
+                    print("ERROR: could not find natural harmonic for pitch " + pitchtools.NamedPitch(sound_pitch).pitch_class_octave_label  + "through partial #" + str(max_partial) + " on string " + string)
+                else:
+                    print(harmonic)
+                    finger_hz = string_hz * harmonic / (harmonic - position)
+                    finger_pitch = pitchtools.NumberedPitch.from_hertz(finger_hz).pitch_number
+                    if finger_pitch == sound_pitch:
+                        show_sound_pitch = False
+
+
+
+                    if show_sound_pitch:
+                        music.remove(note)
+                        chord = Chord()
+                        chord.note_heads = [finger_pitch, sound_pitch]
+                        chord.note_heads[0].tweak.style = "harmonic"
+                        chord.note_heads[1].tweak.font_size = -3
+                        chord.written_duration = duration
+                        if show_string_instruction:
+                            string_instruction = markuptools.Markup(string[0] + " string", direction=Up)
+                            attach(string_instruction, chord)
+                        music.insert(chord_index, chord)
+                    else:
+                        override(note).note_head.style = "harmonic"
+            print("made harmonic")
+    return music
+
 
 
 def attach_commands(commands, music_object):
@@ -209,7 +326,7 @@ def line_staff_skip(position="grace", continue_staff=False):
         skip_container.append(before_staff_normal_skip)
     return skip_container
 
-def line_staff_continue(continue_lengths):
+def line_staff_continue(continue_lengths, is_percussion=False):
     # (we're assuming that the staff has already been converted to a line)
     line_container = Container()
     for d in continue_lengths:
@@ -219,7 +336,8 @@ def line_staff_continue(continue_lengths):
         line_container.append(hidden_leaf(half_continue))
 
         # now make a hidden leaf for the second half, but attach an arrow to the beginning of it
-        half_continue_leaf2 = hidden_leaf(half_continue)
+        # also the 2nd hidden leaf is a NOTE (not a rest)... that way lines will never be hidden
+        half_continue_leaf2 = hidden_leaf(half_continue, 0)
         arrow_container = scoretools.GraceContainer()
         arrow_container.append(continue_arrow())
         attach(arrow_container, half_continue_leaf2)
@@ -227,27 +345,23 @@ def line_staff_continue(continue_lengths):
         line_container.append(half_continue_leaf2)
 
     # now return the staff to normal
-    attach_commands(staff_line_commands(()), line_container[-1] )
+    if is_percussion:
+        attach_commands(staff_line_commands((0,)), line_container[-1] )
+    else:
+        attach_commands(staff_line_commands(()), line_container[-1] )
     
     return line_container
 
-# TO DO... auto find best harmonic?
-# TO DO.... make this!
-def make_harmonics(music, 
-            show_pitch_indices=[None], # none shows all
-            harmonic_types=["artificial"], 
-            instrument="violin", 
-            string="G"):
-    return Container(music)
 
 
 # can live with this for now... but would be nicer to avoid having to use skips
-def box_music(music, instruction=None, continue_lengths=None):
+def box_music(music, instruction=None, continue_lengths=None, is_percussion=False):
     music = get_music_container(music)
     music_selection = music.select_leaves()
     if len(music_selection) > 0:
 
-        attach(line_staff_skip(), music_selection[0])
+        if not is_percussion:
+            attach(line_staff_skip(), music_selection[0])
 
         if instruction is not None:
             instruction_markup = markuptools.Markup('\italic { "' + instruction + '" }', direction=Up)
@@ -258,28 +372,13 @@ def box_music(music, instruction=None, continue_lengths=None):
         attach(line_staff_skip(position="after", continue_staff=continue_line_staff), music_selection[-1])
 
         if continue_line_staff:
-            music.extend(line_staff_continue(continue_lengths))
+            music.extend(line_staff_continue(continue_lengths, is_percussion=is_percussion))
 
         return music
-
-
-        # return_music = Container()
-        # padding_div_length=(padding_length[0],padding_length[1]*4)
-        
-        # return_music.append(hidden_leaf(padding_div_length))
-        # return_music.append(line_staff_skip())
-
-        # make_box_marks(music_selection[0], music_selection[-1])
-        # return_music.extend(music)
-        
-        # return_music.append(line_staff_skip())
-        # return_music.append(hidden_leaf(padding_div_length))
-
-
-        # return return_music
-
     else:
         print("Error... tried to create a box around empty music")
+
+
 
 # TO DO EVENTUALLY... replace by class... also replace within music?
 def replace_pitch(pitch_stuff, pitch, other_pitch):
