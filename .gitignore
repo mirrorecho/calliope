@@ -2,6 +2,11 @@
 # calliope settings file
 settings.py
 
+##########################################
+# pdf folder and compressed files
+pdf/
+.tar.gz
+
 
 ##########################################
 # misc data dump files
