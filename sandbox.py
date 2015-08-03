@@ -154,7 +154,7 @@ class B2(Bubble1,Bubble2):
         self.voices["voice15"].extend("c'16 ( c'16 ) "*64)
         self.voices["voice16"].extend("b'16 ( b'16 ) "*64)
 
-b = Bubble.sequence([B2() for i in range(40)])
+b = Bubble.sequence([B2() for i in range(4)])
 show(b)
 
 print(inspect_(b).get_duration())
