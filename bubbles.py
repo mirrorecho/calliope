@@ -101,7 +101,6 @@ class Bubble(Container):
         """
         pass
 
-
     #CONTINUE TO USE THESE? OR SIMPLIFY AS SIMPLY A FUNCTION THAT RETURNS A NEW/EXISTING VOICE?
     def use_voices(self, names, *args, **kwargs):
         for v in names:
@@ -112,10 +111,6 @@ class Bubble(Container):
             voice = Context(name=name, context_name="Voice", *args, **kwargs)
             self.append(voice)
             self.voices[name] = voice
-
-    def load_material(self):
-        # TO DO... PULL MATERIAL INTO DICT FROM JSON
-        pass
 
     # TO DO... make this better
     def make_staves(self):
