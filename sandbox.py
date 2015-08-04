@@ -26,6 +26,8 @@
 # - - add/remove staves (and account for this in parts)
 
 from abjad import *
+from bubbles import Bubble
+from copy import deepcopy
 
 # c = Container()
 # c.is_simultaneous = True
@@ -43,121 +45,86 @@ from abjad import *
 # s1 = Staff()
 # s2 = Staff()
 
-
-
 # print(format(c))
 # print(dir(c))
 
-class BubbleScore(Score):
+def get_fa():
+    print("SETTING:fa")
+    return "fa"
+
+class Ta:
+    @classmethod
+    def tata(cls):
+        print(cls)
+
+    class_material = {}
+    class_material["yo"] = get_fa()
+
+    def __init__(self):
+        self.material = {}
+        self.material.update(self.class_material)
+
+
+class Ta1(Ta):
+    tata()
+    class_material = deepcopy(Ta.class_material)
+    class_material["yo1"] = "ta1"
+
+class Ta2(Ta):
+    class_material = deepcopy(Ta.class_material)
+    class_material["yo2"] = "ta2"
+
+
+class TaDown(Ta1,Ta2):
     pass
 
-class Bubble(Container):
-    def __init__(self, 
-            name="a-bubble", 
-            *args, **kwargs
-            ):
-        super().__init__(*args, **kwargs)
-        self.name=name
-        self.is_simultaneous = True
+t1 = TaDown()
+t2 = TaDown()
+t = Ta()
 
-        self.voices = {} # necessary?
-        self.material = {}
-
-        # a little hacky... but works well... this calls the music method on every base class
-        for c in reversed( type(self).mro()[:-2] ):
-            # print(c)
-            if hasattr(c, "music"):
-                c.music(self, *args, **kwargs)
-                pass
-
-    @classmethod
-    def sequence(cls, bubbles=[], name="a-sequence"):
-        print(cls)
-        mybubble = cls(name=name)
-        # TO DO... FIX LENGTHS
-        for b in bubbles:
-            mybubble.use_voices(b.voices)
-        for b in bubbles:
-            for n, v in b.voices.items():
-                mybubble.voices[n].extend(v)
-        return mybubble
-
-
-    def music(self, *args, **kwargs):
-        """
-        default hook...
-        """
-        pass
-
-    def use_voices(self, names, *args, **kwargs):
-        for v in names:
-            self.use_voice(v)
-
-    def use_voice(self, name, *args, **kwargs):
-        if name not in self.voices:
-            voice = Context(name=name, context_name="Voice", *args, **kwargs)
-            self.append(voice)
-            self.voices[name] = voice
-
-    def load_material(self):
-        # TO DO... PULL MATERIAL INTO DICT FROM JSON
-        pass
-
-    # TO DO... make this better
-    def make_staves(self):
-        for i, v in enumerate(self.voices):
-            staff = Staff(name=v+"-staff")
-            staff_voice = Context(name=v, context_name="Voice")
-            staff.append(staff_voice)
-            self.insert(i, staff)
+print(t.material)
+print(t1.material)
+print(t2.material)
 
 
 
-class Bubble1(Bubble):
-    def music(self, *args, **kwargs):
-        self.use_voice("voice1")
-        self.use_voice("voice2")
-        self.use_voice("voice3")
-        self.use_voice("voice4")
-        self.use_voice("voice5")
-        self.use_voice("voice6")
-        self.use_voice("voice7")
-        self.use_voice("voice8")
 
-class Bubble2(Bubble):
-    def music(self, *args, **kwargs):
-        self.use_voice("voice9")
-        self.use_voice("voice10")
-        self.use_voice("voice11")
-        self.use_voice("voice12")
-        self.use_voice("voice13")
-        self.use_voice("voice14")
-        self.use_voice("voice15")
-        self.use_voice("voice16")
 
-class B2(Bubble1,Bubble2):
-    def music(self, *args, **kwargs):
-        self.voices["voice1"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice2"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice3"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice4"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice5"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice6"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice7"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice8"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice9"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice10"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice11"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice12"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice13"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice14"].extend("b'16 ( b'16 ) "*64)
-        self.voices["voice15"].extend("c'16 ( c'16 ) "*64)
-        self.voices["voice16"].extend("b'16 ( b'16 ) "*64)
+# class BubbleScore(Score):
+#     pass
 
-b = Bubble.sequence([B2() for i in range(4)])
-show(b)
+# class Bubble1(Bubble):
+#     def music(self, *args, **kwargs):
+#         self.use_voice("voice1")
+#         self.use_voice("voice2")
+#         self.use_voice("voice3")
+#         self.use_voice("voice4")
+#         self.use_voice("voice5")
+#         self.use_voice("voice6")
+#         self.use_voice("voice7")
+#         self.use_voice("voice8")
 
-print(inspect_(b).get_duration())
+# class Bubble2(Bubble):
+#     def music(self, *args, **kwargs):
+#         self.use_voice("voice9")
+#         self.use_voice("voice10")
+#         self.use_voice("voice11")
+#         self.use_voice("voice12")
+#         self.use_voice("voice13")
+#         self.use_voice("voice14")
+#         self.use_voice("voice15")
+#         self.use_voice("voice16")
+
+# class B2(Bubble1,Bubble2):
+#     def music(self, *args, **kwargs):
+#         self.voices["voice1"].extend("c'16 ( c'16 ) "*64)
+
+#         self.voices["voice16"].extend("b'16 ( b'16 ) "*64)
+
+# b = Bubble.sequence([B2() for i in range(4)])
+# show(b)
+
+# print(inspect_(b).get_duration())
 # show(b)
 
 # print(dir(b))
