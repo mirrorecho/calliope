@@ -25,9 +25,47 @@
 # - - instrument names and cues
 # - - add/remove staves (and account for this in parts)
 
+# TO DO
+# - - add lilypond comments where bubbles start in voice music
+
 from abjad import *
 from bubbles import Bubble
 from copy import deepcopy
+
+class Theme(Bubble):
+    def music(self, *args, **kwargs):
+        self.use_lines(["theme","counter","bass"])
+        self.lines["theme"].extend("\\time 2/2 c'4(\\ff d' e' f') " + " d'1 "*2 + "e'2(\\mp f'2) ")
+        self.lines["counter"].extend("c'4(\\ff d' e' f') " + "e'2(\\mp f'2) " + "d'1 "*2 )
+        self.lines["bass"].extend("\\clef bass c1\\mf d e f ")
+
+class Bass2(Bubble):
+    def music(self, *args, **kwargs):
+        self.use_lines(["bass2"])
+        self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1"*3)
+
+class Theme2(Bass2,Theme):
+    def music(self, *args, **kwargs):
+        mutate(self.lines["counter"]).replace(Context("d'2 "*8))
+        pass
+
+
+t1 = Theme()
+t2 = Theme2()
+t3 = Theme()
+t = Bubble.sequence([t1,t2,t3])
+print(inspect_(t).get_duration())
+s = t.score()
+
+# print(format(s))
+# print(t.lines)
+# show(s)
+
+# c = Container("c'4(\\ff d' e' f') " + "d'1 "*2 + "e'2(\\mp f'2)")
+# s = Staff()
+# s.extend(c)
+# print(format(c))
+
 
 # c = Container()
 # c.is_simultaneous = True
@@ -47,48 +85,6 @@ from copy import deepcopy
 
 # print(format(c))
 # print(dir(c))
-
-def get_fa():
-    print("SETTING:fa")
-    return "fa"
-
-class Ta:
-    @classmethod
-    def tata(cls):
-        print(cls)
-
-    class_material = {}
-    class_material["yo"] = get_fa()
-
-    def __init__(self):
-        self.material = {}
-        self.material.update(self.class_material)
-
-
-class Ta1(Ta):
-    tata()
-    class_material = deepcopy(Ta.class_material)
-    class_material["yo1"] = "ta1"
-
-class Ta2(Ta):
-    class_material = deepcopy(Ta.class_material)
-    class_material["yo2"] = "ta2"
-
-
-class TaDown(Ta1,Ta2):
-    pass
-
-t1 = TaDown()
-t2 = TaDown()
-t = Ta()
-
-print(t.material)
-print(t1.material)
-print(t2.material)
-
-
-
-
 
 # class BubbleScore(Score):
 #     pass
@@ -117,9 +113,9 @@ print(t2.material)
 
 # class B2(Bubble1,Bubble2):
 #     def music(self, *args, **kwargs):
-#         self.voices["voice1"].extend("c'16 ( c'16 ) "*64)
+#         self.lines["voice1"].extend("c'16 ( c'16 ) "*64)
 
-#         self.voices["voice16"].extend("b'16 ( b'16 ) "*64)
+#         self.lines["voice16"].extend("b'16 ( b'16 ) "*64)
 
 # b = Bubble.sequence([B2() for i in range(4)])
 # show(b)
@@ -134,7 +130,7 @@ print(t2.material)
 
 
 
-# b = Bubble(voices=["v1","v2"])
+# b = Bubble(lines=["v1","v2"])
 # b[0].extend("b4 "*4)
 # b[1].extend("a8 "*8)
 # b.make_staves()

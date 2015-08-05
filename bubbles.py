@@ -1,5 +1,6 @@
 from collections import Mapping
 from copy import deepcopy
+from collections import OrderedDict
 import json
 
 from abjad import *
@@ -52,8 +53,18 @@ class Material(dict):
 
 GLOBAL_MATERIAL = Material()
 
+class Line():
+    def __init__(self, name, initial_music=None, *args, **kwargs):
+        self.initial_music = initial_music
+        self.name=name
 
-class Bubble(Container):
+    def generate(self, *args, **kwargs):
+        line = Context(name=self.name, *args, **kwargs)
+        line.extend(self.initial_music)
+        return line
+
+
+class Bubble():
 
     def __init__(self, 
             name="a-bubble", 
@@ -63,7 +74,7 @@ class Bubble(Container):
         self.name=name
         self.is_simultaneous = True
 
-        self.voices = {} # necessary?
+        self.lines = OrderedDict() # necessary?
         self.material = Material()
 
         # a little hacky... but works well... this calls the music method on every base class
@@ -79,15 +90,15 @@ class Bubble(Container):
         mybubble = cls(name=name)
         # TO DO... FIX LENGTHS
         for b in bubbles:
-            mybubble.use_voices(b.voices)
+            mybubble.use_lines(b.lines)
         for b in bubbles:
-            for n, v in b.voices.items():
-                mybubble.voices[n].extend(v)
+            for n, l in b.lines.items():
+                mybubble.lines[n].extend(l)
         return mybubble
 
-    def rename_voice(self, old_name, new_name):
-        self.voices[new_name] = self.voices.pop(old_name)
-        self.voices[new_name].name = new_name
+    def rename_line(self, old_name, new_name):
+        self.lines[new_name] = self.lines.pop(old_name)
+        self.lines[new_name].name = new_name
 
     def use_material(self, name, *args, **kwargs):
         GLOBAL_MATERIAL.use(name, *args, **kwargs)
@@ -102,20 +113,28 @@ class Bubble(Container):
         pass
 
     #CONTINUE TO USE THESE? OR SIMPLIFY AS SIMPLY A FUNCTION THAT RETURNS A NEW/EXISTING VOICE?
-    def use_voices(self, names, *args, **kwargs):
-        for v in names:
-            self.use_voice(v)
+    def use_lines(self, names, *args, **kwargs):
+        for l in names:
+            self.use_line(l)
 
-    def use_voice(self, name, *args, **kwargs):
-        if name not in self.voices:
-            voice = Context(name=name, context_name="Voice", *args, **kwargs)
-            self.append(voice)
-            self.voices[name] = voice
+    def use_line(self, name, *args, **kwargs):
+        if name not in self.lines:
+            line = Context(name=name, *args, **kwargs)
+            self.append(line)
+            self.lines[name] = line
+
 
     # TO DO... make this better
-    def make_staves(self):
-        for i, v in enumerate(self.voices):
-            staff = Staff(name=v+"-staff")
-            staff_voice = Context(name=v, context_name="Voice")
-            staff.append(staff_voice)
-            self.insert(i, staff)
+    def score(self):
+        """
+        a quick way to get a score with auto-generated staves for showing a bubble 
+        """
+        score = Score()
+        for n,v in self.lines.items():
+            staff = Staff(name=n+"-staff")
+            # staff_voice = Context(name=v, context_name="Voice")
+            staff.append(v)
+            instrument = instrumenttools.Instrument(instrument_name=n, short_instrument_name=n)
+            attach(instrument, staff)
+            score.append(staff)
+        return score
