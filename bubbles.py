@@ -63,18 +63,32 @@ class Line():
         line.extend(self.initial_music)
         return line
 
+class Blow():
+    def music(self):
+        pass
 
 class Bubble():
+    """
+    a bubble represents a collection of musical material (e.g. pitches and rhythms)
+    as well as a collection of generators that spit out  abjad contexts or containers
+    """
+    b1 = Blow()
 
     def __init__(self, 
             name="a-bubble", 
+            is_simultaneous = False,
+            container_type = Context,
+            context_name="Context",
             *args, **kwargs
             ):
         super().__init__(*args, **kwargs)
         self.name=name
-        self.is_simultaneous = True
+        self.is_simultaneous = is_simultaneous
+        self.context_name = context_name
 
-        self.lines = OrderedDict() # necessary?
+        self.blows = []
+
+        # self.lines = OrderedDict() # necessary?
         self.material = Material()
 
         # a little hacky... but works well... this calls the music method on every base class
@@ -83,6 +97,21 @@ class Bubble():
             if hasattr(c, "music"):
                 c.music(self, *args, **kwargs)
                 pass
+
+    def blow(self, *args, **kwargs):
+        if container_type == Context:
+            music = Context(name=name, context_name=context_name)
+        else:
+            music = container_type(name=name)
+        for m in methods:
+            b = getattr(self, m)(*args, **kwargs)
+            if isinstance(b, Bubble):
+                music.append(b.blow(*args, **kwargs))
+            else:
+                music.append(b)
+        return music
+
+
 
     @classmethod
     def sequence(cls, bubbles=[], name="a-sequence"):

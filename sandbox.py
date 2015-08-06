@@ -29,33 +29,175 @@
 # - - add lilypond comments where bubbles start in voice music
 
 from abjad import *
-from bubbles import Bubble
-from copy import deepcopy
 
-class Theme(Bubble):
-    def music(self, *args, **kwargs):
-        self.use_lines(["theme","counter","bass"])
-        self.lines["theme"].extend("\\time 2/2 c'4(\\ff d' e' f') " + " d'1 "*2 + "e'2(\\mp f'2) ")
-        self.lines["counter"].extend("c'4(\\ff d' e' f') " + "e'2(\\mp f'2) " + "d'1 "*2 )
-        self.lines["bass"].extend("\\clef bass c1\\mf d e f ")
+class Blow():
+    def __init__(self, gen):
+        self.gen = gen
 
-class Bass2(Bubble):
-    def music(self, *args, **kwargs):
-        self.use_lines(["bass2"])
-        self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1 "*3)
+class Yo():
+    blow_yo1 = Blow(lambda : Container("c'4 "*4))
+    blow_yo2 = Blow(lambda : Container("c'4 "*4))
 
-class Theme2(Bass2,Theme):
-    def music(self, *args, **kwargs):
-        mutate(self.lines["counter"]).replace(Context("d'2 "*8))
+    def __init__(self, 
+            name="a-bubble", 
+            is_simultaneous = False,
+            container_type = Context,
+            context_name="Context",
+            *args, **kwargs
+            ):
+        super().__init__(*args, **kwargs)
+        self.name=name
+        self.is_simultaneous = is_simultaneous
+        self.container_type = container_type
+        self.context_name = context_name
+
+        self.blows = []
+
+        # self.lines = OrderedDict() # necessary?
+        # self.material = Material()
+
+    def blow(self, *args, **kwargs):
+        methods = ["blow_yo"]
+        if self.container_type == Context:
+            music = Context(name=self.name, context_name=self.context_name)
+        else:
+            music = container_type(name=self.name)
+
+        # yos = [y for y in dir(self) ]
+        for m in [dir(self)]:
+            # b = getattr(self, m)(*args, **kwargs)
+            b = self.blow_yo.gen()
+            if isinstance(b, Yo):
+                music.append(b.blow(*args, **kwargs))
+            else:
+                music.append(b)
+        return music
+
+    @classmethod
+    def sequence(cls, bubbles=[], name="a-sequence"):
+        print(cls)
+        mybubble = cls(name=name)
+        # TO DO... FIX LENGTHS
+        for b in bubbles:
+            mybubble.use_lines(b.lines)
+        for b in bubbles:
+            for n, l in b.lines.items():
+                mybubble.lines[n].extend(l)
+        return mybubble
+
+
+class Bubble():
+    def __init__(self, container_type=Container, blow=None, bubble_types = None, order=0, *args, **kwargs):
+        self.container_type = container_type
+        self.order = order
+        self.bubble_types = bubble_types or (Bubble,)
+        if blow:
+            self.blow = blow
+
+    def blow(self, *args, **kwargs):
+        music = self.container_type(*args, **kwargs)
+        self.blow_bubble(music)
+        bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
+        bubbles.sort(key=lambda x : x.order)
+        for bubble in bubbles:
+            music.append(bubble.blow())
+        return music
+
+    def blow_bubble(self, music, *args, **kwargs):
         pass
 
-t1 = Theme()
-t2 = Theme2()
-t3 = Theme()
+class BubbleStaff(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type = Staff, *args, **kwargs)
 
-t = Bubble.sequence([t1,t2,t3])
-print(inspect_(t).get_duration())
-s = t.score()
+class BubbleStaffGroup(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type = StaffGroup, *args, **kwargs)
+
+class BubbleScore(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type=Score, bubble_types=(BubbleStaff, BubbleStaffGroup), *args, **kwargs)
+
+
+class B1(Bubble):
+    b2 = Bubble(Container, lambda : "e'4 "*4, order=0)
+    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
+    b4 = b3
+
+B1_LINES = B1()
+
+class B2(B1):
+    flute_line1 = Bubble(Container, lambda : B1_LINES.blow())
+    flute_line2 = B1.b4
+
+ALL_LINES = B2()
+
+
+class YoFluteStaff1(BubbleStaff):
+    flute_music = ALL_LINES.flute_line1
+
+    def blow_bubble(self, staff, *args, **kwargs):
+        instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
+        attach(instrument, staff)
+
+class YoFluteStaff2(BubbleStaff):
+    flute_music = ALL_LINES.flute_line2
+
+    def blow_bubble(self, staff, *args, **kwargs):
+        instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
+        attach(instrument, staff)
+
+class YoScore(BubbleScore):
+    b_music = B1()
+    flute1 = YoFluteStaff1(order=10)
+    flute2 = YoFluteStaff2(order=11)
+
+class B1(Bubble):
+    b2 = Bubble(Staff, lambda : "e'4 "*4, order=0)
+    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
+    b4 = b3
+
+b = YoScore()
+print(format(b.blow()))
+
+B1
+
+# b = Container("c1 c1 c1 c1")
+# c = Container(b)
+# s = Staff(c)
+# print(format(s))
+
+
+# y = Yo()
+# print(format(y.blow()))
+
+# from bubbles import Bubble
+# from copy import deepcopy
+
+# class Theme(Bubble):
+#     def music(self, *args, **kwargs):
+#         self.use_lines(["theme","counter","bass"])
+#         self.lines["theme"].extend("\\time 2/2 c'4(\\ff d' e' f') " + " d'1 "*2 + "e'2(\\mp f'2) ")
+#         self.lines["counter"].extend("c'4(\\ff d' e' f') " + "e'2(\\mp f'2) " + "d'1 "*2 )
+#         self.lines["bass"].extend("\\clef bass c1\\mf d e f ")
+
+# class Bass2(Bubble):
+#     def music(self, *args, **kwargs):
+#         self.use_lines(["bass2"])
+#         self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1 "*3)
+
+# class Theme2(Bass2,Theme):
+#     def music(self, *args, **kwargs):
+#         mutate(self.lines["counter"]).replace(Context("d'2 "*8))
+#         pass
+
+# t1 = Theme()
+# t2 = Theme2()
+# t3 = Theme()
+
+# t = Bubble.sequence([t1,t2,t3])
+# print(inspect_(t).get_duration())
+# s = t.score()
 
 # print(format(s))
 # print(t.lines)
