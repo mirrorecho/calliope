@@ -42,17 +42,17 @@ class Theme(Bubble):
 class Bass2(Bubble):
     def music(self, *args, **kwargs):
         self.use_lines(["bass2"])
-        self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1"*3)
+        self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1 "*3)
 
 class Theme2(Bass2,Theme):
     def music(self, *args, **kwargs):
         mutate(self.lines["counter"]).replace(Context("d'2 "*8))
         pass
 
-
 t1 = Theme()
 t2 = Theme2()
 t3 = Theme()
+
 t = Bubble.sequence([t1,t2,t3])
 print(inspect_(t).get_duration())
 s = t.score()
