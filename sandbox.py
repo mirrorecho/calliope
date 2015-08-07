@@ -29,138 +29,68 @@
 # - - add lilypond comments where bubbles start in voice music
 
 from abjad import *
+from bubbles import *
 
-class Blow():
-    def __init__(self, gen):
-        self.gen = gen
-
-class Yo():
-    blow_yo1 = Blow(lambda : Container("c'4 "*4))
-    blow_yo2 = Blow(lambda : Container("c'4 "*4))
-
-    def __init__(self, 
-            name="a-bubble", 
-            is_simultaneous = False,
-            container_type = Context,
-            context_name="Context",
-            *args, **kwargs
-            ):
-        super().__init__(*args, **kwargs)
-        self.name=name
-        self.is_simultaneous = is_simultaneous
-        self.container_type = container_type
-        self.context_name = context_name
-
-        self.blows = []
-
-        # self.lines = OrderedDict() # necessary?
-        # self.material = Material()
-
-    def blow(self, *args, **kwargs):
-        methods = ["blow_yo"]
-        if self.container_type == Context:
-            music = Context(name=self.name, context_name=self.context_name)
-        else:
-            music = container_type(name=self.name)
-
-        # yos = [y for y in dir(self) ]
-        for m in [dir(self)]:
-            # b = getattr(self, m)(*args, **kwargs)
-            b = self.blow_yo.gen()
-            if isinstance(b, Yo):
-                music.append(b.blow(*args, **kwargs))
-            else:
-                music.append(b)
-        return music
-
-    @classmethod
-    def sequence(cls, bubbles=[], name="a-sequence"):
-        print(cls)
-        mybubble = cls(name=name)
-        # TO DO... FIX LENGTHS
-        for b in bubbles:
-            mybubble.use_lines(b.lines)
-        for b in bubbles:
-            for n, l in b.lines.items():
-                mybubble.lines[n].extend(l)
-        return mybubble
-
-
-class Bubble():
-    def __init__(self, container_type=Container, blow=None, bubble_types = None, order=0, *args, **kwargs):
-        self.container_type = container_type
-        self.order = order
-        self.bubble_types = bubble_types or (Bubble,)
-        if blow:
-            self.blow = blow
-
-    def blow(self, *args, **kwargs):
-        music = self.container_type(*args, **kwargs)
-        self.blow_bubble(music)
-        bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
-        bubbles.sort(key=lambda x : x.order)
-        for bubble in bubbles:
-            music.append(bubble.blow())
-        return music
-
-    def blow_bubble(self, music, *args, **kwargs):
-        pass
-
-class BubbleStaff(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type = Staff, *args, **kwargs)
-
-class BubbleStaffGroup(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type = StaffGroup, *args, **kwargs)
-
-class BubbleScore(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type=Score, bubble_types=(BubbleStaff, BubbleStaffGroup), *args, **kwargs)
-
-
-class B1(Bubble):
-    b2 = Bubble(Container, lambda : "e'4 "*4, order=0)
-    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
+class B(Bubble):
+    b2 = Bubble(Container, lambda : "e'4 "*4, order=1)
+    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=2)
     b4 = b3
 
-B1_LINES = B1()
-
-class B2(B1):
-    flute_line1 = Bubble(Container, lambda : B1_LINES.blow())
-    flute_line2 = B1.b4
-
-ALL_LINES = B2()
-
-
-class YoFluteStaff1(BubbleStaff):
-    flute_music = ALL_LINES.flute_line1
-
-    def blow_bubble(self, staff, *args, **kwargs):
-        instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
-        attach(instrument, staff)
-
-class YoFluteStaff2(BubbleStaff):
-    flute_music = ALL_LINES.flute_line2
-
-    def blow_bubble(self, staff, *args, **kwargs):
-        instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
-        attach(instrument, staff)
-
-class YoScore(BubbleScore):
-    b_music = B1()
-    flute1 = YoFluteStaff1(order=10)
-    flute2 = YoFluteStaff2(order=11)
-
-class B1(Bubble):
-    b2 = Bubble(Staff, lambda : "e'4 "*4, order=0)
-    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
+class C(Bubble):
+    b2 = Bubble(Container, lambda : "c'4 "*4, order=1)
+    b3 = Bubble(Container, lambda : "f'4\\ff "*4, order=2)
     b4 = b3
 
-b = YoScore()
-print(format(b.blow()))
+b = B()
+b = B()
 
-B1
+def sequence(bubbles):
+    bubble = Bubble()
+    for i,b in enumerate(bubbles):
+        attr_name = "seq" + str(i)
+        b.order = i
+        setattr(bubble, attr_name, b)
+    return bubble
+
+
+b.b4.order=0
+
+show(b.blow())
+
+# class B2(B1):
+#     flute_line1 = Bubble(Container, lambda : B1_LINES.blow())
+#     flute_line2 = B1.b4
+
+# ALL_LINES = B2()
+
+
+# class YoFluteStaff1(BubbleStaff):
+#     flute_music = ALL_LINES.flute_line1
+
+#     def blow_bubble(self, staff, *args, **kwargs):
+#         instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
+#         attach(instrument, staff)
+
+# class YoFluteStaff2(BubbleStaff):
+#     flute_music = ALL_LINES.flute_line2
+
+#     def blow_bubble(self, staff, *args, **kwargs):
+#         instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
+#         attach(instrument, staff)
+
+# class YoScore(BubbleScore):
+#     b_music = B1()
+#     flute1 = YoFluteStaff1(order=10)
+#     flute2 = YoFluteStaff2(order=11)
+
+# class B1(Bubble):
+#     b2 = Bubble(Staff, lambda : "e'4 "*4, order=0)
+#     b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
+#     b4 = b3
+
+# b = YoScore()
+# print(format(b.blow()))
+
 
 # b = Container("c1 c1 c1 c1")
 # c = Container(b)

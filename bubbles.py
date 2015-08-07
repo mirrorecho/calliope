@@ -53,26 +53,73 @@ class Material(dict):
 
 GLOBAL_MATERIAL = Material()
 
-class Line():
-    def __init__(self, name, initial_music=None, *args, **kwargs):
-        self.initial_music = initial_music
-        self.name=name
-
-    def generate(self, *args, **kwargs):
-        line = Context(name=self.name, *args, **kwargs)
-        line.extend(self.initial_music)
-        return line
-
-class Blow():
-    def music(self):
-        pass
 
 class Bubble():
+    def __init__(self, container_type=Container, blow=None, bubble_types = None, order=0, *args, **kwargs):
+        self.container_type = container_type
+        self.order = order
+        self.bubble_types = bubble_types or (Bubble,)
+        if blow:
+            self.blow = blow
+
+    def sequence(self, *args, **kwargs):
+        bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
+        bubbles.sort(key=lambda x : x.order)
+        return bubbles
+
+    def blow(self, *args, **kwargs):
+        music = self.container_type(*args, **kwargs)
+        self.before_blow(music)
+        for bubble in self.sequence():
+            music.append(bubble.blow())
+        self.after_blow(music)
+        return music
+
+    def before_blow(self, music, *args, **kwargs):
+        pass
+
+    def after_blow(self, music, *args, **kwargs):
+        pass
+
+class BubbleSequence(Bubble):
+    def __init__(self, bubbles=[], *args, **kwargs):
+        super().__init__(*args, **kwargs)    
+        self.bubbles= bubbles
+
+    # this is the name of the sequence of bubbles WITHIN the combo bubble
+    def sequence(self, *args, **kwargs):
+        return self.bubbles[0].sequence()
+
+    def blow(self, *args, **kwargs):
+        music = self.container_type(*args, **kwargs)
+        self.before_blow(music)
+        for bubble_attr in self.sequence():
+            bubble_attr_music = bubble_attr.container_type()
+            for bubble_next in self.bubbles()
+                bubble_attr_music.append(bubble_next.bubble_attr)
+        self.after_blow(music)
+        return music
+
+
+
+class BubbleStaff(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type = Staff, *args, **kwargs)
+
+class BubbleStaffGroup(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type = StaffGroup, *args, **kwargs)
+
+class BubbleScore(Bubble):
+    def __init__(self, *args, **kwargs):
+        super().__init__(container_type=Score, bubble_types=(BubbleStaff, BubbleStaffGroup), *args, **kwargs)
+
+
+class BubbleOld():
     """
     a bubble represents a collection of musical material (e.g. pitches and rhythms)
     as well as a collection of generators that spit out  abjad contexts or containers
     """
-    b1 = Blow()
 
     def __init__(self, 
             name="a-bubble", 
