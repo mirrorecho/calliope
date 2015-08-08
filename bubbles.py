@@ -53,27 +53,62 @@ class Material(dict):
 
 GLOBAL_MATERIAL = Material()
 
+class BubbleBase():
+    pass
 
-class Bubble():
-    def __init__(self, container_type=Container, blow=None, bubble_types = None, order=0, *args, **kwargs):
-        self.container_type = container_type
-        self.order = order
-        self.bubble_types = bubble_types or (Bubble,)
+class Bubble(BubbleBase):
+    container_type=Container
+    name=None
+    is_simultaneous=True
+    bubble_types = (BubbleBase,)
+    grid_sequence = ()
+
+    def __init__(self, blow=None, *args, **kwargs):
         if blow:
             self.blow = blow
 
     def sequence(self, *args, **kwargs):
-        bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
-        bubbles.sort(key=lambda x : x.order)
+        # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
+        # bubbles.sort(key=lambda x : x.order)
+        bubbles = [b for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
         return bubbles
 
+    @classmethod
+    def grid_set(cls):
+        return_set = set()
+        for g in cls.grid_sequence:
+            return_set.add(g)
+            return_set = return_set.union(g.grid_set())
+        return return_set
+
+    @classmethod
+    def blow_bubble(cls, bubble_name):
+        """
+        execute for each bubble attribute to add that bubble's music to the main bubble's music
+        """
+        bubble = getattr(cls, bubble_name)
+        if any([hasattr(g, bubble_name) for g in cls.grid_set()]):
+            #... then this bubble attr needs to come from a grid...
+            bubble_music = bubble.container_type(is_simultaneous=bubble.is_simultaneous)
+            for g in cls.grid_sequence:
+                bubble_music.extend( g.blow_bubble(bubble_name) )
+            return bubble_music
+        else:
+            return bubble.blow()
+
     def blow(self, *args, **kwargs):
-        music = self.container_type(*args, **kwargs)
+
+        music = self.container_type(is_simultaneous=self.is_simultaneous, *args, **kwargs)
+
         self.before_blow(music)
-        for bubble in self.sequence():
-            music.append(bubble.blow())
+        for bubble_name in self.sequence():
+            # the bubble attribute specified by the sequence must exist on this bubble object...
+            if hasattr(self, bubble_name):
+               append_music = type(self).blow_bubble(bubble_name)
+               music.append(append_music)
         self.after_blow(music)
         return music
+
 
     def before_blow(self, music, *args, **kwargs):
         pass
@@ -81,38 +116,73 @@ class Bubble():
     def after_blow(self, music, *args, **kwargs):
         pass
 
-class BubbleSequence(Bubble):
-    def __init__(self, bubbles=[], *args, **kwargs):
-        super().__init__(*args, **kwargs)    
-        self.bubbles= bubbles
+class Line(Bubble):
+    is_simultaneous = False
 
-    # this is the name of the sequence of bubbles WITHIN the combo bubble
-    def sequence(self, *args, **kwargs):
-        return self.bubbles[0].sequence()
+class BubbleGrid(Bubble):
+    grid_sequence = ()
+    
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def blow(self, *args, **kwargs):
-        music = self.container_type(*args, **kwargs)
-        self.before_blow(music)
-        for bubble_attr in self.sequence():
-            bubble_attr_music = bubble_attr.container_type()
-            for bubble_next in self.bubbles()
-                bubble_attr_music.append(bubble_next.bubble_attr)
-        self.after_blow(music)
-        return music
+    # def __init__(self, *args, **kwargs):
+    #     self.grid_attrs = []
+    #     super().__init__(*args, **kwargs)
+    #     main_grid_type = self.main_grid_type()
+    #     for bubble_name in dir(main_grid_type):
+    #         attr = getattr(main_grid_type, bubble_name)
+    #         if isinstance(attr, self.bubble_types):
+    #             self.grid_attrs.append(bubble_name)
+    #             setattr(self, bubble_name, attr)
 
+    # def main_grid_type(self):
+    #     return self.grid_sequence[0]
+
+    def blow_bubble(self, music, bubble_name, *args, **kwargs):
+        """
+        execute for each bubble attribute to add that bubble's music to the main bubble's music
+        """
+        if bubble_name in self.grid_attrs:
+            this_bubble = getattr(self, bubble_name)
+            bubble_music = this_bubble.container_type(is_simultaneous=this_bubble.is_simultaneous)
+            for bubble_next in self.grid_sequence:
+                if hasattr(bubble_next, bubble_name):
+                    bubble_music.extend( getattr(bubble_next, bubble_name).blow() )
+            music.append(bubble_music)
+        else:
+            super().blow_bubble(music, bubble_name, *args, **kwargs)
+
+# this blows a sequence of bubbles... note that bubbles are INSTANCES of bubbles (not classes)
+# class BubbleSequence(Bubble):
+#     def __init__(self, bubbles=[], *args, **kwargs):
+#         super().__init__(*args, **kwargs)    
+#         self.bubbles= bubbles
+
+#     def main_bubble(self):
+#         return self.bubbles[0]
+
+#     def blow_bubble(self, music, bubble_name, *args, **kwargs):
+#         """
+#         execute for each bubble attribute to add that bubble's music to the main bubble's music
+#         """
+#         this_start_bubble = getattr(self.main_bubble(), bubble_name)
+#         bubble_music = this_start_bubble.container_type(is_simultaneous=this_start_bubble.is_simultaneous)
+#         for bubble_next in self.bubbles:
+#             if hasattr(bubble_next, bubble_name):
+#                 bubble_music.append( getattr(bubble_next, bubble_name).blow() )
+#         music.append(bubble_music)
 
 
 class BubbleStaff(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type = Staff, *args, **kwargs)
+    is_simultaneous = False
+    container_type = Staff
 
 class BubbleStaffGroup(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type = StaffGroup, *args, **kwargs)
+    container_type = StaffGroup
 
 class BubbleScore(Bubble):
-    def __init__(self, *args, **kwargs):
-        super().__init__(container_type=Score, bubble_types=(BubbleStaff, BubbleStaffGroup), *args, **kwargs)
+    container_type=Score
+    bubble_types=(BubbleStaff, BubbleStaffGroup)
 
 
 class BubbleOld():

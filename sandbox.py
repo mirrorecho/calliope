@@ -31,31 +31,72 @@
 from abjad import *
 from bubbles import *
 
-class B(Bubble):
-    b2 = Bubble(Container, lambda : "e'4 "*4, order=1)
-    b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=2)
-    b4 = b3
+class SortMixin():
+    # def sequence(self, *args, **kwargs):
+    #     return ("line1","line2","line3","line4")
+    pass
 
-class C(Bubble):
-    b2 = Bubble(Container, lambda : "c'4 "*4, order=1)
-    b3 = Bubble(Container, lambda : "f'4\\ff "*4, order=2)
-    b4 = b3
+class B(SortMixin, Bubble):
+    is_simultaneous = True
+    line1 = Line(lambda : Container("e'4 "*4))
+    line2 = Line(lambda : Container("d'4\\ff "*4))
+    line3 = line2
+
+class C(B):
+    line1 = Line(lambda : Container("c'4 "*4))
+
+    # def sequence(self, *args, **kwargs):
+    #     return ("line4","line1")
 
 b = B()
-b = B()
+c = C()
 
-def sequence(bubbles):
-    bubble = Bubble()
-    for i,b in enumerate(bubbles):
-        attr_name = "seq" + str(i)
-        b.order = i
-        setattr(bubble, attr_name, b)
-    return bubble
+# d = BubbleSequence((b,c,b,c))
+
+class E(B):
+    grid_sequence = (B,C)
+    line4 = Line(lambda : Container("b4 "*8))
+
+class F(E):
+    grid_sequence = (E,E)
+    line5 = Line(lambda : Container("a4 "*16))
+
+class G(Bubble):
+    line0 = Line(lambda : Container("a1 "*4))
+
+class H(F,G):
+    line01 = Line(lambda : Container("a'1 "*4))
+
+class I(H)
+
+m = H()
+
+print(format(m.blow()))
+# print(super(H))
+
+# for a in dir(B):
+#     # print(type(getattr(B,a)))
+#     if isinstance(getattr(B,a), B.bubble_types):
+#         print(a)
+
+# print(dir(B))
+
+# m = F()
+# print(format(m.blow()))
+# show(d.blow())
+
+# def sequence(bubbles):
+#     bubble = Bubble()
+#     for i,b in enumerate(bubbles):
+#         attr_name = "seq" + str(i)
+#         b.order = i
+#         setattr(bubble, attr_name, b)
+#     return bubble
 
 
-b.b4.order=0
+# b.b4.order=0
 
-show(b.blow())
+# show(b.blow())
 
 # class B2(B1):
 #     flute_line1 = Bubble(Container, lambda : B1_LINES.blow())
