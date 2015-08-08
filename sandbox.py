@@ -38,12 +38,12 @@ class SortMixin():
 
 class B(SortMixin, Bubble):
     is_simultaneous = True
-    line1 = Line(lambda : Container("e'4 "*4))
-    line2 = Line(lambda : Container("d'4\\ff "*4))
+    line1 = Line("e'4 "*4)
+    line2 = Line("d'4\\ff "*4)
     line3 = line2
 
 class C(B):
-    line1 = Line(lambda : Container("c'4 "*4))
+    line1 = Line("c'4 "*4)
 
     # def sequence(self, *args, **kwargs):
     #     return ("line4","line1")
@@ -55,23 +55,43 @@ c = C()
 
 class E(B):
     grid_sequence = (B,C)
-    line4 = Line(lambda : Container("b4 "*8))
+    line4 = Line("b4 "*8)
 
 class F(E):
     grid_sequence = (E,E)
-    line5 = Line(lambda : Container("a4 "*16))
+    line5 = Line("a4 "*16)
 
 class G(Bubble):
-    line0 = Line(lambda : Container("a1 "*4))
+    line0 = Line("a1 "*4)
 
 class H(F,G):
-    line01 = Line(lambda : Container("a'1 "*4))
+    line01 = Line("a'1 "*4)
+    line5 = Eval(F, "line2")
 
-class I(H)
+music = H()
 
-m = H()
+def yoyo(some_class):
+    class AnotherOne(some_class):
+        boo = "ha"
 
-print(format(m.blow()))
+    return AnotherOne
+
+I = yoyo(H)
+print(I.line5)
+
+
+
+class MyScore(BubbleScore):
+    flute_staff1 = BubbleStaff( Eval(H, "line5") )
+    flute_staff2 = BubbleStaff( Eval(H, "line2") )
+    # tata = 
+    pass
+
+
+m = MyScore()
+
+
+# print(format(music.blow()))
 # print(super(H))
 
 # for a in dir(B):
