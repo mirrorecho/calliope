@@ -123,12 +123,19 @@ class Bubble(BubbleBase):
         self.after_blow(music)
         return music
 
-
     def before_blow(self, music, *args, **kwargs):
         pass
 
     def after_blow(self, music, *args, **kwargs):
         pass
+
+    def material(self, name, *args, **kwargs):
+        material = {}
+        GLOBAL_MATERIAL.use(name, *args, **kwargs)
+        setattr(self, name, material)
+        self.material.update(GLOBAL_MATERIAL[name])
+        self.material.loaded.add(name)
+        return material
 
 class Eval(Bubble):
     def __init__(self, cls, bubble_name):
@@ -142,6 +149,7 @@ class BubbleStaff(Bubble):
     container_type = Staff
 
 class BubbleStaffGroup(Bubble):
+    is_simultaneous = None
     container_type = StaffGroup
 
 class BubbleScore(Bubble):

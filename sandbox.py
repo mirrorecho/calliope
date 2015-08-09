@@ -37,6 +37,7 @@ class SortMixin():
     pass
 
 class B(SortMixin, Bubble):
+    material = Material("test_data")
     is_simultaneous = True
     line1 = Line("e'4 "*4)
     line2 = Line("d'4\\ff "*4)
