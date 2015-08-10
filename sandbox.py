@@ -37,20 +37,27 @@ class SortMixin():
     pass
 
 class B(SortMixin, Bubble):
-    material = Material("test_data")
+    # material = Material("test_data")
     is_simultaneous = True
     line1 = Line("e'4 "*4)
     line2 = Line("d'4\\ff "*4)
-    line3 = line2
+    # material=Material("test_data", "test_data_2") # may need to do something like this...
+
+    # line2 = Dynamics("ff"
+    #     Line("d'4\\ff "*4)
+    #     )
+    # line3 = FromMaterial
+
+    def startup(self, *args, **kwargs):
+        # self.line2 = Dynamics("ff", self.line2)
+        # self.lines_from_material("test_data","lines")
+        pass
 
 class C(B):
     line1 = Line("c'4 "*4)
 
     # def sequence(self, *args, **kwargs):
     #     return ("line4","line1")
-
-b = B()
-c = C()
 
 # d = BubbleSequence((b,c,b,c))
 
@@ -66,30 +73,43 @@ class G(Bubble):
     line0 = Line("a1 "*4)
 
 class H(F,G):
-    line01 = Line("a'1 "*4)
+    line2 = Line("a'1 "*4)
     line5 = Eval(F, "line2")
+    line9 = Transpose( Eval(F, "line1"), "+m3")
+    # line11 = Line(material="line11_music") # doesn't work
 
-music = H()
+# H().show()
 
-def yoyo(some_class):
-    class AnotherOne(some_class):
-        boo = "ha"
+t = Transpose( H(), "+m3")
+# t.show()
 
-    return AnotherOne
+print(H.line2)
 
-I = yoyo(H)
-print(I.line5)
-
-
-
-class MyScore(BubbleScore):
-    flute_staff1 = BubbleStaff( Eval(H, "line5") )
-    flute_staff2 = BubbleStaff( Eval(H, "line2") )
-    # tata = 
-    pass
+# print(t)
+# print(format(t))
+print("********************************")
+# print(H())
 
 
-m = MyScore()
+# def yoyo(some_class):
+#     class AnotherOne(some_class):
+#         boo = "ha"
+
+#     return AnotherOne
+
+# I = yoyo(H)
+# print(I.line5)
+
+
+
+# class MyScore(BubbleScore):
+#     flute_staff1 = BubbleStaff( Eval(H, "line5") )
+#     flute_staff2 = BubbleStaff( Eval(H, "line2") )
+#     # tata = 
+#     pass
+
+
+# m = MyScore()
 
 
 # print(format(music.blow()))

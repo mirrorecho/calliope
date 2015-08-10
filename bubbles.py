@@ -26,16 +26,16 @@ class Material(dict):
 
 
     def load(self, name, key_name=None, path="./data", *args, **kwargs):
-        
+        print("LOADING MATERIAL: " + name)
         key_name = key_name or name
 
         file_path = path + "/" + name + ".json"
-        if not name in self or not isinstance(self[name], dict):
-            self[name] = Material()
+        if not key_name in self or not isinstance(self[key_name], dict):
+            self[key_name] = Material()
         
         with open(file_path) as data_file:    
             data = json.load(data_file)
-            self[name].update(data)
+            self[key_name].update(data)
 
         self.loaded.add(name)
 
@@ -50,11 +50,20 @@ class Material(dict):
         super().clear()
         self.loaded.clear
 
-
 GLOBAL_MATERIAL = Material()
 
 class BubbleBase():
-    pass
+    def startup(self, *args, **kwargs):
+        pass
+
+    def before_blow(self, music, *args, **kwargs):
+        pass
+
+    def after_blow(self, music, *args, **kwargs):
+        pass
+
+    def bubble_wrap(self):
+        return self
 
 class Bubble(BubbleBase):
     container_type=Container
@@ -62,8 +71,29 @@ class Bubble(BubbleBase):
     is_simultaneous=True
     bubble_types = (BubbleBase,)
     grid_sequence = ()
+    material=()
+    # using_material = () # necessary?
 
+    # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
     def __init__(self, music_blow=None, *args, **kwargs):
+
+        self.using_material = []
+        my_material = Material()
+        
+        # a little hacky... but works well... 
+        for c in reversed( type( self.bubble_wrap() ).mro()[:-2] ):
+            # this calls the startup method on every base class
+            if hasattr(c, "startup"):
+                c.startup( self, *args, **kwargs)
+            if hasattr(c, "material"):
+                for m in reversed(c.material):
+                    GLOBAL_MATERIAL.use(m)
+                    # if m not in self.using_material: # necessary?
+                    #     self.using_material.insert(0,m)
+                    my_material.update(GLOBAL_MATERIAL[m])
+        for name, value in my_material.items():
+            setattr( self, name, value)
+
         if music_blow:
             if isinstance(music_blow, Bubble):
                 self.music_blow = lambda : music_blow.blow()
@@ -72,10 +102,13 @@ class Bubble(BubbleBase):
             else:
                 self.music_blow = lambda : music_blow # necessary???
 
+        # MAYBE TO DO... it would be cleaner here to make bubbles for anything
+
     def sequence(self, *args, **kwargs):
         # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
         # bubbles.sort(key=lambda x : x.order)
-        bubbles = [b for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
+        seq_bubble = self.bubble_wrap()
+        bubbles = [b for b in dir(seq_bubble) if isinstance(getattr(seq_bubble,b), self.bubble_types)]
         return bubbles
 
     @classmethod
@@ -119,30 +152,84 @@ class Bubble(BubbleBase):
         else:
             music = self.container_type(*args, **kwargs)
         self.before_blow(music)
-        music.extend(self.music_blow())
+        music.extend(self.bubble_wrap().music_blow())
         self.after_blow(music)
         return music
 
-    def before_blow(self, music, *args, **kwargs):
-        pass
+    def score(self, *args, **kwargs):
+        """
+        a quick way to get a full-fledged ajad score object for this bubble type...
+        """
+        score = Score()
+        # TO DO... ADD SCORE TITLE (THE NAME OF THE CLASS)
+        try:
+            self.before_blow(score, *args, **kwargs)
+        except:
+            print("WARNING: error trying to run 'before_blow' on the auto-generated score. Some music may be missing...")
 
-    def after_blow(self, music, *args, **kwargs):
-        pass
+        def append_staff(name, bubble):
+            staff = Staff(name=name)
+            staff.append( bubble.blow() )
+            instrument = instrumenttools.Instrument(instrument_name=name, short_instrument_name=name)
+            attach(instrument, staff)
+            score.append(staff)            
 
-    def material(self, name, *args, **kwargs):
-        material = {}
-        GLOBAL_MATERIAL.use(name, *args, **kwargs)
-        setattr(self, name, material)
-        self.material.update(GLOBAL_MATERIAL[name])
-        self.material.loaded.add(name)
-        return material
+        if self.is_simultaneous:
+            for i, b in enumerate(self.sequence()):
+                bubble = Eval(type(self.bubble_wrap()), b)
+                append_staff(b, bubble)
+        else:
+            append_staff(b.__class__.name, self)
+
+        try:
+            self.after_blow(score, *args, **kwargs)
+        except:
+            print("WARNING: error trying to run 'before_blow' on the auto-generated score. Some music may be missing...")
+
+        return score
+
+
+    def show(self, *args, **kwargs):
+        score = self.score(*args, **kwargs)
+        show(score)
+
+    def __str__(self):
+        music = self.blow()
+        return(format(music))
+
 
 class Eval(Bubble):
     def __init__(self, cls, bubble_name):
+        self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
         super().__init__( lambda : cls.blow_bubble(bubble_name) )
 
 class Line(Bubble):
     is_simultaneous = False
+    def __init__(self, music_blow=None, material=None, pitches=None, pitch_material=None, *args, **kwargs):
+        # TO DO... DOES NOT WORK...!!!!!!!!!!!!
+        my_music_blow = music_blow or (lambda : getattr(self, material))
+        # TO DO... IMPLEMENT PITCH CONVERSION...
+        super().__init__(my_music_blow, *args, **kwargs)
+
+class BubbleWrap(Bubble):
+    """
+    a base class for bubbles that "wrap" other bubbles in order to modify or extend them (without going through the trouble
+        of inheritence)
+    """
+    def __init__(self, bubble, *args, **kwargs):
+        self.bubble_wrap = lambda : bubble.bubble_wrap()
+        self.is_simultaneous = bubble.is_simultaneous
+        super().__init__(bubble, *args, **kwargs)
+
+
+class Transpose(BubbleWrap):
+    def __init__(self, bubble, transpose_expr, *args, **kwargs):
+        self.transpose_expr = transpose_expr
+        super().__init__(bubble, *args, **kwargs)
+    
+    def after_blow(self, music, *args, **kwargs):
+        super().after_blow(music, *args, **kwargs)
+        mutate(music).transpose(self.transpose_expr)
 
 class BubbleStaff(Bubble):
     is_simultaneous = None
@@ -157,103 +244,3 @@ class BubbleScore(Bubble):
     container_type=Score
     bubble_types=(BubbleStaff, BubbleStaffGroup)
 
-
-class BubbleOld():
-    """
-    a bubble represents a collection of musical material (e.g. pitches and rhythms)
-    as well as a collection of generators that spit out  abjad contexts or containers
-    """
-
-    def __init__(self, 
-            name="a-bubble", 
-            is_simultaneous = False,
-            container_type = Context,
-            context_name="Context",
-            *args, **kwargs
-            ):
-        super().__init__(*args, **kwargs)
-        self.name=name
-        self.is_simultaneous = is_simultaneous
-        self.context_name = context_name
-
-        self.blows = []
-
-        # self.lines = OrderedDict() # necessary?
-        self.material = Material()
-
-        # a little hacky... but works well... this calls the music method on every base class
-        for c in reversed( type(self).mro()[:-2] ):
-            # print(c)
-            if hasattr(c, "music"):
-                c.music(self, *args, **kwargs)
-                pass
-
-    def blow(self, *args, **kwargs):
-        if container_type == Context:
-            music = Context(name=name, context_name=context_name)
-        else:
-            music = container_type(name=name)
-        for m in methods:
-            b = getattr(self, m)(*args, **kwargs)
-            if isinstance(b, Bubble):
-                music.append(b.blow(*args, **kwargs))
-            else:
-                music.append(b)
-        return music
-
-
-
-    @classmethod
-    def sequence(cls, bubbles=[], name="a-sequence"):
-        print(cls)
-        mybubble = cls(name=name)
-        # TO DO... FIX LENGTHS
-        for b in bubbles:
-            mybubble.use_lines(b.lines)
-        for b in bubbles:
-            for n, l in b.lines.items():
-                mybubble.lines[n].extend(l)
-        return mybubble
-
-    def rename_line(self, old_name, new_name):
-        self.lines[new_name] = self.lines.pop(old_name)
-        self.lines[new_name].name = new_name
-
-    def use_material(self, name, *args, **kwargs):
-        GLOBAL_MATERIAL.use(name, *args, **kwargs)
-        self.material.update(GLOBAL_MATERIAL[name])
-        self.material.loaded.add(name)
-
-
-    def music(self, *args, **kwargs):
-        """
-        default hook...
-        """
-        pass
-
-    #CONTINUE TO USE THESE? OR SIMPLIFY AS SIMPLY A FUNCTION THAT RETURNS A NEW/EXISTING VOICE?
-    def use_lines(self, names, *args, **kwargs):
-        for l in names:
-            self.use_line(l)
-
-    def use_line(self, name, *args, **kwargs):
-        if name not in self.lines:
-            line = Context(name=name, *args, **kwargs)
-            self.append(line)
-            self.lines[name] = line
-
-
-    # TO DO... make this better
-    def score(self):
-        """
-        a quick way to get a score with auto-generated staves for showing a bubble 
-        """
-        score = Score()
-        for n,v in self.lines.items():
-            staff = Staff(name=n+"-staff")
-            # staff_voice = Context(name=v, context_name="Voice")
-            staff.append(v)
-            instrument = instrumenttools.Instrument(instrument_name=n, short_instrument_name=n)
-            attach(instrument, staff)
-            score.append(staff)
-        return score
