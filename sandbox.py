@@ -41,6 +41,8 @@ class B(SortMixin, Bubble):
     is_simultaneous = True
     line1 = Line("e'4 "*4)
     line2 = Line("d'4\\ff "*4)
+    # line3 = Eval"yo"
+    # material=("test_data", "test_data_2") # may need to do something like this...
     # material=Material("test_data", "test_data_2") # may need to do something like this...
 
     # line2 = Dynamics("ff"
@@ -77,6 +79,7 @@ class H(F,G):
     line5 = Eval(F, "line2")
     line9 = Transpose( Eval(F, "line1"), "+m3")
     # line11 = Line(material="line11_music") # doesn't work
+    line11 = Line(material="line11_music") # doesn't work
 
 # H().show()
 
@@ -89,6 +92,11 @@ print(H.line2)
 # print(format(t))
 print("********************************")
 # print(H())
+
+class Z():
+    
+    def yo*):
+        print(type)
 
 
 # def yoyo(some_class):
