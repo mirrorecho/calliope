@@ -41,6 +41,8 @@ class B(SortMixin, Bubble):
     is_simultaneous = True
     line1 = Line("e'4 "*4)
     line2 = Line("d'4\\ff "*4)
+    # pitch_ji = Material("test_data.pitch.ji")
+    # material_11 = Material("test_data.line11_music")
     # line3 = Eval"yo"
     # material=("test_data", "test_data_2") # may need to do something like this...
     # material=Material("test_data", "test_data_2") # may need to do something like this...
@@ -50,10 +52,11 @@ class B(SortMixin, Bubble):
     #     )
     # line3 = FromMaterial
 
-    def startup(self, *args, **kwargs):
-        # self.line2 = Dynamics("ff", self.line2)
-        # self.lines_from_material("test_data","lines")
-        pass
+    # def startup(self, *args, **kwargs):
+    #     # self.line2 = Dynamics("ff", self.line2)
+    #     # self.lines_from_material("test_data","lines")
+    #     pass
+    # print("YO")
 
 class C(B):
     line1 = Line("c'4 "*4)
@@ -74,29 +77,36 @@ class F(E):
 class G(Bubble):
     line0 = Line("a1 "*4)
 
+class FancyLine(Line):
+    music = Material("test_data.line11")
+
 class H(F,G):
     line2 = Line("a'1 "*4)
-    line5 = Eval(F, "line2")
-    line9 = Transpose( Eval(F, "line1"), "+m3")
+    # line5 = Eval("H.line1") #maybe this would work?
+    # line9 = Transpose( Eval("F.line1"), "+m3")
     # line11 = Line(material="line11_music") # doesn't work
-    line11 = Line(material="line11_music") # doesn't work
+    # line11 = WithPitches( FancyLine(), Material("test_data.test_pitches") ),  # WILL GET THIS ONE WORKING!
+    line11 = FancyLine()
+    line12 = Transpose( BubbleMaterial("test_data.line11"), "+M2")
 
 # H().show()
 
-t = Transpose( H(), "+m3")
-# t.show()
+# print(H())
 
-print(H.line2)
+t = Transpose( H(), "+m6")
+t.show()
+
+# print(t)
 
 # print(t)
 # print(format(t))
 print("********************************")
 # print(H())
 
-class Z():
+# class Z():
     
-    def yo*):
-        print(type)
+#     def yo*):
+#         print(type)
 
 
 # def yoyo(some_class):
