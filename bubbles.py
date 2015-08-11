@@ -87,63 +87,50 @@ class BubbleBase():
             else:
                 self.music = lambda : music 
 
-    def startup(self, *args, **kwargs):
-        pass
+    def music_container(self, *args, **kwargs):
+        if self.is_simultaneous is not None:
+            return self.container_type(is_simultaneous=self.is_simultaneous, *args, **kwargs)
+        else:
+            return self.container_type(*args, **kwargs)
+
+    # IMPLEMENT IF NEEDED...
+    # def before_music(self, music, *args, **kwargs):
+    #     pass
 
     def music(self, *args, **kwargs):
-        pass
+        print("WARNING... EMPTY MUSIC FUNCTION CALLED ON BUBBLE BASE")
+        return self.music_container()
 
-    def before_blow(self, music, *args, **kwargs):
+    def after_music(self, music, *args, **kwargs):
         pass
 
     def blow(self, *args, **kwargs):
-        if self.is_simultaneous is not None:
-            my_music = self.container_type(is_simultaneous=self.is_simultaneous, *args, **kwargs)
-        else:
-            my_music = self.container_type(*args, **kwargs)
-        self.before_blow(my_music)
-        my_music.extend(self.bubble_wrap().music())
-        self.after_blow(my_music)
+        # IMPLEMENT IF BEFORE_MUSIC NEEDED, OTHERWISE KISS
+        # my_music = self.music_container()
+        # self.before_blow(my_music)
+        # my_music.extend(self.bubble_wrap().music())
+        my_music = self.bubble_wrap().music()
+        self.after_music(my_music)
         return my_music
-
-    def after_blow(self, music, *args, **kwargs):
-        pass
 
     def bubble_wrap(self):
         return self
 
+    def __str__(self):
+        music = self.blow()
+        return(format(music))
 
 class BubbleMaterial(Material, BubbleBase):
 
    def music(self, *args, **kwargs):
-        my_music = self.container_type(is_simultaneous=self.is_simultaneous, *args, **kwargs)
-        my_music.append(self.get())
+        my_music = self.music_container()
+        my_music.append( self.get() )
         return my_music
 
 class Bubble(BubbleBase):
     is_simultaneous=True
     bubble_types = (BubbleBase,)
     grid_sequence = ()
-
-        # self.using_material = []
-        # my_material = Material()
-        
-        # KISS!
-        # # a little hacky... but works well... 
-        # for c in reversed( type( self.bubble_wrap() ).mro()[:-2] ):
-        #     # this calls the startup method on every base class
-        #     if hasattr(c, "startup"):
-        #         c.startup( self, *args, **kwargs)
-        # #     if hasattr(c, "material"):
-        # #         for m in reversed(c.material):
-        # #             GLOBAL_MATERIAL.use(m)
-        # #             # if m not in self.using_material: # necessary?
-        # #             #     self.using_material.insert(0,m)
-        # #             my_material.update(GLOBAL_MATERIAL[m])
-        # # for name, value in my_material.items():
-        # #     setattr( self, name, value)
-
-        # MAYBE TO DO... it would be cleaner here to make bubbles for anything
 
     def sequence(self, *args, **kwargs):
         # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
@@ -168,7 +155,7 @@ class Bubble(BubbleBase):
         bubble = getattr(cls, bubble_name)
         if any([hasattr(g, bubble_name) for g in cls.grid_set()]):
             #... then this bubble attr needs to come from a grid...
-            bubble_music = bubble.container_type(is_simultaneous=bubble.is_simultaneous)
+            bubble_music = bubble.music_container()
             for g in cls.grid_sequence:
                 bubble_music.extend( g.blow_bubble(bubble_name) )
             return bubble_music
@@ -176,10 +163,7 @@ class Bubble(BubbleBase):
             return bubble.blow()
 
     def music(self, *args, **kwargs):
-        if self.is_simultaneous is not None:
-            my_music = self.container_type(is_simultaneous=self.is_simultaneous, *args, **kwargs)
-        else:
-            my_music = self.container_type(*args, **kwargs)
+        my_music = self.music_container()
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
             if hasattr(self, bubble_name):
@@ -194,10 +178,11 @@ class Bubble(BubbleBase):
         """
         score = Score()
         # TO DO... ADD SCORE TITLE (THE NAME OF THE CLASS)
-        try:
-            self.before_blow(score, *args, **kwargs)
-        except:
-            print("WARNING: error trying to run 'before_blow' on the auto-generated score. Some music may be missing...")
+        # RE-ADD IF BEFORE_MUSIC NEEDED...`
+        # try:
+        #     self.before_music(score, *args, **kwargs)
+        # except:
+        #     print("WARNING: error trying to run 'before_music' on the auto-generated score. Some music may be missing...")
 
         def append_staff(name, bubble):
             staff = Staff(name=name)
@@ -214,9 +199,9 @@ class Bubble(BubbleBase):
             append_staff(b.__class__.name, self)
 
         try:
-            self.after_blow(score, *args, **kwargs)
+            self.after_music(score, *args, **kwargs)
         except:
-            print("WARNING: error trying to run 'before_blow' on the auto-generated score. Some music may be missing...")
+            print("WARNING: error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
 
         return score
 
@@ -224,10 +209,6 @@ class Bubble(BubbleBase):
     def show(self, *args, **kwargs):
         score = self.score(*args, **kwargs)
         show(score)
-
-    def __str__(self):
-        music = self.blow()
-        return(format(music))
 
 
 class Eval(Bubble):
@@ -254,8 +235,8 @@ class Transpose(BubbleWrap):
         self.transpose_expr = transpose_expr
         super().__init__(bubble, *args, **kwargs)
     
-    def after_blow(self, music, *args, **kwargs):
-        super().after_blow(music, *args, **kwargs)
+    def after_music(self, music, *args, **kwargs):
+        super().after_music(music, *args, **kwargs)
         mutate(music).transpose(self.transpose_expr)
 
 class BubbleStaff(Bubble):

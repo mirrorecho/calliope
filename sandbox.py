@@ -78,11 +78,14 @@ class G(Bubble):
     line0 = Line("a1 "*4)
 
 class FancyLine(Line):
-    music = Material("test_data.line11")
+    def music(self):
+        m = Material("test_data.line11")
+        print(m.get())
+        return m.get()
 
 class H(F,G):
     line2 = Line("a'1 "*4)
-    # line5 = Eval("H.line1") #maybe this would work?
+    line5 = Eval(F, "line1") #maybe this would work?
     # line9 = Transpose( Eval("F.line1"), "+m3")
     # line11 = Line(material="line11_music") # doesn't work
     # line11 = WithPitches( FancyLine(), Material("test_data.test_pitches") ),  # WILL GET THIS ONE WORKING!
@@ -300,6 +303,27 @@ print("********************************")
 # b = B2()
 # show(b)
 
+
+
+        # self.using_material = []
+        # my_material = Material()
+        
+        # KISS!
+        # # a little hacky... but works well... 
+        # for c in reversed( type( self.bubble_wrap() ).mro()[:-2] ):
+        #     # this calls the startup method on every base class
+        #     if hasattr(c, "startup"):
+        #         c.startup( self, *args, **kwargs)
+        # #     if hasattr(c, "material"):
+        # #         for m in reversed(c.material):
+        # #             GLOBAL_MATERIAL.use(m)
+        # #             # if m not in self.using_material: # necessary?
+        # #             #     self.using_material.insert(0,m)
+        # #             my_material.update(GLOBAL_MATERIAL[m])
+        # # for name, value in my_material.items():
+        # #     setattr( self, name, value)
+
+        # MAYBE TO DO... it would be cleaner here to make bubbles for anything
 
 
 # b = Bubble(lines=["v1","v2"])
