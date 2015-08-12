@@ -107,7 +107,7 @@ class BubbleBase():
     def blow(self, *args, **kwargs):
         # IMPLEMENT IF BEFORE_MUSIC NEEDED, OTHERWISE KISS
         # my_music = self.music_container()
-        # self.before_blow(my_music)
+        # self.before_music(my_music)
         # my_music.extend(self.bubble_wrap().music())
         my_music = self.bubble_wrap().music()
         self.after_music(my_music)
@@ -196,7 +196,7 @@ class Bubble(BubbleBase):
                 bubble = Eval(type(self.bubble_wrap()), b)
                 append_staff(b, bubble)
         else:
-            append_staff(b.__class__.name, self)
+            append_staff(self.__class__.name, self)
 
         try:
             self.after_music(score, *args, **kwargs)
@@ -229,6 +229,20 @@ class BubbleWrap(Bubble):
         self.is_simultaneous = bubble.is_simultaneous
         super().__init__(bubble, *args, **kwargs)
 
+class BubbleWrapContainer(Bubble):
+    """
+    similar to bubble wrap, but a new container/bubble is created around the inner bubble
+    """
+    def __init__(self, music_bubble=None, instrument=None, *args, **kwargs):
+        self.music_bubble = lambda : music_bubble
+        super().__init__(*args, **kwargs)
+
+    def music(self, *args, **kwargs):
+        my_music = self.music_container()
+        bubble = self.music_bubble()
+        if isinstance(bubble, BubbleBase): # just as a precaution
+            my_music.append( bubble.blow() )
+        return my_music
 
 class Transpose(BubbleWrap):
     def __init__(self, bubble, transpose_expr, *args, **kwargs):
@@ -239,16 +253,64 @@ class Transpose(BubbleWrap):
         super().after_music(music, *args, **kwargs)
         mutate(music).transpose(self.transpose_expr)
 
-class BubbleStaff(Bubble):
+class BubbleStaff(BubbleWrapContainer):
     is_simultaneous = None
     container_type = Staff
 
-class BubbleStaffGroup(Bubble):
+    def __init__(self, music_bubble=None, instrument=None, *args, **kwargs):
+        self.instrument = instrument
+        super().__init__(music_bubble=music_bubble, *args, **kwargs)
+
+    def after_music(self, music, *args, **kwargs):
+        if self.instrument:
+            attach(self.instrument, music)
+        super().after_music(self, music)
+
+    def show(self):
+        show(self.blow())
+
+class BubbleGridMatch(Bubble):
+
+    def __init__(self, grid_bubble=None, instrument=None, *args, **kwargs):
+        self.grid_bubble = grid_bubble
+        # set the grid bubble for any sub-bubbles (if no already defined) ... that way music bubbles passed to score
+        # will be passed along to staff groups, and so on
+        for bubble_name in self.sequence():
+            bubble = getattr(self, bubble_name)
+            if isinstance(bubble, BubbleGridMatch):
+                bubble.grid_bubble = bubble.grid_bubble or grid_bubble
+        super().__init__(*args, **kwargs)
+
+    def music(self, *args, **kwargs):
+        my_music = self.music_container()
+        for bubble_name in self.sequence():
+            # the bubble attribute specified by the sequence must exist on this bubble object...
+            if hasattr(self, bubble_name):
+                append_music = type(self).blow_bubble(bubble_name)
+                if hasattr(self.grid_bubble, bubble_name):
+                    append_music_inner = type(self.grid_bubble).blow_bubble(bubble_name)
+                    append_music.append(append_music_inner)
+                my_music.append(append_music)
+        return my_music
+
+class BubbleStaffGroup(BubbleGridMatch):
     is_simultaneous = None
     container_type = StaffGroup
+    bubble_types=(BubbleStaff)
 
-class BubbleScore(Bubble):
+    def show(self):
+        show(self.blow())
+
+class BubbleScore(BubbleGridMatch):
     is_simultaneous = None
     container_type=Score
     bubble_types=(BubbleStaff, BubbleStaffGroup)
+
+    # def __init__(self, music=None, *args, **kwargs):
+    #     super().__init__(music, *args, **kwargs)
+    #     if hasattr(self, "score_music"):
+
+
+    def show(self):
+        show(self.blow())
 
