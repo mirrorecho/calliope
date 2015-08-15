@@ -74,18 +74,35 @@ class BubbleBase():
     is_simultaneous=False
     bubble_types = ()
 
+    def make_callable(self, **kwargs):
+        for attr_name in kwargs:
+            attr = kwargs[attr_name] or getattr(self, attr_name)
+            if attr is not None:
+                if isinstance(attr, BubbleBase):
+                    setattr(self, attr_name, attr.blow)
+                elif isinstance(attr, Material):
+                    setattr(self, attr_name, attr.get)
+                elif callable(attr):
+                    setattr(self, attr_name, attr)
+                else:
+                    setattr(self, attr_name, lambda : attr)
+
+
     # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
     def __init__(self, music=None, *args, **kwargs):
-        music = music or self.music
-        if music is not None:
-            if isinstance(music, BubbleBase):
-                self.music = music.blow
-            elif isinstance(music, Material):
-                self.music = music.get
-            elif callable(music):
-                self.music = music
-            else:
-                self.music = lambda : music 
+        self.make_callable(music=music)
+        self.make_callable(sequence=None)
+
+        # music = music or self.music
+        # if music is not None:
+        #     if isinstance(music, BubbleBase):
+        #         self.music = music.blow
+        #     elif isinstance(music, Material):
+        #         self.music = music.get
+        #     elif callable(music):
+        #         self.music = music
+        #     else:
+        #         self.music = lambda : music 
 
     def music_container(self, *args, **kwargs):
         if self.is_simultaneous is not None:
@@ -271,15 +288,19 @@ class BubbleStaff(BubbleWrapContainer):
 
 class BubbleGridMatch(Bubble):
 
-    def __init__(self, grid_bubble=None, instrument=None, *args, **kwargs):
+    def __init__(self, grid_bubble=None, *args, **kwargs):
         self.grid_bubble = grid_bubble
         # set the grid bubble for any sub-bubbles (if no already defined) ... that way music bubbles passed to score
         # will be passed along to staff groups, and so on
+        super().__init__(*args, **kwargs)
+        self.set_grid_bubbles()
+
+    def set_grid_bubbles(self):
         for bubble_name in self.sequence():
             bubble = getattr(self, bubble_name)
             if isinstance(bubble, BubbleGridMatch):
-                bubble.grid_bubble = bubble.grid_bubble or grid_bubble
-        super().__init__(*args, **kwargs)
+                bubble.grid_bubble = bubble.grid_bubble or self.grid_bubble
+                BubbleGridMatch.set_grid_bubbles(bubble)
 
     def music(self, *args, **kwargs):
         my_music = self.music_container()
@@ -296,10 +317,15 @@ class BubbleGridMatch(Bubble):
 class BubbleStaffGroup(BubbleGridMatch):
     is_simultaneous = None
     container_type = StaffGroup
-    bubble_types=(BubbleStaff)
+    bubble_types=(BubbleStaff, BubbleGridMatch)
 
     def show(self):
         show(self.blow())
+
+class InstrumentStaffGroup(BubbleStaffGroup):
+
+    def after_music(self, music):
+        set_(music).systemStartDelimiter = "SystemStartSquare"
 
 class BubbleScore(BubbleGridMatch):
     is_simultaneous = None
