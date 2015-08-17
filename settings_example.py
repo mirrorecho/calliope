@@ -1,6 +1,9 @@
-# copy to settings.py and adjust as needed
+# SAVE A COPY OF THIS AS "settings.py" within each local repo
 
-OUTPUT_PATH = "/home/randall/Code/mirrorecho"
-PDF_SUBFOLDER = "pdf"
-LY_SUBFOLDER = "ly"
-DATA_SUBFOLDER = "data"
+# this should be the path that contains the calliope repo
+ROOT_PATH = "/home/randall/Code/mirrorecho" 
+sys.path.append(ROOT_PATH)
+
+# project path and settings:
+PROJECT_NAME = "calliope"
+PROJECT_PATH = "/home/randall/Code/mirrorecho/calliope"

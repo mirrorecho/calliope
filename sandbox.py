@@ -25,11 +25,25 @@
 # - - instrument names and cues
 # - - add/remove staves (and account for this in parts)
 
-# TO DO
+# TO DO / NEXT UP
+# - - imprints
+# - - odd / compound time signatures
+# - - double and sashed bar lines
+# - - start moving through caesium until it kicks you
+# - - CLOUDS
+# - - "music from durations" rethought
+# - - overall arranging rethought
 # - - add lilypond comments where bubbles start in voice music
 
+from settings import *
+
+# needed to run calliope imports locally:
+import sys
+sys.path.append(ROOT_PATH) 
+
 from abjad import *
-from bubbles import *
+from calliope.bubbles import *
+
 
 class SortMixin():
     # def sequence(self, *args, **kwargs):
