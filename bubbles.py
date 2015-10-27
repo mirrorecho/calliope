@@ -81,6 +81,9 @@ class BubbleBase():
     def pdf_file_path(self):
         return PROJECT_PATH + "/pdf/" + type(self).__name__ + ".pdf"
 
+    def ly_file_path(self):
+        return PROJECT_PATH + "/ly/" + type(self).__name__ + ".ly"
+
     def make_pdf(self, music=None):
         music = music or self.blow()
         assert '__illustrate__' in dir(music)
@@ -107,6 +110,11 @@ class BubbleBase():
         pdf_file_path = self.make_pdf(music)
         systemtools.IOManager.open_file(pdf_file_path)
 
+    def save(self):
+        music = self.blow()
+        with open(self.ly_file_path(), "w") as ly_file:
+            ly_file.write(format(music))
+
     def __str__(self):
         music = self.blow()
         return(format(music))
@@ -115,7 +123,10 @@ class BubbleMaterial(Material, BubbleBase):
 
    def music(self, *args, **kwargs):
         my_music = self.music_container()
-        my_music.append( self.get() )
+        music = self.get()
+        # if isinstance(music, dict):
+        #     music = 
+        my_music.append( music )
         return my_music
 
 class Placeholder(BubbleBase):
@@ -377,6 +388,15 @@ class BubbleFormatLargeScore(BubbleScore):
     def show(self):
         music = self.get_lilypond_file()
         self.show_pdf(music)
+
+    def save(self):
+        music = self.get_lilypond_file()
+        with open(self.ly_file_path(), "w") as ly_file:
+            ly_file.write(format(music))
+
+    def __str__(self):
+        music = self.get_lilypond_file()
+        return(format(music))
 
     def get_lilypond_file(self):
         music = self.blow()

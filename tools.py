@@ -82,11 +82,11 @@ def pitches_from_intervals(intervals, start_pitch=0):
 
 
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
-def music_from_durations(durations, times=None, split_durations=None, pitches=None, 
+def make_music(music, times=None, split_durations=None, pitches=None, 
     transpose=0, respell=None, pitch_offset=0, pitch_columns=None, pitch_range=None):
-    # durations is either:
-    # - a string with rests and notes (usually c) to be transposed by pitches
-    # - a music container with rests and notes (usually c) to be transposed by pitches
+    # music can be either:
+    # - a string with rests and notes (usually c) 
+    # - a music container with rests and notes (usually c) 
     # a list of durations
     if type(durations) is str:
         music = scoretools.Container(durations)
@@ -126,8 +126,6 @@ def music_from_durations(durations, times=None, split_durations=None, pitches=No
 
                 if pitch_range is not None:
                     note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], pitch_range)[0]
-
-
     if times is not None:
         music_times = scoretools.Container()
         for i in range(times):
