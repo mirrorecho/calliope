@@ -29,7 +29,9 @@ class BubbleBase():
 
 
     # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
-    def __init__(self, music=None, *args, **kwargs):
+    def __init__(self, music=None, context_name=None, *args, **kwargs):
+        if context_name:
+            self.context_name = context_name
         self.make_callable(music=music)
         self.make_callable(sequence=None)
 
@@ -59,6 +61,10 @@ class BubbleBase():
     def music(self, *args, **kwargs):
         print("WARNING... EMPTY MUSIC FUNCTION CALLED ON BUBBLE BASE")
         return self.music_container()
+
+    # clever... need to test this carefully!
+    def __add__(self, other):
+        return BubbleSequence( (self, other) )
 
     def before_music(self, music, *args, **kwargs):
         pass
@@ -219,6 +225,15 @@ class Eval(Bubble):
 class Line(Bubble):
     is_simultaneous = False
 
+
+# IS THIS NECESSARY?
+# class LineSequence(Line):
+#     def __init__(self, lines, *args, **kwargs):
+#         self.bubble_name = bubble_name
+#         self.container_type = bubble.container_type
+#         self.context_name = bubble.context_name
+#         self.grid_sequence = grid_sequence
+
 class GridSequence(Bubble):
     grid_sequence = ()
 
@@ -250,15 +265,44 @@ class Sequence(Placeholder):
         return my_music
 
 
+
 class BubbleWrap(Bubble):
     """
-    a base class for bubbles that "wrap" other bubbles in order to modify or extend them (without going through the trouble
+    a base class for bubbles that "wrap" other bubbles in order to modify or extend them 
+    (without going through the trouble
         of inheritence)
     """
     def __init__(self, bubble, *args, **kwargs):
         self.bubble_wrap = bubble.bubble_wrap
         self.is_simultaneous = bubble.is_simultaneous
         super().__init__(bubble, *args, **kwargs)
+
+
+# TO DO... naming is confusing in combo with the above classes..
+# ... also, should rethink sequencing more universally... 
+class BubbleSequence(Bubble):
+    bubbles = ()
+
+    def __init__(self, bubbles, *args, **kwargs):
+        print("------------------------------------------------------")
+        if len(bubbles) > 0:
+            self.bubbles = bubbles
+            self.is_simultaneous = bubbles[0].is_simultaneous
+            # more needed here to copy? TO DO... make copy universal?
+            super().__init__(bubbles[0])
+
+    def blow(self, *args, **kwargs):
+        print("BLOWING!")
+        super().blow(*args, **kwargs)
+
+    def music(self, *args, **kwargs):
+        my_music = self.music_container()
+        print("***************************************")
+        print( self.bubbles)
+        for bubble in self.bubbles:
+            my_music.append(bubble.blow())
+        return my_music
+
 
 # class BubbleImprint(BubbleWrap):
 #     def after_music(self, music):
@@ -350,9 +394,27 @@ class BubbleStaffGroup(BubbleGridMatch):
     is_simultaneous = None
     container_type = StaffGroup
     bubble_types=(BubbleStaff, BubbleGridMatch)
+    instrument = None
+
+    def __init__(self, music_bubble=None, instrument=None, *args, **kwargs):
+        if instrument:
+            self.instrument = instrument
+        super().__init__(music_bubble=music_bubble, *args, **kwargs)
+
+    def after_music(self, music, *args, **kwargs):
+        if self.instrument:
+            attach(self.instrument, music)
+        super().after_music(self, music)
 
     def show(self):
         self.show_pdf()
+
+class BubblePiano(BubbleStaffGroup):
+    piano1 = BubbleStaff()
+    piano2 = BubbleStaff(clef="bass")
+    context_name = "PianoStaff"
+    sequence = ("piano1", "piano2")
+    instrument=instrumenttools.Piano()
 
 class InstrumentStaffGroup(BubbleStaffGroup):
 
