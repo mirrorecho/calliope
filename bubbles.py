@@ -29,7 +29,9 @@ class BubbleBase():
 
 
     # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
-    def __init__(self, music=None, context_name=None, *args, **kwargs):
+    def __init__(self, music=None, name=None, context_name=None, *args, **kwargs):
+        if name:
+            self.name = name
         if context_name:
             self.context_name = context_name
         self.make_callable(music=music)
@@ -51,7 +53,7 @@ class BubbleBase():
             kwargs["is_simultaneous"] = self.is_simultaneous
         if self.context_name is not None:
             kwargs["context_name"] = self.context_name
-        return self.container_type(*args, **kwargs)
+        return self.container_type(name=self.name, *args, **kwargs)
 
 
     # IMPLEMENT IF NEEDED...
@@ -335,6 +337,12 @@ class Transpose(BubbleWrap):
         super().after_music(music, *args, **kwargs)
         mutate(music).transpose(self.transpose_expr)
 
+
+class BubbleVoice(BubbleWrapContainer):
+    is_simultaneous = None
+    container_type = Voice
+
+
 class BubbleStaff(BubbleWrapContainer):
     is_simultaneous = None
     container_type = Staff
@@ -350,6 +358,8 @@ class BubbleStaff(BubbleWrapContainer):
         if self.clef:
             clef_obj = Clef(self.clef)
             attach(clef_obj, music)
+        print("In BubbleStaff after_music:")
+        print(self.clef)
         super().after_music(self, music)
 
     def show(self):
@@ -362,6 +372,7 @@ class BubbleRhythmicStaff(BubbleStaff):
         # TO DO ... why is the percussion clef showing up blank?????
         super().__init__(music_bubble=music_bubble, instrument=instrument, clef=clef, *args, **kwargs)
 
+# maybe bubble grid match should be applicable for all bubbles???
 class BubbleGridMatch(Bubble):
 
     def __init__(self, grid_bubble=None, *args, **kwargs):
@@ -415,6 +426,28 @@ class BubblePiano(BubbleStaffGroup):
     context_name = "PianoStaff"
     sequence = ("piano1", "piano2")
     instrument=instrumenttools.Piano()
+
+class BubbleGridStaff(BubbleGridMatch, BubbleStaff):
+    """
+    creates a staff with a voice or voices inside of it
+    """
+    bubble_types=(BubbleVoice) # needed? (throws exception otherwise... why?)
+    instrument=None
+    clef="bass"
+    # after_music = BubbleStaff.after_music
+
+    # def after_music(self, *args, **kwargs):
+    #     print("YO: ***************************")
+    #     print(self.clef)
+        # print(self.instrument)
+        # print(kwargs)
+
+    def __init__(self, music_bubble=None, *args, **kwargs):
+        # self.instrument = instrument
+        # self.clef = clef
+        super().__init__(music_bubble=music_bubble, *args, **kwargs)
+
+
 
 class InstrumentStaffGroup(BubbleStaffGroup):
 
