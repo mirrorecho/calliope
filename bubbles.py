@@ -227,6 +227,14 @@ class Eval(Bubble):
 class Line(Bubble):
     is_simultaneous = False
 
+class LineLyrics(Line):
+    lyrics = ""
+    
+    def __init__(self, music=None, name=None, context_name=None, lyrics="", *args, **kwargs):
+        self.lyrics = lyrics
+        super().__init__(music=music, name=name, context_name=context_name, *args, **kwargs)
+
+
 
 # IS THIS NECESSARY?
 # class LineSequence(Line):
@@ -253,6 +261,7 @@ class GridSequence(Bubble):
 # QUESTION... Ok to inherit from placeholder here?
 class Sequence(Placeholder):
     grid_sequence = ()
+    lyrics = None
 
     def __init__(self, bubble_name, bubble, grid_sequence, *args, **kwargs):
         self.bubble_name = bubble_name
@@ -262,17 +271,39 @@ class Sequence(Placeholder):
 
     def music(self):
         my_music = self.music_container()
+        has_lyrics = False
+        my_lyrics = ""
         for bubble_type in self.grid_sequence:
             my_music.append( bubble_type.blow_bubble(self.bubble_name) )
+            # TO DO... any way to encapsulate this better so that it's not part of EVERY sequence?
+            # PLUS, is it odd to do this in the music method?
+            if hasattr( getattr(bubble_type, self.bubble_name), "lyrics"):
+                has_lyrics = True
+                my_lyrics += getattr(bubble_type, self.bubble_name).lyrics + " "
+        if has_lyrics:
+            print("BAAAHHH............")
+            self.lyrics = my_lyrics
         return my_music
 
+    # TO DO... any way to encapsulate this better so that it's not part of EVERY sequence?
+    # def after_music(self, music, *args, **kwargs):
+    #     has_lyrics = False
+    #     my_lyrics = ""
+    #     for bubble_type in self.grid_sequence:
+    #         if hasattr( getattr(bubble_type, self.bubble_name), "lyrics"):
+    #             has_lyrics = True
+    #             my_lyrics += getattr(bubble_type, self.bubble_name).lyrics + " "
+    #     if has_lyrics:
+    #         self.lyrics = my_lyrics
+    #         lyrics_command = indicatortools.LilyPondCommand("addlyrics { " + self.lyrics + " }", "after")
+    #         attach(lyrics_command, music)
+    #     super().after_music(self, music, *args, **kwargs)
 
 
 class BubbleWrap(Bubble):
     """
     a base class for bubbles that "wrap" other bubbles in order to modify or extend them 
-    (without going through the trouble
-        of inheritence)
+    (without going through the trouble of inheritence)
     """
     def __init__(self, bubble, *args, **kwargs):
         self.bubble_wrap = bubble.bubble_wrap
@@ -325,8 +356,22 @@ class BubbleWrapContainer(Bubble):
         my_music = self.music_container()
         bubble = self.music_bubble()
         if isinstance(bubble, BubbleBase): # just as a precaution
+            if hasattr(bubble, "lyrics"):
+                print("BOOOOOOOOOOOOOOOOO")
             my_music.append( bubble.blow() )
         return my_music
+
+   # TO DO... any way to encapsulate this better so that it's not part of EVERY bubble wrap container?
+    def after_music(self, music, *args, **kwargs):
+        print("----------------------------------")
+        bubble = self.music_bubble()
+        if isinstance(bubble, BubbleBase):
+            print(bubble )
+            if hasattr(bubble, "lyrics"):
+                print("BOOOOOOOOOOOOOOOOO")
+                lyrics_command = indicatortools.LilyPondCommand("addlyrics { " + bubble.lyrics + " }", "after")
+                attach(lyrics_command, music)
+        super().after_music(self, music, *args, **kwargs)
 
 class Transpose(BubbleWrap):
     def __init__(self, bubble, transpose_expr, *args, **kwargs):
@@ -346,10 +391,14 @@ class BubbleVoice(BubbleWrapContainer):
 class BubbleStaff(BubbleWrapContainer):
     is_simultaneous = None
     container_type = Staff
+    instrument = None
+    clef = None
 
     def __init__(self, music_bubble=None, instrument=None, clef=None, *args, **kwargs):
-        self.instrument = instrument
-        self.clef = clef
+        if instrument:
+            self.instrument = instrument
+        if clef:
+            self.clef = clef
         super().__init__(music_bubble=music_bubble, *args, **kwargs)
 
     def after_music(self, music, *args, **kwargs):
@@ -358,9 +407,7 @@ class BubbleStaff(BubbleWrapContainer):
         if self.clef:
             clef_obj = Clef(self.clef)
             attach(clef_obj, music)
-        print("In BubbleStaff after_music:")
-        print(self.clef)
-        super().after_music(self, music)
+        super().after_music(self, music, *args, **kwargs)
 
     def show(self):
         self.show_pdf()
@@ -433,20 +480,10 @@ class BubbleGridStaff(BubbleGridMatch, BubbleStaff):
     """
     bubble_types=(BubbleVoice) # needed? (throws exception otherwise... why?)
     instrument=None
-    clef="bass"
-    # after_music = BubbleStaff.after_music
-
-    # def after_music(self, *args, **kwargs):
-    #     print("YO: ***************************")
-    #     print(self.clef)
-        # print(self.instrument)
-        # print(kwargs)
+    clef=None
 
     def __init__(self, music_bubble=None, *args, **kwargs):
-        # self.instrument = instrument
-        # self.clef = clef
         super().__init__(music_bubble=music_bubble, *args, **kwargs)
-
 
 
 class InstrumentStaffGroup(BubbleStaffGroup):

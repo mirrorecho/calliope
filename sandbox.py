@@ -5,8 +5,8 @@
 # WITH THAT IN MIND, BASIC GOALS ARE:
 
 # help create structure around non-linear musical thinking
-# - - musical ideas as objects (inherit from Bubble?)
-# - - use inheritance, don't cram everything into a mega-class
+# DONE: - - musical ideas as objects (inherit from Bubble?)
+# DONE: - - use inheritance, don't cram everything into a mega-class
 
 # a few tools to help with routine tasks
 # - - templates for scores and parts
