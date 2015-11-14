@@ -13,6 +13,7 @@ class BubbleBase():
     context_name=None
     is_simultaneous=False
     bubble_types = ()
+    commands = ()
 
     def make_callable(self, **kwargs):
         for attr_name in kwargs:
@@ -29,24 +30,15 @@ class BubbleBase():
 
 
     # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
-    def __init__(self, music=None, name=None, context_name=None, *args, **kwargs):
+    def __init__(self, music=None, name=None, context_name=None, commands=None, *args, **kwargs):
         if name:
             self.name = name
         if context_name:
             self.context_name = context_name
+        if commands:
+            self.commands = commands
         self.make_callable(music=music)
         self.make_callable(sequence=None)
-
-        # music = music or self.music
-        # if music is not None:
-        #     if isinstance(music, BubbleBase):
-        #         self.music = music.blow
-        #     elif isinstance(music, Material):
-        #         self.music = music.get
-        #     elif callable(music):
-        #         self.music = music
-        #     else:
-        #         self.music = lambda : music 
 
     def music_container(self, *args, **kwargs):
         if self.is_simultaneous is not None:
@@ -81,6 +73,9 @@ class BubbleBase():
         # my_music.append(self.bubble_wrap().music())
         my_music = self.bubble_wrap().music()
         self.after_music(my_music)
+        for c in self.commands:
+            command = indicatortools.LilyPondCommand(c[0], c[1])
+            attach(command, my_music)
         return my_music
 
     def bubble_wrap(self):
@@ -226,6 +221,36 @@ class Eval(Bubble):
 
 class Line(Bubble):
     is_simultaneous = False
+
+class MultiLine(Bubble):
+    """
+    a line with temporary simultaneous music... optionally as multiple voices
+    """
+    multi_voiced = True
+
+    @classmethod
+    def bubble_imprint(cls, music):
+        my_music = Container()
+        my_music.append(music)
+        return my_music
+
+    def music(self, *args, **kwargs):
+        my_music = super().music(self, *args, **kwargs)
+
+        if self.multi_voiced and len(my_music) > 1:
+            for container in my_music[0:-1]:
+                command_voices = indicatortools.LilyPondCommand('\\ ', 'after')
+                attach(command_voices, container)
+            command_one_voice = indicatortools.LilyPondCommand('oneVoice', 'after')
+            attach(command_one_voice, my_music)
+        return my_music
+
+class SimulLine(MultiLine):
+    """
+    same as MultiLine, but defaults multi_voiced to False
+    """
+    multi_voiced = False
+
 
 class LineLyrics(Line):
     lyrics = ""
