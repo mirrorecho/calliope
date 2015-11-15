@@ -7,66 +7,60 @@ from settings import PROJECT_PATH
 from .material import GLOBAL_MATERIAL, Material
 
 
-class BubbleBase():
+class BubbleBase(object):
     name=None
     container_type=Container
     context_name=None
     is_simultaneous=False
     bubble_types = ()
     commands = ()
+    sequence = ()
 
-    def make_callable(self, **kwargs):
-        for attr_name in kwargs:
-            attr = kwargs[attr_name] or getattr(self, attr_name)
-            if attr is not None:
-                if isinstance(attr, BubbleBase):
-                    setattr(self, attr_name, attr.blow)
-                elif isinstance(attr, Material):
-                    setattr(self, attr_name, attr.get)
-                elif callable(attr):
-                    setattr(self, attr_name, attr)
-                else:
-                    setattr(self, attr_name, lambda : attr)
+    def make_callable(self, attr_name):
+        attr = getattr(self, attr_name, None)
+        if attr is not None:
+            if isinstance(attr, BubbleBase):
+                setattr(self, attr_name, attr.blow)
+            elif isinstance(attr, Material):
+                setattr(self, attr_name, attr.get)
+            elif callable(attr):
+                setattr(self, attr_name, attr)
+            else:
+                setattr(self, attr_name, lambda : attr)
 
+    def __init__(self, music=None, **kwargs):
+        # the first arg is always the music, if passed:
+        if music:
+            setattr(self, "music", music)
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+        self.make_callable("music")
+        self.make_callable("sequence")
 
-    # MAYBE TO DO... could be slick if all kwargs added to the bubble as attributes?
-    def __init__(self, music=None, name=None, context_name=None, commands=None, *args, **kwargs):
-        if name:
-            self.name = name
-        if context_name:
-            self.context_name = context_name
-        if commands:
-            self.commands = commands
-        self.make_callable(music=music)
-        self.make_callable(sequence=None)
-
-    def music_container(self, *args, **kwargs):
+    def music_container(self, **kwargs):
         if self.is_simultaneous is not None:
             kwargs["is_simultaneous"] = self.is_simultaneous
         if self.context_name is not None:
             kwargs["context_name"] = self.context_name
-        return self.container_type(name=self.name, *args, **kwargs)
+        return self.container_type(name=self.name, **kwargs)
 
-
-    # IMPLEMENT IF NEEDED...
-    # def before_music(self, music, *args, **kwargs):
-    #     pass
-
-    def music(self, *args, **kwargs):
+    def music(self, **kwargs):
         print("WARNING... EMPTY MUSIC FUNCTION CALLED ON BUBBLE BASE")
         return self.music_container()
 
     # clever... need to test this carefully!
     def __add__(self, other):
         return BubbleSequence( (self, other) )
+    
+    # IMPLEMENT IF NEEDED...
+    # def before_music(self, music, **kwargs):
+    #     pass
 
-    def before_music(self, music, *args, **kwargs):
+    def after_music(self, music, **kwargs):
         pass
 
-    def after_music(self, music, *args, **kwargs):
-        pass
-
-    def blow(self, *args, **kwargs):
+    def blow(self, **kwargs):
+        
         # IMPLEMENT IF BEFORE_MUSIC NEEDED, OTHERWISE KISS
         # my_music = self.music_container()
         # self.before_music(my_music)
@@ -124,7 +118,7 @@ class BubbleBase():
 
 class BubbleMaterial(Material, BubbleBase):
 
-   def music(self, *args, **kwargs):
+   def music(self, **kwargs):
         my_music = self.music_container()
         music = self.get()
         # if isinstance(music, dict):
@@ -139,7 +133,7 @@ class Bubble(BubbleBase):
     is_simultaneous=True
     bubble_types = (BubbleBase,)
 
-    def sequence(self, *args, **kwargs):
+    def sequence(self, **kwargs):
         # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.bubble_types)]
         # bubbles.sort(key=lambda x : x.order)
         seq_bubble = self.bubble_wrap()
@@ -165,17 +159,20 @@ class Bubble(BubbleBase):
     def bubble_default(cls):
         return Bubble()
 
-    def music(self, *args, **kwargs):
+    def music(self, **kwargs):
         my_music = self.music_container()
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
             if hasattr(self, bubble_name):
                append_music = type(self).blow_bubble(bubble_name)
+               # print("YOYOYOYO")
+               # print(append_music)
+               # print(type(append_music))
                my_music.append(append_music)
         return my_music
 
 
-    def score(self, *args, **kwargs):
+    def score(self, **kwargs):
         """
         a quick way to get a full-fledged ajad score object for this bubble type...
         """
@@ -183,7 +180,7 @@ class Bubble(BubbleBase):
         # TO DO... ADD SCORE TITLE (THE NAME OF THE CLASS)
         # RE-ADD IF BEFORE_MUSIC NEEDED...`
         # try:
-        #     self.before_music(score, *args, **kwargs)
+        #     self.before_music(score, **kwargs)
         # except:
         #     print("WARNING: error trying to run 'before_music' on the auto-generated score. Some music may be missing...")
 
@@ -202,15 +199,15 @@ class Bubble(BubbleBase):
             append_staff(self.__class__.name, self)
 
         try:
-            self.after_music(score, *args, **kwargs)
+            self.after_music(score, **kwargs)
         except:
             print("WARNING: error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
 
         return score
 
 
-    def show(self, *args, **kwargs):
-        score = self.score(*args, **kwargs)
+    def show(self, **kwargs):
+        score = self.score(**kwargs)
         self.show_pdf(score)
 
 
@@ -234,8 +231,8 @@ class MultiLine(Bubble):
         my_music.append(music)
         return my_music
 
-    def music(self, *args, **kwargs):
-        my_music = super().music(self, *args, **kwargs)
+    def music(self, **kwargs):
+        my_music = super().music(**kwargs)
 
         if self.multi_voiced and len(my_music) > 1:
             for container in my_music[0:-1]:
@@ -254,20 +251,7 @@ class SimulLine(MultiLine):
 
 class LineLyrics(Line):
     lyrics = ""
-    
-    def __init__(self, music=None, name=None, context_name=None, lyrics="", *args, **kwargs):
-        self.lyrics = lyrics
-        super().__init__(music=music, name=name, context_name=context_name, *args, **kwargs)
 
-
-
-# IS THIS NECESSARY?
-# class LineSequence(Line):
-#     def __init__(self, lines, *args, **kwargs):
-#         self.bubble_name = bubble_name
-#         self.container_type = bubble.container_type
-#         self.context_name = bubble.context_name
-#         self.grid_sequence = grid_sequence
 
 class GridSequence(Bubble):
     grid_sequence = ()
@@ -280,38 +264,37 @@ class GridSequence(Bubble):
         """
         bubble = getattr(cls, bubble_name)
         if isinstance(bubble, Placeholder):
-            bubble = Sequence(bubble_name, bubble, cls.grid_sequence)
+            bubble = Sequence(
+                bubble_name=bubble_name, 
+                container_type = bubble.container_type,
+                context_name = bubble.context_name,
+                grid_sequence=cls.grid_sequence)
         return bubble.blow()
 
 # QUESTION... Ok to inherit from placeholder here?
 class Sequence(Placeholder):
     grid_sequence = ()
     lyrics = None
-
-    def __init__(self, bubble_name, bubble, grid_sequence, *args, **kwargs):
-        self.bubble_name = bubble_name
-        self.container_type = bubble.container_type
-        self.context_name = bubble.context_name
-        self.grid_sequence = grid_sequence
+    bubble_name = None
 
     def music(self):
         my_music = self.music_container()
-        has_lyrics = False
-        my_lyrics = ""
+        # has_lyrics = False
+        # my_lyrics = ""
         for bubble_type in self.grid_sequence:
             my_music.append( bubble_type.blow_bubble(self.bubble_name) )
             # TO DO... any way to encapsulate this better so that it's not part of EVERY sequence?
             # PLUS, is it odd to do this in the music method?
-            if hasattr( getattr(bubble_type, self.bubble_name), "lyrics"):
-                has_lyrics = True
-                my_lyrics += getattr(bubble_type, self.bubble_name).lyrics + " "
-        if has_lyrics:
-            print("BAAAHHH............")
-            self.lyrics = my_lyrics
+        #     if hasattr( getattr(bubble_type, self.bubble_name), "lyrics"):
+        #         has_lyrics = True
+        #         my_lyrics += getattr(bubble_type, self.bubble_name).lyrics + " "
+        # if has_lyrics:
+        #     print("BAAAHHH............")
+        #     self.lyrics = my_lyrics
         return my_music
 
     # TO DO... any way to encapsulate this better so that it's not part of EVERY sequence?
-    # def after_music(self, music, *args, **kwargs):
+    # def after_music(self, music, **kwargs):
     #     has_lyrics = False
     #     my_lyrics = ""
     #     for bubble_type in self.grid_sequence:
@@ -322,7 +305,7 @@ class Sequence(Placeholder):
     #         self.lyrics = my_lyrics
     #         lyrics_command = indicatortools.LilyPondCommand("addlyrics { " + self.lyrics + " }", "after")
     #         attach(lyrics_command, music)
-    #     super().after_music(self, music, *args, **kwargs)
+    #     super().after_music(self, music, **kwargs)
 
 
 class BubbleWrap(Bubble):
@@ -330,10 +313,10 @@ class BubbleWrap(Bubble):
     a base class for bubbles that "wrap" other bubbles in order to modify or extend them 
     (without going through the trouble of inheritence)
     """
-    def __init__(self, bubble, *args, **kwargs):
+    def __init__(self, bubble, **kwargs):
         self.bubble_wrap = bubble.bubble_wrap
         self.is_simultaneous = bubble.is_simultaneous
-        super().__init__(bubble, *args, **kwargs)
+        super().__init__(**kwargs)
 
 
 # TO DO... naming is confusing in combo with the above classes..
@@ -341,26 +324,25 @@ class BubbleWrap(Bubble):
 class BubbleSequence(Bubble):
     bubbles = ()
 
-    def __init__(self, bubbles, *args, **kwargs):
-        print("------------------------------------------------------")
-        if len(bubbles) > 0:
+    def __init__(self, bubbles=None, **kwargs):
+        if bubbles:
             self.bubbles = bubbles
-            self.is_simultaneous = bubbles[0].is_simultaneous
+        if len(self.bubbles) > 0:
+            self.is_simultaneous = self.bubbles[0].is_simultaneous
             # more needed here to copy? TO DO... make copy universal?
-            super().__init__(bubbles[0])
+            super().__init__(self.bubbles[0], **kwargs)
 
-    def blow(self, *args, **kwargs):
-        print("BLOWING!")
-        super().blow(*args, **kwargs)
+    # def blow(self, **kwargs):
+    #     print("BLOWING!")
+    #     super().blow(**kwargs)
 
-    def music(self, *args, **kwargs):
+    def music(self, **kwargs):
         my_music = self.music_container()
-        print("***************************************")
-        print( self.bubbles)
+        # print("***************************************")
+        # print( self.bubbles)
         for bubble in self.bubbles:
             my_music.append(bubble.blow())
         return my_music
-
 
 # class BubbleImprint(BubbleWrap):
 #     def after_music(self, music):
@@ -373,38 +355,35 @@ class BubbleWrapContainer(Bubble):
     """
     similar to bubble wrap, but a new container/bubble is created around the inner bubble
     """
-    def __init__(self, music_bubble=None, instrument=None, *args, **kwargs):
+    def __init__(self, music_bubble=None, **kwargs):
         self.music_bubble = lambda : music_bubble
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
-    def music(self, *args, **kwargs):
+    def music(self, **kwargs):
         my_music = self.music_container()
         bubble = self.music_bubble()
         if isinstance(bubble, BubbleBase): # just as a precaution
-            if hasattr(bubble, "lyrics"):
-                print("BOOOOOOOOOOOOOOOOO")
+            # if hasattr(bubble, "lyrics"):
+            #     print("BOOOOOOOOOOOOOOOOO")
             my_music.append( bubble.blow() )
         return my_music
 
    # TO DO... any way to encapsulate this better so that it's not part of EVERY bubble wrap container?
-    def after_music(self, music, *args, **kwargs):
-        print("----------------------------------")
-        bubble = self.music_bubble()
-        if isinstance(bubble, BubbleBase):
-            print(bubble )
-            if hasattr(bubble, "lyrics"):
-                print("BOOOOOOOOOOOOOOOOO")
-                lyrics_command = indicatortools.LilyPondCommand("addlyrics { " + bubble.lyrics + " }", "after")
-                attach(lyrics_command, music)
-        super().after_music(self, music, *args, **kwargs)
+    # def after_music(self, music, **kwargs):
+    #     bubble = self.music_bubble()
+    #     if isinstance(bubble, BubbleBase):
+    #         print(bubble )
+    #         if hasattr(bubble, "lyrics"):
+    #             print("BOOOOOOOOOOOOOOOOO")
+    #             lyrics_command = indicatortools.LilyPondCommand("addlyrics { " + bubble.lyrics + " }", "after")
+    #             attach(lyrics_command, music)
+    #     super().after_music(self, music, **kwargs)
 
 class Transpose(BubbleWrap):
-    def __init__(self, bubble, transpose_expr, *args, **kwargs):
-        self.transpose_expr = transpose_expr
-        super().__init__(bubble, *args, **kwargs)
+    transpose_expr = 0
     
-    def after_music(self, music, *args, **kwargs):
-        super().after_music(music, *args, **kwargs)
+    def after_music(self, music, **kwargs):
+        super().after_music(music, **kwargs)
         mutate(music).transpose(self.transpose_expr)
 
 
@@ -419,39 +398,32 @@ class BubbleStaff(BubbleWrapContainer):
     instrument = None
     clef = None
 
-    def __init__(self, music_bubble=None, instrument=None, clef=None, *args, **kwargs):
-        if instrument:
-            self.instrument = instrument
-        if clef:
-            self.clef = clef
-        super().__init__(music_bubble=music_bubble, *args, **kwargs)
-
-    def after_music(self, music, *args, **kwargs):
+    def after_music(self, music, **kwargs):
         if self.instrument:
             attach(self.instrument, music)
         if self.clef:
             clef_obj = Clef(self.clef)
             attach(clef_obj, music)
-        super().after_music(self, music, *args, **kwargs)
+        super().after_music(music, **kwargs)
 
     def show(self):
         self.show_pdf()
 
 class BubbleRhythmicStaff(BubbleStaff):
     context_name="RhythmicStaff"
+    clef="percussion"
 
-    def __init__(self, music_bubble=None, instrument=None, clef="percussion", *args, **kwargs):
-        # TO DO ... why is the percussion clef showing up blank?????
-        super().__init__(music_bubble=music_bubble, instrument=instrument, clef=clef, *args, **kwargs)
 
 # maybe bubble grid match should be applicable for all bubbles???
 class BubbleGridMatch(Bubble):
+    grid_bubble=None
 
-    def __init__(self, grid_bubble=None, *args, **kwargs):
-        self.grid_bubble = grid_bubble
+    def __init__(self, grid_bubble=None, **kwargs):
         # set the grid bubble for any sub-bubbles (if not already defined) ... that way music bubbles passed to score
         # will be passed along to staff groups, and so on
-        super().__init__(*args, **kwargs)
+        if grid_bubble:
+            self.grid_bubble = grid_bubble
+        super().__init__(**kwargs)
         self.set_grid_bubbles()
 
     def set_grid_bubbles(self):
@@ -461,7 +433,7 @@ class BubbleGridMatch(Bubble):
                 bubble.grid_bubble = bubble.grid_bubble or self.grid_bubble
                 BubbleGridMatch.set_grid_bubbles(bubble)
 
-    def music(self, *args, **kwargs):
+    def music(self, **kwargs):
         my_music = self.music_container()
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
@@ -479,15 +451,10 @@ class BubbleStaffGroup(BubbleGridMatch):
     bubble_types=(BubbleStaff, BubbleGridMatch)
     instrument = None
 
-    def __init__(self, music_bubble=None, instrument=None, *args, **kwargs):
-        if instrument:
-            self.instrument = instrument
-        super().__init__(music_bubble=music_bubble, *args, **kwargs)
-
-    def after_music(self, music, *args, **kwargs):
+    def after_music(self, music, **kwargs):
         if self.instrument:
             attach(self.instrument, music)
-        super().after_music(self, music)
+        super().after_music(music, **kwargs)
 
     def show(self):
         self.show_pdf()
@@ -507,23 +474,16 @@ class BubbleGridStaff(BubbleGridMatch, BubbleStaff):
     instrument=None
     clef=None
 
-    def __init__(self, music_bubble=None, *args, **kwargs):
-        super().__init__(music_bubble=music_bubble, *args, **kwargs)
-
-
 class InstrumentStaffGroup(BubbleStaffGroup):
 
-    def after_music(self, music):
+    def after_music(self, music, **kwargs):
+        super().after_music(self, music, **kwargs)
         set_(music).systemStartDelimiter = "SystemStartSquare"
 
 class BubbleScore(BubbleGridMatch):
     is_simultaneous = None
     container_type=Score
     bubble_types=(BubbleStaff, BubbleStaffGroup)
-
-    # def __init__(self, music=None, *args, **kwargs):
-    #     super().__init__(music, *args, **kwargs)
-    #     if hasattr(self, "score_music"):
 
     def show(self):
         self.show_pdf()
@@ -533,8 +493,8 @@ class BubbleFormatLargeScore(BubbleScore):
     hide_empty = False
     title = None
 
-    def after_music(self, music):
-        super().after_music(self, music)
+    def after_music(self, music, **kwargs):
+        super().after_music(self, music, **kwargs)
         music.add_final_bar_line()
         spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
         override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
