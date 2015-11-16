@@ -1,4 +1,4 @@
-from settings import PROJECT_PATH
+from _settings import PROJECT_PATH
 
 import json
 from copy import deepcopy

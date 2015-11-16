@@ -2,7 +2,7 @@ from shutil import copyfile
 
 from abjad import *
 
-from settings import PROJECT_PATH
+from _settings import PROJECT_PATH
 
 from .material import GLOBAL_MATERIAL, Material
 
@@ -28,10 +28,8 @@ class BubbleBase(object):
             else:
                 setattr(self, attr_name, lambda : attr)
 
-    def __init__(self, music=None, **kwargs):
+    def __init__(self, **kwargs):
         # the first arg is always the music, if passed:
-        if music:
-            setattr(self, "music", music)
         for name, value in kwargs.items():
             setattr(self, name, value)
         self.make_callable("music")
@@ -50,7 +48,7 @@ class BubbleBase(object):
 
     # clever... need to test this carefully!
     def __add__(self, other):
-        return BubbleSequence( (self, other) )
+        return BubbleSequence( bubbles=(self, other) )
     
     # IMPLEMENT IF NEEDED...
     # def before_music(self, music, **kwargs):
@@ -65,6 +63,7 @@ class BubbleBase(object):
         # my_music = self.music_container()
         # self.before_music(my_music)
         # my_music.append(self.bubble_wrap().music())
+
         my_music = self.bubble_wrap().music()
         self.after_music(my_music)
         for c in self.commands:
@@ -192,6 +191,7 @@ class Bubble(BubbleBase):
             score.append(staff)            
 
         if self.is_simultaneous:
+            # ???????? KISS ????
             for i, b in enumerate(self.sequence()):
                 bubble = Eval(type(self.bubble_wrap()), b)
                 append_staff(b, bubble)
@@ -218,12 +218,41 @@ class Eval(Bubble):
 
 class Line(Bubble):
     is_simultaneous = False
+    instruction = None
+    dynamic = None
+    music_string = None
 
-class MultiLine(Bubble):
+    def __init__(self, music_string=None, **kwargs):
+        self.music_string = music_string
+        super().__init__(**kwargs)
+
+    def music(self, **kwargs):
+        if self.music_string:
+            return self.music_container(music=self.music_string)
+        else:
+            return super().music(**kwargs)
+
+    def after_music(self, music, **kwargs):
+        super().after_music(music, **kwargs)
+        if self.instruction or self.dynamic:
+            leaves = music.select_leaves(allow_discontiguous_leaves=True)
+            if len(leaves) > 0:
+                if self.instruction:
+                    markup_object = markuptools.Markup(self.instruction, direction=Up)
+                    attach(markup_object, leaves[0])
+                if self.dynamic:
+                    dynamic_object = indicatortools.Dynamic(self.dynamic)
+                    attach(dynamic_object, leaves[0])
+            else:
+                print("WARNING: tried to attach to " + str(type(self)) + " but it contains no music (leaves)." ) 
+
+class MultiLine(Line):
     """
     a line with temporary simultaneous music... optionally as multiple voices
     """
     multi_voiced = True
+    is_simultaneous = True
+    instruction = None
 
     @classmethod
     def bubble_imprint(cls, music):
@@ -308,38 +337,22 @@ class Sequence(Placeholder):
     #     super().after_music(self, music, **kwargs)
 
 
-class BubbleWrap(Bubble):
-    """
-    a base class for bubbles that "wrap" other bubbles in order to modify or extend them 
-    (without going through the trouble of inheritence)
-    """
-    def __init__(self, bubble, **kwargs):
-        self.bubble_wrap = bubble.bubble_wrap
-        self.is_simultaneous = bubble.is_simultaneous
-        super().__init__(**kwargs)
-
-
 # TO DO... naming is confusing in combo with the above classes..
 # ... also, should rethink sequencing more universally... 
 class BubbleSequence(Bubble):
     bubbles = ()
+    is_simultaneous = False
 
-    def __init__(self, bubbles=None, **kwargs):
-        if bubbles:
-            self.bubbles = bubbles
-        if len(self.bubbles) > 0:
-            self.is_simultaneous = self.bubbles[0].is_simultaneous
-            # more needed here to copy? TO DO... make copy universal?
-            super().__init__(self.bubbles[0], **kwargs)
-
-    # def blow(self, **kwargs):
-    #     print("BLOWING!")
-    #     super().blow(**kwargs)
+    # def __init__(self, bubbles=None, **kwargs):
+    #     if bubbles:
+    #         self.bubbles = bubbles
+    #     if len(self.bubbles) > 0:
+    #         # self.is_simultaneous = self.bubbles[0].is_simultaneous
+    #         # more needed here to copy? TO DO... make copy universal?
+    #         super().__init__(**kwargs)
 
     def music(self, **kwargs):
         my_music = self.music_container()
-        # print("***************************************")
-        # print( self.bubbles)
         for bubble in self.bubbles:
             my_music.append(bubble.blow())
         return my_music
@@ -349,6 +362,17 @@ class BubbleSequence(Bubble):
 #         pass
 
 #     def imprint_bubble(self, bubble):
+
+
+class BubbleWrap(Bubble):
+    """
+    a base class for bubbles that "wrap" other bubbles in order to modify or extend them 
+    (without going through the trouble of inheritence)
+    """
+    def __init__(self, bubble, **kwargs):
+        self.bubble_wrap = bubble.bubble_wrap
+        self.is_simultaneous = bubble.is_simultaneous
+        super().__init__(**kwargs)
 
 
 class BubbleWrapContainer(Bubble):
