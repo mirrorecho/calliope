@@ -49,6 +49,9 @@ class BubbleBase(object):
     # clever... need to test this carefully!
     def __add__(self, other):
         return BubbleSequence( bubbles=(self, other) )
+
+    def __mul__(self, num):
+        return BubbleSequence( bubbles = [self for i in range(num)] )
     
     # IMPLEMENT IF NEEDED...
     # def before_music(self, music, **kwargs):
@@ -409,6 +412,15 @@ class Transpose(BubbleWrap):
     def after_music(self, music, **kwargs):
         super().after_music(music, **kwargs)
         mutate(music).transpose(self.transpose_expr)
+
+
+class Tr(Transpose):
+    """
+    just a shortcut for the Transpose class, since it's used often enough ...
+    """
+    def __init__(self, bubble, transpose_expr, **kwargs):
+        super().__init__(bubble=bubble, transpose_expr=transpose_expr, **kwargs)
+
 
 
 class BubbleVoice(BubbleWrapContainer):
