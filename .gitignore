@@ -1,6 +1,7 @@
 ##########################################
 # calliope settings file
 settings.py
+_settings.py
 
 ##########################################
 # pdf folder and compressed files
