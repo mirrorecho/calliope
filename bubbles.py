@@ -35,6 +35,12 @@ class BubbleBase(object):
         self.make_callable("music")
         self.make_callable("sequence")
 
+    def latch(self, **kwargs):
+        return_bubble = self # better to use BubbleWrap here?
+        for name, value in kwargs.items():
+            setattr(return_bubble, name, value)
+        return return_bubble
+
     def music_container(self, **kwargs):
         if self.is_simultaneous is not None:
             kwargs["is_simultaneous"] = self.is_simultaneous
@@ -229,6 +235,12 @@ class Line(Bubble):
         self.music_string = music_string
         super().__init__(**kwargs)
 
+    def __add__(self, other):
+        return LineSequence( bubbles=(self, other) )
+
+    def __mul__(self, num):
+        return LineSequence( bubbles = [self for i in range(num)] )
+
     def music(self, **kwargs):
         if self.music_string:
             return self.music_container(music=self.music_string)
@@ -359,6 +371,9 @@ class BubbleSequence(Bubble):
         for bubble in self.bubbles:
             my_music.append(bubble.blow())
         return my_music
+
+class LineSequence(BubbleSequence, Line):
+    pass
 
 # class BubbleImprint(BubbleWrap):
 #     def after_music(self, music):

@@ -8,6 +8,9 @@
 # DONE: - - musical ideas as objects (inherit from Bubble?)
 # DONE: - - use inheritance, don't cram everything into a mega-class
 
+# material
+# - - pull from lilypond variables file (instead of json)
+
 # a few tools to help with routine tasks
 # - - templates for scores and parts
 
