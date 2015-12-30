@@ -38,6 +38,10 @@
 # - - overall arranging rethought
 # - - add lilypond comments where bubbles start in voice music
 
+# MISC
+# - - piano centered dynamics (see http://lsr.di.unimi.it/LSR/Item?id=357 ??)
+# - - unterminated ties
+
 from settings import *
 
 # needed to run calliope imports locally:

@@ -89,6 +89,10 @@ class BubbleBase(object):
     def ly_file_path(self):
         return PROJECT_PATH + "/ly/" + type(self).__name__ + ".ly"
 
+    def play(self, music=None):
+        music = music or self.blow()
+        play(music)
+
     def make_pdf(self, music=None):
         music = music or self.blow()
         assert '__illustrate__' in dir(music)
@@ -534,10 +538,98 @@ class InstrumentStaffGroup(BubbleStaffGroup):
 class BubbleScore(BubbleGridMatch):
     is_simultaneous = None
     container_type=Score
+    hide_empty = False
     bubble_types=(BubbleStaff, BubbleStaffGroup)
 
     def show(self):
         self.show_pdf()
+
+
+class BubbleScoreLetter(BubbleScore):
+
+    def after_music(self, music, **kwargs):
+        super().after_music(music, **kwargs)
+        music.add_final_bar_line()
+        # spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
+        # override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
+        # override(self).staff_grouper.staff_staff_spacing = spacing_vector
+        # override(self).staff_symbol.thickness = 0.5
+        # set_(self).mark_formatter = schemetools.Scheme("format-mark-box-numbers")
+
+    def get_lilypond_file(self):
+        music = self.blow()
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music)
+
+        # configure the lilypond file...
+        # lilypond_file.global_staff_size = 12
+
+        if self.hide_empty:
+            staff_context_block = lilypondfiletools.ContextBlock(
+                source_context_name="Staff \\RemoveEmptyStaves",
+                )
+            rhythmic_staff_context_block = lilypondfiletools.ContextBlock(
+                source_context_name="RhythmicStaff \\RemoveEmptyStaves",
+                )
+        else:
+            staff_context_block = lilypondfiletools.ContextBlock()
+            rhythmic_staff_context_block = lilypondfiletools.ContextBlock()
+
+        # override(staff_context_block).vertical_axis_group.remove_first = True
+        lilypond_file.layout_block.items.append(staff_context_block)
+
+        # override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
+        lilypond_file.layout_block.items.append(rhythmic_staff_context_block)
+
+        # slash_separator = indicatortools.LilyPondCommand('slashSeparator')
+        # lilypond_file.paper_block.system_separator_markup = slash_separator
+
+        # bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.bottom_margin = bottom_margin
+
+        # top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.top_margin = top_margin
+
+        # left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
+        # lilypond_file.paper_block.left_margin = left_margin
+
+        # right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.right_margin = right_margin
+
+        # paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
+        # lilypond_file.paper_block.paper_width = paper_width
+
+        # paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
+        # lilypond_file.paper_block.paper_height = paper_height
+
+        # system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
+        # lilypond_file.paper_block.system_system_spacing = system_system_spacing
+
+        lilypond_file.header_block.composer = markuptools.Markup('Randall West')
+
+        # TO DO... move "for Taiko and Orchestra" to subtitle
+        lilypond_file.header_block.title = markuptools.Markup(self.title)
+        lilypond_file.header_block.tagline = markuptools.Markup("")
+
+        return lilypond_file
+
+    # TO DO MUST BE BETTER WAY TO HANDLE THIS!!!!
+
+    def show(self):
+        music = self.get_lilypond_file()
+        self.show_pdf(music)
+
+    def make_pdf(self):
+        music = self.get_lilypond_file()
+        super().make_pdf(music)        
+
+    def save(self):
+        music = self.get_lilypond_file()
+        with open(self.ly_file_path(), "w") as ly_file:
+            ly_file.write(format(music))
+
+    def __str__(self):
+        music = self.get_lilypond_file()
+        return(format(music))
 
 
 class BubbleFormatLargeScore(BubbleScore):
@@ -545,7 +637,7 @@ class BubbleFormatLargeScore(BubbleScore):
     title = None
 
     def after_music(self, music, **kwargs):
-        super().after_music(self, music, **kwargs)
+        super().after_music(music, **kwargs)
         music.add_final_bar_line()
         spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
         override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
@@ -621,3 +713,4 @@ class BubbleFormatLargeScore(BubbleScore):
         # lilypond_file.header_block.tagline = markuptools.Markup(tagline)
 
         return lilypond_file
+
