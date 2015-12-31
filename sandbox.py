@@ -9,7 +9,7 @@
 # DONE: - - use inheritance, don't cram everything into a mega-class
 
 # material
-# - - pull from lilypond variables file (instead of json)
+# DONE: - - pull from lilypond variables file (instead of json)
 
 # a few tools to help with routine tasks
 # - - templates for scores and parts
@@ -42,7 +42,7 @@
 # - - piano centered dynamics (see http://lsr.di.unimi.it/LSR/Item?id=357 ??)
 # - - unterminated ties
 
-from settings import *
+from _settings import *
 
 # needed to run calliope imports locally:
 import sys
@@ -51,81 +51,81 @@ sys.path.append(ROOT_PATH)
 from abjad import *
 from calliope.bubbles import *
 
+yo_five = BubbleMaterial("test.five")
+yo_four = BubbleMaterial("test.four")
+print(yo_four)
+print(yo_four.is_simultaneous)
 
-class SortMixin():
-    # def sequence(self, *args, **kwargs):
-    #     return ("line1","line2","line3","line4")
-    pass
+c = parse("{c1 c1 c1}")
+print(type(c))
+print(c)
 
-class B(SortMixin, Bubble):
-    # material = Material("test_data")
-    is_simultaneous = True
-    line1 = Line("e'4 "*4)
-    line2 = Line("d'4\\ff "*4)
-    # pitch_ji = Material("test_data.pitch.ji")
-    # material_11 = Material("test_data.line11_music")
-    # line3 = Eval"yo"
-    # material=("test_data", "test_data_2") # may need to do something like this...
-    # material=Material("test_data", "test_data_2") # may need to do something like this...
+# class SortMixin():
+#     # def sequence(self, *args, **kwargs):
+#     #     return ("line1","line2","line3","line4")
+#     pass
 
-    # line2 = Dynamics("ff"
-    #     Line("d'4\\ff "*4)
-    #     )
-    # line3 = FromMaterial
+# class B(SortMixin, Bubble):
+#     # material = Material("test_data")
+#     is_simultaneous = True
+#     line1 = Line("e'4 "*4)
+#     line2 = Line("d'4\\ff "*4)
+#     # pitch_ji = Material("test_data.pitch.ji")
+#     # material_11 = Material("test_data.line11_music")
+#     # line3 = Eval"yo"
+#     # material=("test_data", "test_data_2") # may need to do something like this...
+#     # material=Material("test_data", "test_data_2") # may need to do something like this...
 
-    # def startup(self, *args, **kwargs):
-    #     # self.line2 = Dynamics("ff", self.line2)
-    #     # self.lines_from_material("test_data","lines")
-    #     pass
-    # print("YO")
+#     # line2 = Dynamics("ff"
+#     #     Line("d'4\\ff "*4)
+#     #     )
+#     # line3 = FromMaterial
 
-class C(B):
-    line1 = Line("c'4 "*4)
+#     # def startup(self, *args, **kwargs):
+#     #     # self.line2 = Dynamics("ff", self.line2)
+#     #     # self.lines_from_material("test_data","lines")
+#     #     pass
+#     # print("YO")
 
-    # def sequence(self, *args, **kwargs):
-    #     return ("line4","line1")
+# class C(B):
+#     line1 = Line("c'4 "*4)
 
-# d = BubbleSequence((b,c,b,c))
+#     # def sequence(self, *args, **kwargs):
+#     #     return ("line4","line1")
 
-class E(B):
-    grid_sequence = (B,C)
-    line4 = Line("b4 "*8)
+# # d = BubbleSequence((b,c,b,c))
 
-class F(E):
-    grid_sequence = (E,E)
-    line5 = Line("a4 "*16)
+# class E(B):
+#     grid_sequence = (B,C)
+#     line4 = Line("b4 "*8)
 
-class G(Bubble):
-    line0 = Line("a1 "*4)
+# class F(E):
+#     grid_sequence = (E,E)
+#     line5 = Line("a4 "*16)
 
-class FancyLine(Line):
-    def music(self):
-        m = Material("test_data.line11")
-        print(m.get())
-        return m.get()
+# class G(Bubble):
+#     line0 = Line("a1 "*4)
 
-class H(F,G):
-    line2 = Line("a'1 "*4)
-    line5 = Eval(F, "line1") #maybe this would work?
-    # line9 = Transpose( Eval("F.line1"), "+m3")
-    # line11 = Line(material="line11_music") # doesn't work
-    # line11 = WithPitches( FancyLine(), Material("test_data.test_pitches") ),  # WILL GET THIS ONE WORKING!
-    line11 = FancyLine()
-    line12 = Transpose( BubbleMaterial("test_data.line11"), "+M2")
+# class FancyLine(Line):
+#     def music(self):
+#         m = Material("test_data.line11")
+#         print(m.get())
+#         return m.get()
 
-# H().show()
+# class H(F,G):
+#     line2 = Line("a'1 "*4)
+#     line5 = Eval(F, "line1") #maybe this would work?
+#     # line9 = Transpose( Eval("F.line1"), "+m3")
+#     # line11 = Line(material="line11_music") # duseoesn't work
+#     # line11 = WithPitches( FancyLine(), Material("test_data.test_pitches") ),  # WILL GET THIS ONE WORKING!
+#     line11 = FancyLine()
+#     line12 = Transpose( BubbleMaterial("test_data.line11"), "+M2")
 
-# print(H())
 
-t = Transpose( H(), "+m6")
-t.show()
+# t = Transpose( H(), "+m6")
+# t.show()
 
-# print(t)
 
-# print(t)
-# print(format(t))
-print("********************************")
-# print(H())
 
 # class Z():
     

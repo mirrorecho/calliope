@@ -131,12 +131,10 @@ class BubbleBase(object):
 class BubbleMaterial(Material, BubbleBase):
 
    def music(self, **kwargs):
-        my_music = self.music_container()
-        music = self.get()
-        # if isinstance(music, dict):
-        #     music = 
-        my_music.append( music )
-        return my_music
+        music = parse( self.get() )
+        self.container_type = type(music)
+        self.is_simultaneous = music.is_simultaneous
+        return music
 
 class Placeholder(BubbleBase):
     sequence = ()
