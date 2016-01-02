@@ -6,7 +6,7 @@ import json
 from copy import deepcopy
 
 class GlobalMaterial(dict):
-    data_path = PROJECT_PATH + "/material"
+    data_path = PROJECT_PATH + "/ly_material"
 
     def __init__(self):
         self.loaded = set()
@@ -70,18 +70,3 @@ class GlobalMaterial(dict):
 
 GLOBAL_MATERIAL = GlobalMaterial()
 
-class Material(GlobalMaterial):
-
-    def __init__(self, search_string):
-        self.search_list = search_string.split(".")
-        GLOBAL_MATERIAL.use(self.search_list[0])
-        super().__init__()
-
-    def get(self):
-        my_material = GLOBAL_MATERIAL
-        for m in self.search_list:
-            if m not in my_material:
-                print("WARNING: '" + m + "' does not exist in the material dictionary.")
-                return None
-            my_material = my_material[m]
-        return(my_material)

@@ -1,11 +1,9 @@
+from copy import copy, deepcopy
 from shutil import copyfile
-
 from abjad import *
-
 from _settings import PROJECT_PATH
-
-from .material import GLOBAL_MATERIAL, Material
-
+from material import GLOBAL_MATERIAL
+from tools import pitch 
 
 class BubbleBase(object):
     name=None
@@ -15,14 +13,16 @@ class BubbleBase(object):
     bubble_types = ()
     commands = ()
     sequence = ()
+    respell=None # TO DO, best place for this?
+    process_methods = []
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
         if attr is not None:
             if isinstance(attr, BubbleBase):
                 setattr(self, attr_name, attr.blow)
-            elif isinstance(attr, Material):
-                setattr(self, attr_name, attr.get)
+            # elif isinstance(attr, Material):
+            #     setattr(self, attr_name, attr.get)
             elif callable(attr):
                 setattr(self, attr_name, attr)
             else:
@@ -36,9 +36,15 @@ class BubbleBase(object):
         self.make_callable("sequence")
 
     def latch(self, **kwargs):
-        return_bubble = self # better to use BubbleWrap here?
+        return_bubble = copy(self)
         for name, value in kwargs.items():
             setattr(return_bubble, name, value)
+        return return_bubble
+
+    def process(self, method, *args, **kwargs):
+        return_bubble = copy(self)
+        return_bubble.process_methods = copy(self.process_methods)
+        return_bubble.process_methods.append(lambda music: method(music, *args, **kwargs))
         return return_bubble
 
     def music_container(self, **kwargs):
@@ -64,7 +70,11 @@ class BubbleBase(object):
     #     pass
 
     def after_music(self, music, **kwargs):
-        pass
+        # TO DO... is this the best place for respell, etc.?
+        if self.respell:
+            pitch.respell(music, self.respell)
+        for m in self.process_methods:
+            m(music)
 
     def blow(self, **kwargs):
         
@@ -128,13 +138,13 @@ class BubbleBase(object):
         music = self.blow()
         return(format(music))
 
-class BubbleMaterial(Material, BubbleBase):
+# class BubbleMaterial(Material, BubbleBase):
 
-   def music(self, **kwargs):
-        music = parse( self.get() )
-        self.container_type = type(music)
-        self.is_simultaneous = music.is_simultaneous
-        return music
+#    def music(self, **kwargs):
+#         music = parse( self.get() )
+#         self.container_type = type(music)
+#         self.is_simultaneous = music.is_simultaneous
+#         return music
 
 class Placeholder(BubbleBase):
     sequence = ()
@@ -225,16 +235,18 @@ class Bubble(BubbleBase):
 class Eval(Bubble):
     def __init__(self, cls, bubble_name):
         self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
-        super().__init__( lambda : cls.blow_bubble(bubble_name) )
+        super().__init__( music = lambda : cls.blow_bubble(bubble_name) )
 
 class Line(Bubble):
     is_simultaneous = False
     instruction = None
     dynamic = None
     music_string = None
+    pitches = None
 
     def __init__(self, music_string=None, **kwargs):
-        self.music_string = music_string
+        if music_string:
+            self.music_string = music_string
         super().__init__(**kwargs)
 
     def __add__(self, other):
@@ -245,12 +257,16 @@ class Line(Bubble):
 
     def music(self, **kwargs):
         if self.music_string:
-            return self.music_container(music=self.music_string)
+            my_music = parse( self.music_string )
+            self.container_type = type(my_music) # TO DO: necessary?
+            self.is_simultaneous = my_music.is_simultaneous # TO DO: necessary?
+            return my_music
         else:
             return super().music(**kwargs)
 
     def after_music(self, music, **kwargs):
-        super().after_music(music, **kwargs)
+        if self.pitches:
+            pitch.set_pitches(music, pitches=self.pitches)
         if self.instruction or self.dynamic:
             leaves = music.select_leaves(allow_discontiguous_leaves=True)
             if len(leaves) > 0:
@@ -262,6 +278,29 @@ class Line(Bubble):
                     attach(dynamic_object, leaves[0])
             else:
                 print("WARNING: tried to attach to " + str(type(self)) + " but it contains no music (leaves)." ) 
+        super().after_music(music, **kwargs)
+
+class Ly(Line):
+    ly_material = None # the name of material to load
+
+    def __init__(self, ly_material, **kwargs):
+        self.ly_material = ly_material
+        super().__init__(music_string=self.get_ly_material(), **kwargs)
+
+    def get_ly_material(self):
+        search_list = self.ly_material.split(".")
+        material_name = search_list[0]
+        material_var = search_list[1]
+
+        GLOBAL_MATERIAL.use(material_name)
+        
+        ly_string = GLOBAL_MATERIAL[material_name].get(material_var, None)
+
+        if not ly_string:
+            print("WARNING: '" + material_var + "' variable does not exist in the material file: '" + material_name + ".ly'")
+
+        return ly_string
+
 
 class MultiLine(Line):
     """
@@ -298,6 +337,38 @@ class SimulLine(MultiLine):
 class LineLyrics(Line):
     lyrics = ""
 
+class FreeSpan(Bubble):
+    commands = []
+    show_x_meter = False
+    show_time_span = False
+    time_span_text = None # e.g. "10'' ca"
+    duration = None # leave duration None to automatically expand the free "measure"
+    start_bar_line = None
+    end_bar_line = None
+
+    def after_music(self, music, **kwargs):
+        print("FREE AFTER MUSIC!")
+        for music_line in music:
+            line_leaves = music_line.select_leaves(allow_discontiguous_leaves=True)
+            if self.show_x_meter:
+                x_meter_command = indicatortools.LilyPondCommand( ("""once \override 
+                        Staff.TimeSignature #'stencil = #(lambda (grob)
+                        (parenthesize-stencil (grob-interpret-markup grob 
+                        (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
+                        ) 0.1 0.4 0.4 0.1 ))
+                        """), "before" )
+                attach(x_meter_command, line_leaves[0])
+            else:
+                # HIDE THE TIME SIGNATURE:
+                hide_time_command = indicatortools.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
+                attach(hide_time_command, line_leaves[0])
+            if self.duration:
+                time_command =  indicatortools.LilyPondCommand("time " + str(self.duration[0]) + "/" + str(self.duration[1]), "before")
+                attach(time_command, line_leaves[0])
+            else:
+                # TO DO... auto calculate bar-length based on longest bubble
+                pass
+        super().after_music(music, **kwargs)
 
 class GridSequence(Bubble):
     grid_sequence = ()
@@ -427,9 +498,8 @@ class Transpose(BubbleWrap):
     transpose_expr = 0
     
     def after_music(self, music, **kwargs):
-        super().after_music(music, **kwargs)
         mutate(music).transpose(self.transpose_expr)
-
+        super().after_music(music, **kwargs)
 
 class Tr(Transpose):
     """

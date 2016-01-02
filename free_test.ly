@@ -303,11 +303,11 @@ endFree = {
 
   \numericTimeSignature
 
-      % \once \override 
-      %       Staff.TimeSignature #'stencil = #(lambda (grob)
-      %       (parenthesize-stencil (grob-interpret-markup grob 
-      %       (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
-      %       ) 0.1 0.4 0.4 0.1 ))
+            \once \override 
+            Staff.TimeSignature #'stencil = #(lambda (grob)
+            (parenthesize-stencil (grob-interpret-markup grob 
+            (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
+            ) 0.1 0.4 0.4 0.1 ))
             \time 4/4
 
             {

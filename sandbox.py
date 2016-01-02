@@ -2,14 +2,12 @@
 
 # KEEP IT SIMPLE! ... abjad already provides a structure, don't re-intent the wheel
 
-# WITH THAT IN MIND, BASIC GOALS ARE:
-
-# help create structure around non-linear musical thinking
-# DONE: - - musical ideas as objects (inherit from Bubble?)
-# DONE: - - use inheritance, don't cram everything into a mega-class
-
-# material
-# DONE: - - pull from lilypond variables file (instead of json)
+# cleanup / integration
+# - - integrate previous "tools"
+# - - integrate previous "work"
+# - - integrate previous "cycles"
+# - - integrate previous "cloud"
+# - - fix sequence weirdness
 
 # a few tools to help with routine tasks
 # - - templates for scores and parts
@@ -50,15 +48,63 @@ sys.path.append(ROOT_PATH)
 
 from abjad import *
 from calliope.bubbles import *
+from calliope.tools import pitch, rhythm
 
-yo_five = BubbleMaterial("test.five")
-yo_four = BubbleMaterial("test.four")
-print(yo_four)
-print(yo_four.is_simultaneous)
 
-c = parse("{c1 c1 c1}")
-print(type(c))
-print(c)
+# l =  Ly("ametric.timeX") + Ly("test.six")
+# l.show()
+# with open("ly_material/ametric.ly") as data_file:    
+#     ly_string = data_file.read()
+# parser = lilypondparsertools.LilyPondParser()
+# parser.tokenize(ly_string)
+# music = parser(ly_string + " { \\timeX } ")
+# print(ly_string)
+# print(music)
+
+class Test(Bubble):
+    l1 = Placeholder()
+    l2 = Placeholder()
+
+class TestFirst(Test):
+    l1 = Line("{ }")
+    l2 = Line("{ }")
+
+class Intro1(FreeSpan):
+    l1 = Ly("test.one")*3  + Ly("test.one", pitches=(0,1,2,3))
+    l2 = Tr(Ly("test.two"),4,respell="flats") + Ly("test.three") * 2 + Line("<< { a2 } \\\\ { c'4 d'8( e') } >>")
+    show_x_meter = True
+    duration = (2,1)
+
+class Intro2(Intro1):
+    show_x_meter = False
+
+class Intro3(Intro1):
+    show_x_meter = False
+
+class Intro(Test, GridSequence):
+    grid_sequence = (TestFirst, Intro1, Intro2, Intro3)
+
+music = Intro()
+# print(music)
+music.show()
+
+            # % \once \override 
+            # % Staff.TimeSignature #'stencil = #(lambda (grob)
+            # % (parenthesize-stencil (grob-interpret-markup grob 
+            # % (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
+            # % ) 0.1 0.4 0.4 0.1 ))
+
+# REMEMBER THIS MAY BE USEFUL:
+music_list = scoretools.make_leaves([0], ((1,4)) )
+
+# yo_five = BubbleMaterial("test.five")
+# yo_four = BubbleMaterial("test.four")
+# print(yo_four)
+# print(yo_four.is_simultaneous)
+
+# c = parse("{c1 c1 c1}")
+# print(type(c))
+# print(c)
 
 # class SortMixin():
 #     # def sequence(self, *args, **kwargs):

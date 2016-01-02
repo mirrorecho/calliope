@@ -9,4 +9,11 @@ four = { << { c'8( a4 c'8) } d1 >> }
 five = {
     a1
     << { r1 a1 } { b4 b b b | b b b b } >>
-    R1}
+    R1 }
+
+
+six = {
+    \relative c' {
+        a1\< b c\!
+    }
+}
