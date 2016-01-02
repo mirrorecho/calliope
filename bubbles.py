@@ -175,6 +175,7 @@ class Bubble(BubbleBase):
     def bubble_imprint(cls, music):
         return music
 
+    # TO DO: necesssary?
     @classmethod
     def bubble_default(cls):
         return Bubble()
@@ -231,7 +232,7 @@ class Bubble(BubbleBase):
         score = self.score(**kwargs)
         self.show_pdf(score)
 
-
+# TO DO... this shouldn't be necessary...?
 class Eval(Bubble):
     def __init__(self, cls, bubble_name):
         self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
@@ -337,38 +338,103 @@ class SimulLine(MultiLine):
 class LineLyrics(Line):
     lyrics = ""
 
-class FreeSpan(Bubble):
-    commands = []
+class GridStart(Bubble):
+    tempo_text = None
+    tempo_units_per_minute=None
+    tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
+    time_signature = (4,4)
+    start_bar_line = "||"
+    accidental_style = "modern-cautionary"
+
+    @classmethod
+    def blow_bubble(cls, bubble_name):
+        """
+        overriding blow_bubble to add free stuff to each sub-bubble
+        """
+        music = super().blow_bubble(bubble_name)
+        leaves = music.select_leaves(allow_discontiguous_leaves=True)
+        if cls.time_signature:
+            # TO DO... is the numeric commad necessary... maybe just include it at the score level?
+            time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
+            attach(time_command_numeric, leaves[0])
+            time_command =  indicatortools.LilyPondCommand("time " + str(cls.time_signature[0]) + "/" + str(cls.time_signature[1]), "before")
+            attach(time_command, leaves[0])
+        if cls.start_bar_line:
+            bar_command =  indicatortools.LilyPondCommand('bar "' + cls.start_bar_line + '"', 'before')
+            attach(bar_command, leaves[0])
+        if cls.tempo_text or cls.tempo_units_per_minute:
+            if cls.tempo_units_per_minute:
+                tempo_reference_duration = Duration(cls.tempo_duration)
+            else:
+                tempo_reference_duration = None
+            tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=cls.tempo_units_per_minute, textual_indication=cls.tempo_text)
+            attach(tempo, leaves[0])
+        if cls.accidental_style:
+            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + cls.accidental_style, "before")
+            attach(accidental_style_command, leaves[0])
+        return music
+
+class Ametric(Bubble):
     show_x_meter = False
     show_time_span = False
+    start_text = None # e.g. "Freely"
     time_span_text = None # e.g. "10'' ca"
-    duration = None # leave duration None to automatically expand the free "measure"
-    start_bar_line = None
+    duration = (2,1)
+    start_bar_line = "!"
     end_bar_line = None
+    accidental_style = None
 
-    def after_music(self, music, **kwargs):
-        print("FREE AFTER MUSIC!")
-        for music_line in music:
-            line_leaves = music_line.select_leaves(allow_discontiguous_leaves=True)
-            if self.show_x_meter:
-                x_meter_command = indicatortools.LilyPondCommand( ("""once \override 
-                        Staff.TimeSignature #'stencil = #(lambda (grob)
-                        (parenthesize-stencil (grob-interpret-markup grob 
-                        (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
-                        ) 0.1 0.4 0.4 0.1 ))
-                        """), "before" )
-                attach(x_meter_command, line_leaves[0])
-            else:
-                # HIDE THE TIME SIGNATURE:
-                hide_time_command = indicatortools.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
-                attach(hide_time_command, line_leaves[0])
-            if self.duration:
-                time_command =  indicatortools.LilyPondCommand("time " + str(self.duration[0]) + "/" + str(self.duration[1]), "before")
-                attach(time_command, line_leaves[0])
-            else:
-                # TO DO... auto calculate bar-length based on longest bubble
-                pass
-        super().after_music(music, **kwargs)
+    @classmethod
+    def blow_bubble(cls, bubble_name):
+        """
+        overriding blow_bubble to add free stuff to each sub-bubble
+        """
+        music = super().blow_bubble(bubble_name)
+        
+        # this will auto-increase the length of the music (in skips) to the length of the Ametric duration
+        add_skips_duration = Duration(cls.duration) - inspect_(music).get_duration()
+        if add_skips_duration > 0:
+            skips = scoretools.make_skips( Duration(1, add_skips_duration.denominator), ((add_skips_duration.numerator,add_skips_duration.denominator),) )
+            music.append(skips)
+
+        leaves = music.select_leaves(allow_discontiguous_leaves=True)
+        if cls.show_x_meter:
+            x_meter_command = indicatortools.LilyPondCommand( ("""once \override 
+                    Staff.TimeSignature #'stencil = #(lambda (grob)
+                    (parenthesize-stencil (grob-interpret-markup grob 
+                    (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
+                    ) 0.1 0.4 0.4 0.1 ))
+                    """), "before" )
+            attach(x_meter_command, leaves[0])
+        else:
+            # HIDE THE TIME SIGNATURE:
+            hide_time_command = indicatortools.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
+            attach(hide_time_command, leaves[0])
+        if cls.duration:
+            time_command =  indicatortools.LilyPondCommand("time " + str(cls.duration[0]) + "/" + str(cls.duration[1]), "before")
+            attach(time_command, leaves[0])
+        if cls.start_bar_line:
+            bar_command =  indicatortools.LilyPondCommand('bar "' + cls.start_bar_line + '"', 'before')
+            attach(bar_command, leaves[0])
+        else:
+            # MAYBE TO DO... auto calculate bar-length based on longest bubble
+            pass
+        if cls.start_text or cls.time_span_text:
+            # TO DO... this could conflict with tempo mark / text
+            # ALSO MAYBE TO DO... better time_span_text using a measure-length spanner
+            my_text = ", ".join([t for t in [cls.start_text, cls.time_span_text] if t])
+            tempo_text = indicatortools.Tempo(textual_indication=my_text)
+            attach(tempo_text, leaves[0])
+        if cls.accidental_style:
+            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + cls.accidental_style, "before")
+            attach(accidental_style_command, leaves[0])
+        return music
+
+class AmetricStart(Ametric):
+    start_bar_line = "||"
+    show_x_meter = True
+    start_text = "Freely"
+    accidental_style = "neo-modern-cautionary"
 
 class GridSequence(Bubble):
     grid_sequence = ()

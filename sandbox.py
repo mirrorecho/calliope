@@ -1,9 +1,12 @@
 # CALLIOPE DESIGN PRINCIPLES:
 
-# KEEP IT SIMPLE! ... abjad already provides a structure, don't re-intent the wheel
+# KEEP IT SIMPLE! ... abjad already provides a structure, don't re-invent the wheel
+
+# ametrical music and systems
+# - - show time length spans
+# - - boxes and arrows
 
 # cleanup / integration
-# - - integrate previous "tools"
 # - - integrate previous "work"
 # - - integrate previous "cycles"
 # - - integrate previous "cloud"
@@ -12,12 +15,6 @@
 # a few tools to help with routine tasks
 # - - templates for scores and parts
 
-# ametrical music and systems
-# - - quickly create ametrical music
-# - - align all parts
-# - - x/x time signature
-# - - dashed bar lines
-# - - boxes and arrows
 
 # beuatifully printed music (with some fancy formatting)
 # - - fonts
@@ -35,6 +32,7 @@
 # - - "music from durations" rethought
 # - - overall arranging rethought
 # - - add lilypond comments where bubbles start in voice music
+# - - better ametric spanners with time span text
 
 # MISC
 # - - piano centered dynamics (see http://lsr.di.unimi.it/LSR/Item?id=357 ??)
@@ -64,29 +62,41 @@ from calliope.tools import pitch, rhythm
 class Test(Bubble):
     l1 = Placeholder()
     l2 = Placeholder()
+    l3 = Placeholder()
 
-class TestFirst(Test):
-    l1 = Line("{ }")
-    l2 = Line("{ }")
+class TestFirst(GridStart):
+    l1 = Line("{ bf4 bf' c' bf }")
+    l2 = Line("{ c'1 }")
+    l3 = Line("{R1}")
+    tempo_units_per_minute = 120
 
-class Intro1(FreeSpan):
-    l1 = Ly("test.one")*3  + Ly("test.one", pitches=(0,1,2,3))
-    l2 = Tr(Ly("test.two"),4,respell="flats") + Ly("test.three") * 2 + Line("<< { a2 } \\\\ { c'4 d'8( e') } >>")
-    show_x_meter = True
+class TestContinue(TestFirst):
+    tempo_units_per_minute = None
+
+
+class Intro(Ametric):
+    l1 = Tr( Ly("test.one")*3, 1)  + Ly("test.one", pitches=(0,1,2,3))
+    l2 = Ly("test.three") + Line("{a32 r1\\fermata }") 
+    l3 = Line("{R1 R1}")
+    time_span_text = " 10'' ca"
     duration = (2,1)
 
-class Intro2(Intro1):
-    show_x_meter = False
+class Intro1(AmetricStart, Intro):
+    pass
 
-class Intro3(Intro1):
-    show_x_meter = False
+class Intro2(Intro):
+    pass
+
+class Intro3(Intro):
+    pass
 
 class Intro(Test, GridSequence):
-    grid_sequence = (TestFirst, Intro1, Intro2, Intro3)
+    grid_sequence = (TestFirst, Intro1, Intro2, TestContinue)
 
 music = Intro()
-# print(music)
+print(music)
 music.show()
+
 
             # % \once \override 
             # % Staff.TimeSignature #'stencil = #(lambda (grob)
