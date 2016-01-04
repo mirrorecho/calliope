@@ -206,9 +206,9 @@ endBarCurly = {
 % The number next to "th" in (th 0.2) controls thickness of the brackets. 
 #(define-markup-command (left-bracket layout props) ()
 "Draw left hand bracket"
-(let* ((th 0.06) ;; todo: take from GROB
-  (width (* 8 th)) ;; todo: take from GROB
-  (ext '(-3.3 . 3.3))) ;; todo: take line-count into account
+(let* ((th 0.09) ;; todo: take from GROB
+  (width (* 0 th)) ;; todo: take from GROB
+  (ext '(-0.66 . 0.66))) ;; todo: take line-count into account
   (ly:bracket Y ext th width)))
 
 leftBracket = {
@@ -223,9 +223,9 @@ leftBracket = {
 
 #(define-markup-command (right-bracket layout props) ()
 "Draw right hand bracket"
-  (let* ((th .2);;todo: take from GROB
-          (width (* 2.5 th)) ;; todo: take from GROB
-          (ext '(-2.8 . 2.8))) ;; todo: take line-count into account
+  (let* ((th .09);;todo: take from GROB
+          (width (* 0 th)) ;; todo: take from GROB
+          (ext '(-0.66 . 0.66))) ;; todo: take line-count into account
         (ly:bracket Y ext th (- width))))
 
 rightBracket = {
@@ -239,10 +239,12 @@ beforeFree = {
       \hideNotes
       \grace {
         \stopStaff
-        \override Staff.StaffSymbol #'line-positions = #'( -4 -2  0 2 4 )
-        \dashedStaffSymbolLines #'( #t #t #t #t #t )
+        % \override Staff.StaffSymbol #'line-positions = #'( -4 -2  0 2 4 )
+        % \dashedStaffSymbolLines #'( #t #t #t #t #t )
+      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 0 2 4 )
+      \dashedStaffSymbolLines #'( #t #t #t #t #t )
         \startStaff
-        r8 ^"freely"
+        s16
         \stopStaff
         \dashedStaffSymbolLines #'( #f #f #f #f #f )
         \override Staff.StaffSymbol #'line-positions = #'()
@@ -266,8 +268,8 @@ afterFreeOnly = {
 afterFree = {
       \hideNotes
       \stopStaff
-      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 -0.2 -0.1 0 0.1 0.2 2 4 )
-      \dashedStaffSymbolLines #'( #t #t #f #f #f #f #f #t #t )
+      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 -0.1 0 0.1 2 4 )
+      \dashedStaffSymbolLines #'( #t #t #f #f #f #t #t )
       % \override Staff.StaffSymbol #'line-positions = #'()
       \startStaff
       \grace {
@@ -313,15 +315,18 @@ endFree = {
             {
 
               % \beforeFree
-            c'1 a'2 b'2              
+            c'1 a'2 b'2 
+            % s4
 
-          % \beforeFree
+          \beforeFree
           \leftBracket
+              <> ^"freely, repeat 3 or 4 times"
               c''8  \pp b' a' g' ~ g'4. -\fermata 
           \rightBracket
               % \afterFreeOnly
               \afterFree
-              r8 ^"repeat 2 or 3 times"
+              r8
+              % r8 ^"repeat 2 or 3 times"
               \afterFreeContinue
               \afterFreeContinue
               \afterFreeContinue

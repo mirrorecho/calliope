@@ -422,7 +422,7 @@ class Ametric(Bubble):
         if cls.start_text or cls.time_span_text:
             # TO DO... this could conflict with tempo mark / text
             # ALSO MAYBE TO DO... better time_span_text using a measure-length spanner
-            my_text = ", ".join([t for t in [cls.start_text, cls.time_span_text] if t])
+            my_text = ", ".join([t for t in [cls.start_text, " " + cls.time_span_text] if t])
             tempo_text = indicatortools.Tempo(textual_indication=my_text)
             attach(tempo_text, leaves[0])
         if cls.accidental_style:

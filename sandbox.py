@@ -3,7 +3,6 @@
 # KEEP IT SIMPLE! ... abjad already provides a structure, don't re-invent the wheel
 
 # ametrical music and systems
-# - - show time length spans
 # - - boxes and arrows
 
 # cleanup / integration
@@ -78,7 +77,7 @@ class Intro(Ametric):
     l1 = Tr( Ly("test.one")*3, 1)  + Ly("test.one", pitches=(0,1,2,3))
     l2 = Ly("test.three") + Line("{a32 r1\\fermata }") 
     l3 = Line("{R1 R1}")
-    time_span_text = " 10'' ca"
+    time_span_text = "10'' ca"
     duration = (2,1)
 
 class Intro1(AmetricStart, Intro):
