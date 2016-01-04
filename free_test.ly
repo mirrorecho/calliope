@@ -278,7 +278,7 @@ afterFree = {
 }
 
 afterFreeContinue = {
-      r2. %^"repeat 2 or  3 times"
+      r4 %^"repeat 2 or  3 times"
       \unHideNotes
       \grace {
         \once \override Rest  #'stencil = #ly:text-interface::print
@@ -287,7 +287,7 @@ afterFreeContinue = {
         r16 
       }
       \hideNotes
-      r4
+      r2.
 }
 
 endFree = {
