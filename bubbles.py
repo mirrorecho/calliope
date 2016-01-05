@@ -1,7 +1,7 @@
 from copy import copy, deepcopy
 from shutil import copyfile
 from abjad import *
-from _settings import PROJECT_PATH
+from _settings import PROJECT_PATH, ROOT_PATH
 from material import GLOBAL_MATERIAL
 from tools import pitch 
 
@@ -197,6 +197,7 @@ class Bubble(BubbleBase):
         """
         a quick way to get a full-fledged ajad score object for this bubble type...
         """
+        # TO DO... refactor to use BubbleScore
         score = Score()
         # TO DO... ADD SCORE TITLE (THE NAME OF THE CLASS)
         # RE-ADD IF BEFORE_MUSIC NEEDED...`
@@ -210,7 +211,7 @@ class Bubble(BubbleBase):
             staff.append( bubble.blow() )
             instrument = instrumenttools.Instrument(instrument_name=name, short_instrument_name=name)
             attach(instrument, staff)
-            score.append(staff)            
+            score.append(staff)
 
         if self.is_simultaneous:
             # ???????? KISS ????
@@ -225,7 +226,17 @@ class Bubble(BubbleBase):
         except:
             print("WARNING: error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
 
-        return score
+        # TO DO... refactor to use BubbleScore
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(score)
+        # include_command = indicatortools.LilyPondCommand("', 'before')
+        # print(include_command)
+        # attach(include_command, lilypond_file.paper_block)
+
+        lilypond_file.items.insert(3, '\\include "' + ROOT_PATH + '/calliope/ly_includes/ametric.ly"')
+
+        print(format(lilypond_file))
+
+        return lilypond_file
 
 
     def show(self, **kwargs):
@@ -280,6 +291,17 @@ class Line(Bubble):
             else:
                 print("WARNING: tried to attach to " + str(type(self)) + " but it contains no music (leaves)." ) 
         super().after_music(music, **kwargs)
+
+    def free_box(self, arrows=0, **kwargs):
+        return_bubble = copy(self)
+        return_bubble.commands = [c for c in self.commands]
+        return_bubble.commands.append( ("freeOn", "before") )
+        # return_bubble.commands.append( ("leftBracket", "before") )
+        if not arrows:
+            return_bubble.commands.append( ("freeAfter", "after") )
+        return_bubble.commands.append( ("freeOff", "after") )
+        return return_bubble
+
 
 class Ly(Line):
     ly_material = None # the name of material to load
@@ -374,6 +396,7 @@ class GridStart(Bubble):
             attach(accidental_style_command, leaves[0])
         return music
 
+# MAYBE TO DO... should this be specified at the line level?
 class Ametric(Bubble):
     show_x_meter = False
     show_time_span = False
@@ -399,23 +422,18 @@ class Ametric(Bubble):
 
         leaves = music.select_leaves(allow_discontiguous_leaves=True)
         if cls.show_x_meter:
-            x_meter_command = indicatortools.LilyPondCommand( ("""once \override 
-                    Staff.TimeSignature #'stencil = #(lambda (grob)
-                    (parenthesize-stencil (grob-interpret-markup grob 
-                    (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
-                    ) 0.1 0.4 0.4 0.1 ))
-                    """), "before" )
-            attach(x_meter_command, leaves[0])
+            x_meter_command = indicatortools.LilyPondCommand( ("timeX"), "before" )
+            attach(x_meter_command, music)
         else:
             # HIDE THE TIME SIGNATURE:
             hide_time_command = indicatortools.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
-            attach(hide_time_command, leaves[0])
+            attach(hide_time_command, music)
         if cls.duration:
             time_command =  indicatortools.LilyPondCommand("time " + str(cls.duration[0]) + "/" + str(cls.duration[1]), "before")
-            attach(time_command, leaves[0])
+            attach(time_command, music)
         if cls.start_bar_line:
             bar_command =  indicatortools.LilyPondCommand('bar "' + cls.start_bar_line + '"', 'before')
-            attach(bar_command, leaves[0])
+            attach(bar_command, music)
         else:
             # MAYBE TO DO... auto calculate bar-length based on longest bubble
             pass
@@ -424,10 +442,10 @@ class Ametric(Bubble):
             # ALSO MAYBE TO DO... better time_span_text using a measure-length spanner
             my_text = ", ".join([t for t in [cls.start_text, " " + cls.time_span_text] if t])
             tempo_text = indicatortools.Tempo(textual_indication=my_text)
-            attach(tempo_text, leaves[0])
+            attach(tempo_text, music)
         if cls.accidental_style:
             accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + cls.accidental_style, "before")
-            attach(accidental_style_command, leaves[0])
+            attach(accidental_style_command, music)
         return music
 
 class AmetricStart(Ametric):

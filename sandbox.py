@@ -12,8 +12,8 @@
 # - - fix sequence weirdness
 
 # a few tools to help with routine tasks
+# - - integrate/refactor score auto-generation from random bubbles with BubbleScore
 # - - templates for scores and parts
-
 
 # beuatifully printed music (with some fancy formatting)
 # - - fonts
@@ -59,9 +59,9 @@ from calliope.tools import pitch, rhythm
 # print(music)
 
 class Test(Bubble):
-    l1 = Placeholder()
+    # l1 = Placeholder()
     l2 = Placeholder()
-    l3 = Placeholder()
+    # l3 = Placeholder()
 
 class TestFirst(GridStart):
     l1 = Line("{ bf4 bf' c' bf }")
@@ -75,12 +75,14 @@ class TestContinue(TestFirst):
 
 class Intro(Ametric):
     l1 = Tr( Ly("test.one")*3, 1)  + Ly("test.one", pitches=(0,1,2,3))
-    l2 = Ly("test.three") + Line("{a32 r1\\fermata }") 
+    l2 = (Ly("test.three") + Line("{a32 r1\\fermata }")).free_box()
     l3 = Line("{R1 R1}")
     time_span_text = "10'' ca"
     duration = (2,1)
+    start_bar_line=None
 
 class Intro1(AmetricStart, Intro):
+    start_bar_line=None
     pass
 
 class Intro2(Intro):
@@ -93,7 +95,7 @@ class Intro(Test, GridSequence):
     grid_sequence = (TestFirst, Intro1, Intro2, TestContinue)
 
 music = Intro()
-print(music)
+# print(format(music.score()))
 music.show()
 
 
