@@ -59,9 +59,9 @@ from calliope.tools import pitch, rhythm
 # print(music)
 
 class Test(Bubble):
-    # l1 = Placeholder()
+    l1 = Placeholder()
     l2 = Placeholder()
-    # l3 = Placeholder()
+    l3 = Placeholder()
 
 class TestFirst(GridStart):
     l1 = Line("{ bf4 bf' c' bf }")

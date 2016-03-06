@@ -125,7 +125,7 @@ the first number of the pair is the width, the second the spacing
 #(define-markup-command (left-bracket layout props) ()
 "Draw left hand bracket"
   (let* ((th .09);;todo: take from GROB
-          (width (* 0 th)) ;; todo: take from GROB
+          (width (* 4 th)) ;; todo: take from GROB
           (ext '(-1.4 . 1.4))) ;; todo: take line-count into account
   (ly:bracket Y ext th width)))
 
@@ -142,7 +142,7 @@ leftBracket = {
 #(define-markup-command (right-bracket layout props) ()
 "Draw right hand bracket"
   (let* ((th .09);;todo: take from GROB
-          (width (* 0 th)) ;; todo: take from GROB
+          (width (* 2 th)) ;; todo: take from GROB
           (ext '(-1.4 . 1.4))) ;; todo: take line-count into account
         (ly:bracket Y ext th (- width))))
 
@@ -158,20 +158,39 @@ rightBracket = {
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 freeOn = {
-    \hideNotes
-    \grace {
+
+\newSpacingSection
+    
+\override Score.SpacingSpanner.spacing-increment = #20
+\newSpacingSection
         \stopStaff
-        \override Staff.StaffSymbol #'line-positions = #'( -4 -2 0 2 4 )
-        \dashedStaffSymbolLines #'( #t #t #t #t #t )
+      % \override Staff.StaffSymbol #'line-positions = #'( -4 -2 -0.1 0 0.1 2 4 )
+      % \dashedStaffSymbolLines #'( #t #t #f #f #f #t #t )
+      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 0 2 4 )
+      \dashedStaffSymbolLines #'( #t #t #t #t #t )
         \startStaff
-        r8
+    \grace {
+    \hideNotes
+        % r4
+
+
+
+    \unHideNotes  
+    }
         \stopStaff
         \dashedStaffSymbolLines #'( #f #f #f #f #f )
         \override Staff.StaffSymbol #'line-positions = #'()
         \startStaff
-    }
-    \unHideNotes  
-    % \leftBracket
+        \leftBracket
+
+\revert Score.SpacingSpanner.spacing-increment
+
+  % \draw-dashed-line #'(5.1 . 2.3)
+  % \override #'(on . 0.3)
+  % \override #'(off . 0.5)
+  % \draw-dashed-line #'(5.1 . 2.3)
+
+
 }
 
 freeAfter = {

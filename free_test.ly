@@ -239,8 +239,8 @@ beforeFree = {
       \hideNotes
       \grace {
         \stopStaff
-      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 0 2 4 )
-      \dashedStaffSymbolLines #'( #t #t #t #t #t )
+      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 -0.1 0 0.1 2 4 )
+      \dashedStaffSymbolLines #'( #t #t #f #f #f #t #t )
         \startStaff
         s8 s8
         \stopStaff
