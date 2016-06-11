@@ -231,10 +231,9 @@ class Bubble(BubbleBase):
         # include_command = indicatortools.LilyPondCommand("', 'before')
         # print(include_command)
         # attach(include_command, lilypond_file.paper_block)
+        # lilypond_file.items.insert(3, '\\include "' + ROOT_PATH + '/calliope/ly_includes/ametric.ly"')
 
-        lilypond_file.items.insert(3, '\\include "' + ROOT_PATH + '/calliope/ly_includes/ametric.ly"')
-
-        print(format(lilypond_file))
+        # print(format(lilypond_file))
 
         return lilypond_file
 
