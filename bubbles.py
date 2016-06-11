@@ -269,8 +269,8 @@ class Line(Bubble):
 
     def music(self, **kwargs):
         if self.music_string:
-            my_music = parse( self.music_string )
-            self.container_type = type(my_music) # TO DO: necessary?
+            my_music = self.container_type( self.music_string )
+            # self.container_type = type(my_music) # TO DO: necessary?
             self.is_simultaneous = my_music.is_simultaneous # TO DO: necessary?
             return my_music
         else:

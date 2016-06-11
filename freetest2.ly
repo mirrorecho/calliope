@@ -115,7 +115,7 @@
                 \timeX
                 \time 2/1
                 \accidentalStyle neo-modern-cautionary
-                % \freeOn
+                \freeOn
                 {
                     {
                         a8 (
@@ -129,8 +129,8 @@
                     }
                     s32 * 15
                 }
-                % \freeAfter
-                % \freeOff
+                \freeAfter
+                \freeOff
                 \once \override Staff.TimeSignature #'stencil = ##f 
                 \time 2/1
                 \freeOn
