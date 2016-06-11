@@ -124,9 +124,9 @@ the first number of the pair is the width, the second the spacing
 % The number next to "th" in (th 0.2) controls thickness of the brackets. 
 #(define-markup-command (left-bracket layout props) ()
 "Draw left hand bracket"
-  (let* ((th .09);;todo: take from GROB
+  (let* ((th .08);;todo: take from GROB
           (width (* 4 th)) ;; todo: take from GROB
-          (ext '(-1.4 . 1.4))) ;; todo: take line-count into account
+          (ext '(-4.9 . 4))) ;; todo: take line-count into account
   (ly:bracket Y ext th width)))
 
 leftBracket = {
@@ -158,38 +158,38 @@ rightBracket = {
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 freeOn = {
-
-\newSpacingSection
-    
-\override Score.SpacingSpanner.spacing-increment = #20
-\newSpacingSection
+    \hideNotes
         \stopStaff
       % \override Staff.StaffSymbol #'line-positions = #'( -4 -2 -0.1 0 0.1 2 4 )
       % \dashedStaffSymbolLines #'( #t #t #f #f #f #t #t )
-      \override Staff.StaffSymbol #'line-positions = #'( -4 -2 0 2 4 )
-      \dashedStaffSymbolLines #'( #t #t #t #t #t )
+      \override Staff.StaffSymbol #'line-positions = #'( -4 4 )
+      \dashedStaffSymbolLines #'( #t #t )
         \startStaff
     \grace {
-    \hideNotes
-        % r4
+    
+    % \override Score.SpacingSpanner.spacing-increment = #20
+
+
+        % b1
+
+        % \leftBracket
+
+        % \revert Score.SpacingSpanner.spacing-increment
 
 
 
-    \unHideNotes  
     }
+
+\draw-line #'(5.1 . 2.3)
+  \override #'(on . 0.3)
+  \override #'(off . 0.5)
+  \draw-dashed-line #'(5.1 . 2.3)
+
         \stopStaff
         \dashedStaffSymbolLines #'( #f #f #f #f #f )
         \override Staff.StaffSymbol #'line-positions = #'()
         \startStaff
-        \leftBracket
-
-\revert Score.SpacingSpanner.spacing-increment
-
-  % \draw-dashed-line #'(5.1 . 2.3)
-  % \override #'(on . 0.3)
-  % \override #'(off . 0.5)
-  % \draw-dashed-line #'(5.1 . 2.3)
-
+    \unHideNotes  
 
 }
 
