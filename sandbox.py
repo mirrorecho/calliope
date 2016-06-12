@@ -5,6 +5,11 @@
 # ametrical music and systems
 # - - boxes and arrows
 
+# implement an Arrangement bubble class (appropriate name?)... 
+# it can be viewed like other bubbles, but no musical operation should be possible on 
+# it as a Container as a whole
+
+
 # cleanup / integration
 # - - integrate previous "work"
 # - - integrate previous "cycles"

@@ -160,24 +160,21 @@ class Bubble(BubbleBase):
         bubbles = [b for b in dir(seq_bubble) if isinstance(getattr(seq_bubble,b), self.bubble_types)]
         return bubbles
 
-    @classmethod
-    def blow_bubble(cls, bubble_name):
+    def blow_bubble(self, bubble_name):
         """
         execute for each bubble attribute to add that bubble's music to the main bubble's music
         """
-        bubble = getattr(cls, bubble_name)
-        if isinstance(bubble, Placeholder) and hasattr(cls, "bubble_default"):
-            bubble = cls.bubble_default   
+        bubble = getattr(self, bubble_name)
+        if isinstance(bubble, Placeholder) and hasattr(self, "bubble_default"):
+            bubble = self.bubble_default   
         # print(type(bubble.blow()))   
-        return cls.bubble_imprint( bubble.blow() )
+        return self.bubble_imprint( bubble.blow() )
 
-    @classmethod
-    def bubble_imprint(cls, music):
+    def bubble_imprint(self, music):
         return music
 
     # TO DO: necesssary?
-    # @classmethod
-    # def bubble_default(cls):
+    # def bubble_default(self):
     #     return Bubble()
 
     def music(self, **kwargs):
@@ -185,7 +182,7 @@ class Bubble(BubbleBase):
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
             if hasattr(self, bubble_name):
-               append_music = type(self).blow_bubble(bubble_name)
+               append_music = self.blow_bubble(bubble_name)
                # print("YOYOYOYO")
                # print(append_music)
                # print(type(append_music))
@@ -206,20 +203,19 @@ class Bubble(BubbleBase):
         # except:
         #     print("WARNING: error trying to run 'before_music' on the auto-generated score. Some music may be missing...")
 
-        def append_staff(name, bubble):
+        def append_staff(name, bubble=None, bubble_name=None):
             staff = Staff(name=name)
-            staff.append( bubble.blow() )
+            music = bubble.blow() if bubble is not None else self.blow_bubble(bubble_name)
+            staff.append( music )
             instrument = instrumenttools.Instrument(instrument_name=name, short_instrument_name=name)
             attach(instrument, staff)
             score.append(staff)
 
         if self.is_simultaneous:
-            # ???????? KISS ????
-            for i, b in enumerate(self.sequence()):
-                bubble = Eval(type(self.bubble_wrap()), b)
-                append_staff(b, bubble)
+            for b in self.sequence():
+                append_staff(b, bubble=None, bubble_name=b)
         else:
-            append_staff(self.__class__.name, self)
+            append_staff(self.__class__.name, bubble=self)
 
         try:
             self.after_music(score, **kwargs)
@@ -243,10 +239,10 @@ class Bubble(BubbleBase):
         self.show_pdf(score)
 
 # TO DO... this shouldn't be necessary...?
-class Eval(Bubble):
-    def __init__(self, cls, bubble_name):
-        self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
-        super().__init__( music = lambda : cls.blow_bubble(bubble_name) )
+# class Eval(Bubble):
+#     def __init__(self, cls, bubble_name):
+#         self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
+#         super().__init__( music = lambda : cls.blow_bubble(bubble_name) )
 
 class Line(Bubble):
     is_simultaneous = False
@@ -332,8 +328,7 @@ class MultiLine(Line):
     is_simultaneous = True
     instruction = None
 
-    @classmethod
-    def bubble_imprint(cls, music):
+    def bubble_imprint(self, music):
         my_music = Container()
         my_music.append(music)
         return my_music
@@ -367,31 +362,30 @@ class GridStart(Bubble):
     start_bar_line = "||"
     accidental_style = "modern-cautionary"
 
-    @classmethod
-    def blow_bubble(cls, bubble_name):
+    def blow_bubble(self, bubble_name):
         """
         overriding blow_bubble to add free stuff to each sub-bubble
         """
         music = super().blow_bubble(bubble_name)
         leaves = music.select_leaves(allow_discontiguous_leaves=True)
-        if cls.time_signature:
+        if self.time_signature:
             # TO DO... is the numeric commad necessary... maybe just include it at the score level?
             time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
             attach(time_command_numeric, leaves[0])
-            time_command =  indicatortools.LilyPondCommand("time " + str(cls.time_signature[0]) + "/" + str(cls.time_signature[1]), "before")
+            time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
             attach(time_command, leaves[0])
-        if cls.start_bar_line:
-            bar_command =  indicatortools.LilyPondCommand('bar "' + cls.start_bar_line + '"', 'before')
+        if self.start_bar_line:
+            bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
             attach(bar_command, leaves[0])
-        if cls.tempo_text or cls.tempo_units_per_minute:
-            if cls.tempo_units_per_minute:
-                tempo_reference_duration = Duration(cls.tempo_duration)
+        if self.tempo_text or self.tempo_units_per_minute:
+            if self.tempo_units_per_minute:
+                tempo_reference_duration = Duration(self.tempo_duration)
             else:
                 tempo_reference_duration = None
-            tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=cls.tempo_units_per_minute, textual_indication=cls.tempo_text)
+            tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
             attach(tempo, leaves[0])
-        if cls.accidental_style:
-            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + cls.accidental_style, "before")
+        if self.accidental_style:
+            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
             attach(accidental_style_command, leaves[0])
         return music
 
@@ -406,44 +400,43 @@ class Ametric(Bubble):
     end_bar_line = None
     accidental_style = None
 
-    @classmethod
-    def blow_bubble(cls, bubble_name):
+    def blow_bubble(self, bubble_name):
         """
         overriding blow_bubble to add free stuff to each sub-bubble
         """
         music = super().blow_bubble(bubble_name)
         
         # this will auto-increase the length of the music (in skips) to the length of the Ametric duration
-        add_skips_duration = Duration(cls.duration) - inspect_(music).get_duration()
+        add_skips_duration = Duration(self.duration) - inspect_(music).get_duration()
         if add_skips_duration > 0:
             skips = scoretools.make_skips( Duration(1, add_skips_duration.denominator), ((add_skips_duration.numerator,add_skips_duration.denominator),) )
             music.append(skips)
 
         leaves = music.select_leaves(allow_discontiguous_leaves=True)
-        if cls.show_x_meter:
+        if self.show_x_meter:
             x_meter_command = indicatortools.LilyPondCommand( ("timeX"), "before" )
             attach(x_meter_command, music)
         else:
             # HIDE THE TIME SIGNATURE:
             hide_time_command = indicatortools.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
             attach(hide_time_command, music)
-        if cls.duration:
-            time_command =  indicatortools.LilyPondCommand("time " + str(cls.duration[0]) + "/" + str(cls.duration[1]), "before")
+        if self.duration:
+            time_command =  indicatortools.LilyPondCommand("time " + str(self.duration[0]) + "/" + str(self.duration[1]), "before")
             attach(time_command, music)
-        if cls.start_bar_line:
-            bar_command =  indicatortools.LilyPondCommand('bar "' + cls.start_bar_line + '"', 'before')
+        if self.start_bar_line:
+            bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
             attach(bar_command, music)
         else:
             # MAYBE TO DO... auto calculate bar-length based on longest bubble
             pass
-        if cls.start_text or cls.time_span_text:
+        if self.start_text or self.time_span_text:
             # TO DO... this could conflict with tempo mark / text
             # ALSO MAYBE TO DO... better time_span_text using a measure-length spanner
-            my_text = ", ".join([t for t in [cls.start_text, " " + cls.time_span_text] if t])
+            my_text = ", ".join([t for t in [self.start_text, " " + self.time_span_text] if t])
             tempo_text = indicatortools.Tempo(textual_indication=my_text)
             attach(tempo_text, music)
-        if cls.accidental_style:
-            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + cls.accidental_style, "before")
+        if self.accidental_style:
+            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
             attach(accidental_style_command, music)
         return music
 
@@ -456,19 +449,18 @@ class AmetricStart(Ametric):
 class GridSequence(Bubble):
     grid_sequence = ()
 
-    @classmethod
-    def blow_bubble(cls, bubble_name):
+    def blow_bubble(self, bubble_name):
         """
         execute for each bubble attribute to add that bubble's music to the main bubble's music.
         NOTE that classes that inherit from GridSequence should NOT override blow_bubble
         """
-        bubble = getattr(cls, bubble_name)
+        bubble = getattr(self, bubble_name)
         if isinstance(bubble, Placeholder):
             bubble = Sequence(
                 bubble_name=bubble_name, 
                 container_type = bubble.container_type,
                 context_name = bubble.context_name,
-                grid_sequence=cls.grid_sequence)
+                grid_sequence=self.grid_sequence)
         return bubble.blow()
 
 # QUESTION... Ok to inherit from placeholder here?
@@ -481,8 +473,8 @@ class Sequence(Placeholder):
         my_music = self.music_container()
         # has_lyrics = False
         # my_lyrics = ""
-        for bubble_type in self.grid_sequence:
-            my_music.append( bubble_type.blow_bubble(self.bubble_name) )
+        for bubble in self.grid_sequence:
+            my_music.append( bubble.blow_bubble(self.bubble_name) )
             # TO DO... any way to encapsulate this better so that it's not part of EVERY sequence?
             # PLUS, is it odd to do this in the music method?
         #     if hasattr( getattr(bubble_type, self.bubble_name), "lyrics"):
@@ -644,9 +636,9 @@ class BubbleGridMatch(Bubble):
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
             if hasattr(self, bubble_name):
-                append_music = type(self).blow_bubble(bubble_name)
+                append_music = self.blow_bubble(bubble_name)
                 if hasattr(self.grid_bubble, bubble_name):
-                    append_music_inner = type(self.grid_bubble).blow_bubble(bubble_name)
+                    append_music_inner = self.grid_bubble.blow_bubble(bubble_name)
                     append_music.append(append_music_inner)
                 my_music.append(append_music)
         return my_music
