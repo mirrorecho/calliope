@@ -166,8 +166,8 @@ class Bubble(BubbleBase):
         execute for each bubble attribute to add that bubble's music to the main bubble's music
         """
         bubble = getattr(cls, bubble_name)
-        if isinstance(bubble, Placeholder):
-            bubble = cls.bubble_default()     
+        if isinstance(bubble, Placeholder) and hasattr(cls, "bubble_default"):
+            bubble = cls.bubble_default   
         # print(type(bubble.blow()))   
         return cls.bubble_imprint( bubble.blow() )
 
@@ -176,9 +176,9 @@ class Bubble(BubbleBase):
         return music
 
     # TO DO: necesssary?
-    @classmethod
-    def bubble_default(cls):
-        return Bubble()
+    # @classmethod
+    # def bubble_default(cls):
+    #     return Bubble()
 
     def music(self, **kwargs):
         my_music = self.music_container()
@@ -305,8 +305,8 @@ class Line(Bubble):
 class Ly(Line):
     ly_material = None # the name of material to load
 
-    def __init__(self, ly_material, **kwargs):
-        self.ly_material = ly_material
+    def __init__(self, ly_material=None, **kwargs):
+        self.ly_material = ly_material or self.ly_material
         super().__init__(music_string=self.get_ly_material(), **kwargs)
 
     def get_ly_material(self):
@@ -681,9 +681,8 @@ class BubbleGridStaff(BubbleGridMatch, BubbleStaff):
     clef=None
 
 class InstrumentStaffGroup(BubbleStaffGroup):
-
     def after_music(self, music, **kwargs):
-        super().after_music(self, music, **kwargs)
+        super().after_music(music, **kwargs)
         set_(music).systemStartDelimiter = "SystemStartSquare"
 
 class BubbleScore(BubbleGridMatch):
@@ -691,69 +690,34 @@ class BubbleScore(BubbleGridMatch):
     container_type=Score
     hide_empty = False
     bubble_types=(BubbleStaff, BubbleStaffGroup)
-
-    def show(self):
-        self.show_pdf()
-
-
-class BubbleScoreLetter(BubbleScore):
-
-    def after_music(self, music, **kwargs):
-        super().after_music(music, **kwargs)
-        music.add_final_bar_line()
-        # spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
-        # override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
-        # override(self).staff_grouper.staff_staff_spacing = spacing_vector
-        # override(self).staff_symbol.thickness = 0.5
-        # set_(self).mark_formatter = schemetools.Scheme("format-mark-box-numbers")
+    global_staff_size = None
+    staff_context_block = None
+    rhythmic_staff_context_block = None
+    title = ""
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music)
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, global_staff_size=self.global_staff_size)
 
         # configure the lilypond file...
         # lilypond_file.global_staff_size = 12
 
         if self.hide_empty:
-            staff_context_block = lilypondfiletools.ContextBlock(
+            self.staff_context_block = lilypondfiletools.ContextBlock(
                 source_context_name="Staff \\RemoveEmptyStaves",
                 )
-            rhythmic_staff_context_block = lilypondfiletools.ContextBlock(
+            self.rhythmic_staff_context_block = lilypondfiletools.ContextBlock(
                 source_context_name="RhythmicStaff \\RemoveEmptyStaves",
                 )
         else:
-            staff_context_block = lilypondfiletools.ContextBlock()
-            rhythmic_staff_context_block = lilypondfiletools.ContextBlock()
+            self.staff_context_block = lilypondfiletools.ContextBlock()
+            self.rhythmic_staff_context_block = lilypondfiletools.ContextBlock()
 
         # override(staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(staff_context_block)
+        lilypond_file.layout_block.items.append(self.staff_context_block)
 
         # override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(rhythmic_staff_context_block)
-
-        # slash_separator = indicatortools.LilyPondCommand('slashSeparator')
-        # lilypond_file.paper_block.system_separator_markup = slash_separator
-
-        # bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        # lilypond_file.paper_block.bottom_margin = bottom_margin
-
-        # top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        # lilypond_file.paper_block.top_margin = top_margin
-
-        # left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
-        # lilypond_file.paper_block.left_margin = left_margin
-
-        # right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        # lilypond_file.paper_block.right_margin = right_margin
-
-        # paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
-        # lilypond_file.paper_block.paper_width = paper_width
-
-        # paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
-        # lilypond_file.paper_block.paper_height = paper_height
-
-        # system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
-        # lilypond_file.paper_block.system_system_spacing = system_system_spacing
+        lilypond_file.layout_block.items.append(self.rhythmic_staff_context_block)
 
         lilypond_file.header_block.composer = markuptools.Markup('Randall West')
 
@@ -763,15 +727,18 @@ class BubbleScoreLetter(BubbleScore):
 
         return lilypond_file
 
-    # TO DO MUST BE BETTER WAY TO HANDLE THIS!!!!
+    def after_music(self, music, **kwargs):
+        super().after_music(music, **kwargs)
+        music.add_final_bar_line()
 
     def show(self):
         music = self.get_lilypond_file()
+        # print(music)
         self.show_pdf(music)
 
-    def make_pdf(self):
-        music = self.get_lilypond_file()
-        super().make_pdf(music)        
+    # def make_pdf(self, music):
+        # music = self.get_lilypond_file()
+        # super().make_pdf(music)        
 
     def save(self):
         music = self.get_lilypond_file()
@@ -784,54 +751,27 @@ class BubbleScoreLetter(BubbleScore):
 
 
 class BubbleFormatLargeScore(BubbleScore):
-    hide_empty = False
-    title = None
+    global_staff_size = 12
 
     def after_music(self, music, **kwargs):
         super().after_music(music, **kwargs)
-        music.add_final_bar_line()
-        spacing_vector = layouttools.make_spacing_vector(0, 0, 8, 0)
+        spacing_vector = schemetools.make_spacing_vector(0, 0, 8, 0)
         override(self).vertical_axis_group.staff_staff_spacing = spacing_vector
         override(self).staff_grouper.staff_staff_spacing = spacing_vector
         override(self).staff_symbol.thickness = 0.5
         set_(self).mark_formatter = schemetools.Scheme("format-mark-box-numbers")
 
-    def show(self):
-        music = self.get_lilypond_file()
-        self.show_pdf(music)
-
-    def save(self):
-        music = self.get_lilypond_file()
-        with open(self.ly_file_path(), "w") as ly_file:
-            ly_file.write(format(music))
-
-    def __str__(self):
-        music = self.get_lilypond_file()
-        return(format(music))
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music)
-
+        lilypond_file = super().get_lilypond_file()
         # configure the lilypond file...
-        lilypond_file.global_staff_size = 12
 
-        if self.hide_empty:
-            staff_context_block = lilypondfiletools.ContextBlock(
-                source_context_name="Staff \\RemoveEmptyStaves",
-                )
-            rhythmic_staff_context_block = lilypondfiletools.ContextBlock(
-                source_context_name="RhythmicStaff \\RemoveEmptyStaves",
-                )
-        else:
-            staff_context_block = lilypondfiletools.ContextBlock()
-            rhythmic_staff_context_block = lilypondfiletools.ContextBlock()
+        override(self.staff_context_block).vertical_axis_group.remove_first = True
+        lilypond_file.layout_block.items.append(self.staff_context_block)
 
-        override(staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(staff_context_block)
-
-        override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(rhythmic_staff_context_block)
+        override(self.rhythmic_staff_context_block).vertical_axis_group.remove_first = True
+        lilypond_file.layout_block.items.append(self.rhythmic_staff_context_block)
 
         slash_separator = indicatortools.LilyPondCommand('slashSeparator')
         lilypond_file.paper_block.system_separator_markup = slash_separator
@@ -854,7 +794,7 @@ class BubbleFormatLargeScore(BubbleScore):
         paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
         lilypond_file.paper_block.paper_height = paper_height
 
-        system_system_spacing = layouttools.make_spacing_vector(0, 0, 20, 0)
+        system_system_spacing = schemetools.make_spacing_vector(0, 0, 20, 0)
         lilypond_file.paper_block.system_system_spacing = system_system_spacing
 
         lilypond_file.header_block.composer = markuptools.Markup('Randall West')
