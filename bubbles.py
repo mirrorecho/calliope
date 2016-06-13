@@ -14,7 +14,7 @@ class BubbleBase(object):
     commands = ()
     sequence = ()
     respell=None # TO DO, best place for this?
-    process_methods = []
+    process_methods = ()
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -34,6 +34,23 @@ class BubbleBase(object):
             setattr(self, name, value)
         self.make_callable("music")
         self.make_callable("sequence")
+        self.setup()
+        self.arrange()
+
+    def setup(self):
+        """
+        hook that's called at end of bubble __init__ method (just before arrange), 
+        for adjusting bubble atributes / actual bubble material, etc.
+        """
+        pass
+
+    def arrange(self):
+        """
+        hook that's called at end of bubble __init__ method, for arranging music
+        (usually dealing with bubble attributes... adding articulations, phrasing, etc.)
+        """
+        pass
+
 
     def latch(self, **kwargs):
         return_bubble = copy(self)
@@ -41,11 +58,11 @@ class BubbleBase(object):
             setattr(return_bubble, name, value)
         return return_bubble
 
-    def process(self, method, *args, **kwargs):
-        return_bubble = copy(self)
-        return_bubble.process_methods = copy(self.process_methods)
-        return_bubble.process_methods.append(lambda music: method(music, *args, **kwargs))
-        return return_bubble
+    # def process(self, method, *args, **kwargs):
+    #     return_bubble = copy(self)
+    #     return_bubble.process_methods = copy(self.process_methods)
+    #     return_bubble.process_methods.append(lambda music: method(music, *args, **kwargs))
+    #     return return_bubble
 
     def music_container(self, **kwargs):
         if self.is_simultaneous is not None:
@@ -138,13 +155,6 @@ class BubbleBase(object):
         music = self.blow()
         return(format(music))
 
-# class BubbleMaterial(Material, BubbleBase):
-
-#    def music(self, **kwargs):
-#         music = parse( self.get() )
-#         self.container_type = type(music)
-#         self.is_simultaneous = music.is_simultaneous
-#         return music
 
 class Placeholder(BubbleBase):
     sequence = ()
@@ -183,9 +193,6 @@ class Bubble(BubbleBase):
             # the bubble attribute specified by the sequence must exist on this bubble object...
             if hasattr(self, bubble_name):
                append_music = self.blow_bubble(bubble_name)
-               # print("YOYOYOYO")
-               # print(append_music)
-               # print(type(append_music))
                my_music.append(append_music)
         return my_music
 
@@ -244,14 +251,28 @@ class Bubble(BubbleBase):
 #         self.is_simultaneous = getattr(cls, bubble_name).is_simultaneous
 #         super().__init__( music = lambda : cls.blow_bubble(bubble_name) )
 
+class LineAttachments:
+    show_indices = False
+    dynamics = ()
+    slurs = ()
+    instructions = ()    
+
 class Line(Bubble):
     is_simultaneous = False
-    instruction = None
-    dynamic = None
     music_string = None
     pitches = None
 
+    # TO DO... keep thinking about this? Best approach? Is "Attachments" the best name? Use this more generally as a "Meta"?
+    class Attachments(LineAttachments):
+        show_indices = False
+        dynamics = ()
+        slurs = ()
+        instructions = ()
+
     def __init__(self, music_string=None, **kwargs):
+        """
+        overriding __init__ simply to be able to use music_string as a positional argument
+        """
         if music_string:
             self.music_string = music_string
         super().__init__(**kwargs)
@@ -274,17 +295,22 @@ class Line(Bubble):
     def after_music(self, music, **kwargs):
         if self.pitches:
             pitch.set_pitches(music, pitches=self.pitches)
-        if self.instruction or self.dynamic:
+        if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
             leaves = music.select_leaves(allow_discontiguous_leaves=True)
-            if len(leaves) > 0:
-                if self.instruction:
-                    markup_object = markuptools.Markup(self.instruction, direction=Up)
-                    attach(markup_object, leaves[0])
-                if self.dynamic:
-                    dynamic_object = indicatortools.Dynamic(self.dynamic)
-                    attach(dynamic_object, leaves[0])
-            else:
-                print("WARNING: tried to attach to " + str(type(self)) + " but it contains no music (leaves)." ) 
+            if self.Attachments.show_indices:
+                for i,leaf in enumerate(leaves):
+                    if self.Attachments.show_indices:
+                        markup_object = markuptools.Markup(str(i), direction=Up)
+                        attach(markup_object, leaf)
+            for d in self.Attachments.dynamics:
+                dynamic_object = indicatortools.Dynamic(d[1])
+                attach(dynamic_object, leaves[d[0]])
+            for i in self.Attachments.instructions:
+                markup_object = markuptools.Markup(i[1], direction=Up)
+                attach(markup_object, leaves[i[0]])
+            for s in self.Attachments.slurs:
+                slur_object=spannertools.Slur()
+                attach(slur_object, leaves[s[0]:s[1]+1])
         super().after_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
@@ -506,14 +532,6 @@ class BubbleSequence(Bubble):
     bubbles = ()
     is_simultaneous = False
 
-    # def __init__(self, bubbles=None, **kwargs):
-    #     if bubbles:
-    #         self.bubbles = bubbles
-    #     if len(self.bubbles) > 0:
-    #         # self.is_simultaneous = self.bubbles[0].is_simultaneous
-    #         # more needed here to copy? TO DO... make copy universal?
-    #         super().__init__(**kwargs)
-
     def music(self, **kwargs):
         my_music = self.music_container()
         for bubble in self.bubbles:
@@ -522,13 +540,6 @@ class BubbleSequence(Bubble):
 
 class LineSequence(BubbleSequence, Line):
     pass
-
-# class BubbleImprint(BubbleWrap):
-#     def after_music(self, music):
-#         pass
-
-#     def imprint_bubble(self, bubble):
-
 
 class BubbleWrap(Bubble):
     """
