@@ -387,6 +387,7 @@ class GridStart(Bubble):
     time_signature = (4,4)
     start_bar_line = "||"
     accidental_style = "modern-cautionary"
+    rehearsal_mark_number = None
 
     def blow_bubble(self, bubble_name):
         """
@@ -403,6 +404,9 @@ class GridStart(Bubble):
         if self.start_bar_line:
             bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
             attach(bar_command, leaves[0])
+        if self.rehearsal_mark_number:
+            mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
+            attach(mark, leaves[0])
         if self.tempo_text or self.tempo_units_per_minute:
             if self.tempo_units_per_minute:
                 tempo_reference_duration = Duration(self.tempo_duration)
