@@ -296,7 +296,7 @@ class Line(Bubble):
         if self.pitches:
             pitch.set_pitches(music, pitches=self.pitches)
         if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
-            leaves = music.select_leaves(allow_discontiguous_leaves=True)
+            leaves = select(music).by_leaf()
             if self.Attachments.show_indices:
                 for i,leaf in enumerate(leaves):
                     if self.Attachments.show_indices:
@@ -394,7 +394,7 @@ class GridStart(Bubble):
         overriding blow_bubble to add free stuff to each sub-bubble
         """
         music = super().blow_bubble(bubble_name)
-        leaves = music.select_leaves(allow_discontiguous_leaves=True)
+        leaves = select(music).by_leaf()
         if self.time_signature:
             # TO DO... is the numeric commad necessary... maybe just include it at the score level?
             time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
@@ -442,7 +442,7 @@ class Ametric(Bubble):
             skips = scoretools.make_skips( Duration(1, add_skips_duration.denominator), ((add_skips_duration.numerator,add_skips_duration.denominator),) )
             music.append(skips)
 
-        leaves = music.select_leaves(allow_discontiguous_leaves=True)
+        leaves = select(music).by_leaf()
         if self.show_x_meter:
             x_meter_command = indicatortools.LilyPondCommand( ("timeX"), "before" )
             attach(x_meter_command, music)
@@ -663,7 +663,7 @@ class BubbleStaffGroup(BubbleGridMatch):
     container_type = StaffGroup
     bubble_types=(BubbleStaff, BubbleGridMatch)
     instrument = None
-
+    
     def after_music(self, music, **kwargs):
         if self.instrument:
             attach(self.instrument, music)
