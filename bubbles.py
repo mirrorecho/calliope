@@ -261,6 +261,7 @@ class Line(Bubble):
     is_simultaneous = False
     music_string = None
     pitches = None
+    clef = None
 
     # TO DO... keep thinking about this? Best approach? Is "Attachments" the best name? Use this more generally as a "Meta"?
     class Attachments(LineAttachments):
@@ -295,6 +296,10 @@ class Line(Bubble):
     def after_music(self, music, **kwargs):
         if self.pitches:
             pitch.set_pitches(music, pitches=self.pitches)
+        # WHY DOESN'T THIS WORK?
+        # if self.clef:
+        #     clef_obj = Clef(self.clef)
+        #     attach(clef_obj, music)
         if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
             leaves = select(music).by_leaf()
             if self.Attachments.show_indices:
