@@ -137,6 +137,18 @@ class BubbleBase(object):
         # if return_timing:
         #     return abjad_formatting_time, lilypond_rendering_time
 
+    # def __illustrate__(self):
+    #     r'''Illustrates component.
+
+    #     Returns LilyPond file.
+    #     '''
+    #     from abjad.tools import lilypondfiletools
+    #     music = music or self.blow()
+    #     assert '__illustrate__' in dir(music)
+    #     lilypond_file = lilypondfiletools.make_basic_lilypond_file(music)
+    #     lilypond_file.header_block.tagline = False
+    #     return lilypond_file
+
     def show_pdf(self, music=None):
         """
         calls make_pdf and then shows the pdf: similar to abjad's builtin show() method... 
