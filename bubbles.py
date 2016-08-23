@@ -1,9 +1,31 @@
+import os,sys,inspect
 from copy import copy, deepcopy
 from shutil import copyfile
-from abjad import *
+from abjad import * # get rid of this eventually (use import below instead)
+import abjad
 from _settings import PROJECT_PATH, ROOT_PATH
 from material import GLOBAL_MATERIAL
 from tools import pitch 
+
+def ancestors_path_insert(levels=2):
+    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parentdir = os.path.dirname(currentdir)
+    sys.path.insert(0,parentdir) 
+    grandparentdir = os.path.dirname(parentdir)
+    sys.path.insert(0,grandparentdir) 
+
+def illustrate_me(module_path, illustratable):
+    import __main__ as main
+    if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
+        module_name = os.path.split(module_path)[1].split(".")[0]
+        pdf_filename = '%s_illustration.pdf' % module_name
+        illustration_path = os.path.join(
+            os.path.dirname(module_path),
+            pdf_filename,
+            )
+        abjad.persist( illustratable ).as_pdf(illustration_path)
+        abjad.systemtools.IOManager.open_file(illustration_path)
+
 
 class BubbleBase(object):
     name=None
@@ -775,7 +797,7 @@ class BubbleScore(BubbleGridMatch):
 
 
 class BubbleFormatLargeScore(BubbleScore):
-    global_staff_size = 12
+    global_staff_size = 16
 
     def after_music(self, music, **kwargs):
         super().after_music(music, **kwargs)
