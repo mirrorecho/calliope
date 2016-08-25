@@ -1,6 +1,6 @@
 from abjad import *
 
-from _settings import PROJECT_PATH
+from calliope._settings import PROJECT_PATH
 
 import json
 from copy import deepcopy
