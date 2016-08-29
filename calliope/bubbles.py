@@ -3,9 +3,11 @@ from copy import copy, deepcopy
 from shutil import copyfile
 from abjad import * # get rid of this eventually (use import below instead)
 import abjad
-from calliope._settings import PROJECT_PATH, ROOT_PATH # TO DO... GET RID OF THESE SETTINGS... SHOULD NOT BE NEEDED
+# from calliope._settings import PROJECT_PATH, ROOT_PATH # TO DO... GET RID OF THESE SETTINGS... SHOULD NOT BE NEEDED
 from calliope.material import GLOBAL_MATERIAL
 from calliope.tools import pitch 
+
+PROJECT_PATH = "."
 
 def illustrate_me(module_path, illustrate_callable, subfolder=""):
     import __main__ as main
