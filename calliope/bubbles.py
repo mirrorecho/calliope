@@ -327,9 +327,9 @@ class Line(Bubble):
         if self.pitches:
             pitch.set_pitches(music, pitches=self.pitches)
         # WHY DOESN'T THIS WORK?
-        # if self.clef:
-        #     clef_obj = Clef(self.clef)
-        #     attach(clef_obj, music)
+        if self.clef:
+            clef_obj = Clef(self.clef)
+            attach(clef_obj, music)
         if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
             leaves = select(music).by_leaf()
             if self.Attachments.show_indices:
