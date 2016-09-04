@@ -285,6 +285,7 @@ class LineAttachments:
     show_indices = False
     dynamics = ()
     slurs = ()
+    endos = ()
     instructions = ()    
 
 class Line(Bubble):
@@ -298,6 +299,7 @@ class Line(Bubble):
         show_indices = False
         dynamics = ()
         slurs = ()
+        endos = ()
         instructions = ()
 
     def __init__(self, music_string=None, **kwargs):
@@ -346,6 +348,12 @@ class Line(Bubble):
             for s in self.Attachments.slurs:
                 slur_object=spannertools.Slur()
                 attach(slur_object, leaves[s[0]:s[1]+1])
+            for e in self.Attachments.endos:
+                if e[1] == "<":
+                    endo_cobject = abjad.Crescendo()
+                else:
+                    endo_cobject = abjad.Decrescendo()
+                attach(endo_cobject, leaves[e[0][0]:e[0][1]+1])
         super().after_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
