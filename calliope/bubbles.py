@@ -780,6 +780,7 @@ class BubbleScore(BubbleGridMatch):
     def after_music(self, music, **kwargs):
         super().after_music(music, **kwargs)
         music.add_final_bar_line()
+        print("Finished creating abjad music container object for the score!")
 
     def show(self):
         music = self.get_lilypond_file()
