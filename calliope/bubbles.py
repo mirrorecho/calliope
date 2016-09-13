@@ -55,14 +55,14 @@ class BubbleBase(object):
         self.setup()
         self.arrange()
 
-    def setup(self):
+    def setup(self, **kwargs):
         """
         hook that's called at end of bubble __init__ method (just before arrange), 
         for adjusting bubble atributes / actual bubble material, etc.
         """
         pass
 
-    def arrange(self):
+    def arrange(self, **kwargs):
         """
         hook that's called at end of bubble __init__ method, for arranging music
         (usually dealing with bubble attributes... adding articulations, phrasing, etc.)
