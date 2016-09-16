@@ -181,6 +181,18 @@ class BubbleBase(object):
         with open(self.ly_file_path(), "w") as ly_file:
             ly_file.write(format(music))
 
+    def warn(self, msg, data=None, **kwargs):
+        print("WARNING - %s: %s" % (self.__class__.__name__, msg)  )
+        print(data)
+        if data:
+            print(str(data))
+        print("------------------------------")
+
+    def verify(self, condition, msg=None, data=None, **kwargs):
+        if not condition:
+            self.warn(msg or "(no message)", data)
+        return condition
+
     def __str__(self):
         music = self.blow()
         return(format(music))
