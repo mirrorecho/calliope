@@ -183,9 +183,14 @@ class BubbleBase(object):
 
     def warn(self, msg, data=None, **kwargs):
         print("WARNING - %s: %s" % (self.__class__.__name__, msg)  )
-        print(data)
-        if data:
-            print(str(data))
+        if data is not None:
+            print(data)
+        print("------------------------------")
+
+    def info(self, msg, data=None, **kwargs):
+        print("INFO - %s: %s" % (self.__class__.__name__, msg)  )
+        if data is not None:
+            print(data)
         print("------------------------------")
 
     def verify(self, condition, msg=None, data=None, **kwargs):
