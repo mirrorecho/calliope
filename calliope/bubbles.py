@@ -90,7 +90,7 @@ class BubbleBase(object):
         return self.container_type(name=self.name, **kwargs)
 
     def music(self, **kwargs):
-        print("WARNING... EMPTY MUSIC FUNCTION CALLED ON BUBBLE BASE")
+        self.warn("empty music method called on bubble base... music method needs to be overriden somewhere")
         return self.music_container()
 
     # clever... need to test this carefully!
@@ -274,7 +274,7 @@ class Bubble(BubbleBase):
         try:
             self.after_music(score, **kwargs)
         except:
-            print("WARNING: error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
+            self.warn("error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
 
         # TO DO... refactor to use BubbleScore
         lilypond_file = lilypondfiletools.make_basic_lilypond_file(score)
@@ -453,6 +453,8 @@ class GridStart(Bubble):
         """
         overriding blow_bubble to add free stuff to each sub-bubble
         """
+        # TO DO... how expensive is this????
+        # maybe move to machines / inherited lines???
         music = super().blow_bubble(bubble_name)
         leaves = select(music).by_leaf()
         if self.time_signature:
@@ -739,6 +741,13 @@ class BubblePiano(BubbleStaffGroup):
     sequence = ("piano1", "piano2")
     instrument=instrumenttools.Piano()
 
+class BubbleHarp(BubbleStaffGroup):
+    harp1 = BubbleStaff()
+    harp2 = BubbleStaff(clef="bass")
+    context_name = "PianoStaff"
+    sequence = ("harp1", "harp2")
+    instrument=instrumenttools.Harp()
+
 class BubbleGridStaff(BubbleGridMatch, BubbleStaff):
     """
     creates a staff with a voice or voices inside of it
@@ -763,7 +772,9 @@ class BubbleScore(BubbleGridMatch):
     title = ""
 
     def get_lilypond_file(self):
+        # print("pre blow")
         music = self.blow()
+        # print("post blow")
         lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, global_staff_size=self.global_staff_size)
 
         # configure the lilypond file...
@@ -791,13 +802,13 @@ class BubbleScore(BubbleGridMatch):
         # TO DO... move "for Taiko and Orchestra" to subtitle
         lilypond_file.header_block.title = markuptools.Markup(self.title)
         lilypond_file.header_block.tagline = markuptools.Markup("")
-
+        self.info("got abjad representation of lilypond file... now rendering with lilypond")
         return lilypond_file
 
     def after_music(self, music, **kwargs):
         super().after_music(music, **kwargs)
         music.add_final_bar_line()
-        print("Finished creating abjad music container object for the score!")
+        self.info("finished creating abjad music container object for the score")
 
     def show(self):
         music = self.get_lilypond_file()
