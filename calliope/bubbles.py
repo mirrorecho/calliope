@@ -69,7 +69,7 @@ class BubbleBase(object):
         """
         pass
 
-
+    # TO DO... depreciate...
     def latch(self, **kwargs):
         return_bubble = copy(self)
         for name, value in kwargs.items():
@@ -230,10 +230,6 @@ class Bubble(BubbleBase):
     def bubble_imprint(self, music):
         return music
 
-    # TO DO: necesssary?
-    # def bubble_default(self):
-    #     return Bubble()
-
     def music(self, **kwargs):
         my_music = self.music_container()
         for bubble_name in self.sequence():
@@ -308,10 +304,14 @@ class LineAttachments:
 class Line(Bubble):
     is_simultaneous = False
     music_string = None
-    pitches = None
+    tempo_text = None
+    tempo_units_per_minute=None
+    tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
     clef = None
     time_signature = None
     start_bar_line = None
+    rehearsal_mark_number = None
+    accidental_style = "modern-cautionary" # TO DO... necessary?
 
     def __init__(self, music_string=None, **kwargs):
         """
@@ -337,19 +337,35 @@ class Line(Bubble):
             return super().music(**kwargs)
 
     def after_music(self, music, **kwargs):
+        music_start = music[0]
         if self.time_signature:
             # TO DO... is the numeric commad necessary... maybe just include it at the score level?
             time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
-            attach(time_command_numeric, music[0])
+            attach(time_command_numeric, music_start)
             time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
-            attach(time_command, music[0])
+            attach(time_command, music_start)
         if self.clef:
             clef_obj = Clef(self.clef)
-            attach(clef_obj, music)
+            attach(clef_obj, music_start)
         if self.start_bar_line:
             bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
-            attach(bar_command, leaves[0])
+            attach(bar_command, music_start)
+        if self.rehearsal_mark_number:
+            mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
+            attach(mark, music_start)
 
+        # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
+        # if self.tempo_text or self.tempo_units_per_minute:
+        #     if self.tempo_units_per_minute:
+        #         tempo_reference_duration = Duration(self.tempo_duration)
+        #     else:
+        #         tempo_reference_duration = None
+        #     tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
+        #     attach(tempo, music_start)
+
+        if self.accidental_style:
+            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
+            attach(accidental_style_command, music_start)
         super().after_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
@@ -415,42 +431,10 @@ class SimulLine(MultiLine):
     """
     multi_voiced = False
 
-
 class LineLyrics(Line):
     lyrics = ""
 
-class GridStart(Bubble):
-    tempo_text = None
-    tempo_units_per_minute=None
-    tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
-    time_signature = (4,4)
-    accidental_style = "modern-cautionary"
-    rehearsal_mark_number = None
-
-    def blow_bubble(self, bubble_name):
-        """
-        overriding blow_bubble to add free stuff to each sub-bubble
-        """
-        # TO DO... how expensive is this????
-        # maybe move to machines / inherited lines???
-        music = super().blow_bubble(bubble_name)
-        leaves = select(music).by_leaf()
-        if self.rehearsal_mark_number:
-            mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
-            attach(mark, leaves[0])
-        if self.tempo_text or self.tempo_units_per_minute:
-            if self.tempo_units_per_minute:
-                tempo_reference_duration = Duration(self.tempo_duration)
-            else:
-                tempo_reference_duration = None
-            tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
-            attach(tempo, leaves[0])
-        if self.accidental_style:
-            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
-            attach(accidental_style_command, leaves[0])
-        return music
-
-# MAYBE TO DO... should this be specified at the line level?
+# TO DO... this be specified at the line level!!!!!!!!!!!!!!!!!!
 class Ametric(Bubble):
     show_x_meter = False
     show_time_span = False
@@ -741,9 +725,7 @@ class BubbleScore(BubbleGridMatch):
     title = ""
 
     def get_lilypond_file(self):
-        # print("pre blow")
         music = self.blow()
-        # print("post blow")
         lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, global_staff_size=self.global_staff_size)
 
         # configure the lilypond file...
@@ -811,7 +793,6 @@ class BubbleFormatLargeScore(BubbleScore):
 
 
     def get_lilypond_file(self):
-        music = self.blow()
         lilypond_file = super().get_lilypond_file()
         # configure the lilypond file...
 
