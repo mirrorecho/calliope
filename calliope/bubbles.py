@@ -40,6 +40,7 @@ class BubbleBase(object):
     sequence = ()
     respell=None # TO DO, best place for this?
     process_methods = ()
+    stylesheets = None
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -280,7 +281,7 @@ class Bubble(BubbleBase):
             self.warn("error trying to run 'after_music' on the auto-generated score. Some music may be missing...")
 
         # TO DO... refactor to use BubbleScore
-        lilypond_file = lilypondfiletools.make_basic_lilypond_file(score)
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(score, includes=self.stylesheets)
         # include_command = indicatortools.LilyPondCommand("', 'before')
         # print(include_command)
         # attach(include_command, lilypond_file.paper_block)
@@ -733,7 +734,8 @@ class BubbleScore(BubbleGridMatch):
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, global_staff_size=self.global_staff_size)
+        print(self.stylesheets)
+        lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, includes=self.stylesheets, global_staff_size=self.global_staff_size)
 
         # configure the lilypond file...
         # lilypond_file.global_staff_size = 12
@@ -755,11 +757,11 @@ class BubbleScore(BubbleGridMatch):
         # override(rhythmic_staff_context_block).vertical_axis_group.remove_first = True
         lilypond_file.layout_block.items.append(self.rhythmic_staff_context_block)
 
-        lilypond_file.header_block.composer = markuptools.Markup('Randall West')
+        # lilypond_file.header_block.composer = markuptools.Markup('Randall West')
 
         # TO DO... move "for Taiko and Orchestra" to subtitle
-        lilypond_file.header_block.title = markuptools.Markup(self.title)
-        lilypond_file.header_block.tagline = markuptools.Markup("")
+        # lilypond_file.header_block.title = markuptools.Markup(self.title)
+        # lilypond_file.header_block.tagline = markuptools.Markup("")
         self.info("got abjad representation of lilypond file... now rendering with lilypond")
         return lilypond_file
 
@@ -803,40 +805,40 @@ class BubbleFormatLargeScore(BubbleScore):
         lilypond_file = super().get_lilypond_file()
         # configure the lilypond file...
 
-        override(self.staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(self.staff_context_block)
+        # override(self.staff_context_block).vertical_axis_group.remove_first = True
+        # lilypond_file.layout_block.items.append(self.staff_context_block)
 
-        override(self.rhythmic_staff_context_block).vertical_axis_group.remove_first = True
-        lilypond_file.layout_block.items.append(self.rhythmic_staff_context_block)
+        # override(self.rhythmic_staff_context_block).vertical_axis_group.remove_first = True
+        # lilypond_file.layout_block.items.append(self.rhythmic_staff_context_block)
 
-        slash_separator = indicatortools.LilyPondCommand('slashSeparator')
-        lilypond_file.paper_block.system_separator_markup = slash_separator
+        # slash_separator = indicatortools.LilyPondCommand('slashSeparator')
+        # lilypond_file.paper_block.system_separator_markup = slash_separator
 
-        bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.bottom_margin = bottom_margin
+        # bottom_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.bottom_margin = bottom_margin
 
-        top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.top_margin = top_margin
+        # top_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.top_margin = top_margin
 
-        left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
-        lilypond_file.paper_block.left_margin = left_margin
+        # left_margin = lilypondfiletools.LilyPondDimension(0.75, 'in')
+        # lilypond_file.paper_block.left_margin = left_margin
 
-        right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
-        lilypond_file.paper_block.right_margin = right_margin
+        # right_margin = lilypondfiletools.LilyPondDimension(0.5, 'in')
+        # lilypond_file.paper_block.right_margin = right_margin
 
-        paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
-        lilypond_file.paper_block.paper_width = paper_width
+        # paper_width = lilypondfiletools.LilyPondDimension(11, 'in')
+        # lilypond_file.paper_block.paper_width = paper_width
 
-        paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
-        lilypond_file.paper_block.paper_height = paper_height
+        # paper_height = lilypondfiletools.LilyPondDimension(17, 'in')
+        # lilypond_file.paper_block.paper_height = paper_height
 
-        system_system_spacing = schemetools.make_spacing_vector(0, 0, 20, 0)
-        lilypond_file.paper_block.system_system_spacing = system_system_spacing
+        # system_system_spacing = schemetools.make_spacing_vector(0, 0, 20, 0)
+        # lilypond_file.paper_block.system_system_spacing = system_system_spacing
 
-        lilypond_file.header_block.composer = markuptools.Markup('Randall West')
+        # lilypond_file.header_block.composer = markuptools.Markup('Randall West')
 
         # TO DO... move "for Taiko and Orchestra" to subtitle
-        lilypond_file.header_block.title = markuptools.Markup(self.title)
+        # lilypond_file.header_block.title = markuptools.Markup(self.title)
         # lilypond_file.header_block.tagline = markuptools.Markup(tagline)
 
         return lilypond_file
