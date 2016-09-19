@@ -9,17 +9,24 @@ from calliope.tools import pitch
 
 PROJECT_PATH = "."
 
+def illustrate_me_file(file_name, module_path, illustrate_callable, subfolder=""):
+    import __main__ as main
+    if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
+        illustration_path = os.path.join(
+            os.path.dirname(module_path),
+            subfolder,
+            file_name,
+            )
+        abjad.persist( illustrate_callable() ).as_pdf(illustration_path)
+        return illustration_path
+
+
 def illustrate_me(module_path, illustrate_callable, subfolder=""):
     import __main__ as main
     if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
         module_name = os.path.split(module_path)[1].split(".")[0]
         pdf_filename = '%s_illustration.pdf' % module_name
-        illustration_path = os.path.join(
-            os.path.dirname(module_path),
-            subfolder,
-            pdf_filename,
-            )
-        abjad.persist( illustrate_callable() ).as_pdf(illustration_path)
+        illustration_path = illustrate_me_file(pdf_filename, module_path, illustrate_callable, subfolder)
         abjad.systemtools.IOManager.open_file(illustration_path)
 
 
