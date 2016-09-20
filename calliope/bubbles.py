@@ -9,18 +9,53 @@ from calliope.tools import pitch
 
 PROJECT_PATH = "."
 
-def illustrate_me(module_path, illustrate_callable, subfolder=""):
+def illustrate_me(module_path, illustrate_callable, subfolder="illustrations", as_pdf=True, open_pdf=False, as_midi=False):
+
     import __main__ as main
-    if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
+    if main.__file__ == module_path: # only conitnue if illustrate_me called from main (as opposed to imported module)
         module_name = os.path.split(module_path)[1].split(".")[0]
-        pdf_filename = '%s_illustration.pdf' % module_name
-        illustration_path = os.path.join(
+        illustration_directory_path = os.path.join(
             os.path.dirname(module_path),
             subfolder,
-            pdf_filename,
             )
-        abjad.persist( illustrate_callable() ).as_pdf(illustration_path)
-        abjad.systemtools.IOManager.open_file(illustration_path)
+        if not os.path.exists(illustration_directory_path):
+            os.makedirs(illustration_directory_path)
+
+        # NOTE... this is odd... within sublimetext using the virtual envionment package on a mac ONLY, 
+        # lilypond executable is not founr properly (something to do with os.environ not finding the right PATH info)
+        # ... adding this here solves as a quick-fix
+        mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
+        if os.path.exists("/Applications/LilyPond.app/Contents/Resources/bin/lilypond"):
+            from abjad import abjad_configuration
+            abjad_configuration["lilypond_path"] = mac_default_lilypond_path
+
+        my_persistance_agent = abjad.persist( illustrate_callable() )
+        
+        if as_pdf:
+            pdf_filename = '%s.pdf' % module_name
+            illustration_file_path = os.path.join(
+                illustration_directory_path,
+                pdf_filename,
+                )
+            my_persistance_agent.as_pdf(illustration_file_path)
+            if open_pdf:
+                abjad.systemtools.IOManager.open_file(illustration_file_path)
+        if as_midi:
+            pdf_filename = '%s.midi' % module_name
+            midi_file_path = os.path.join(
+                illustration_directory_path,
+                pdf_filename,
+                )
+            my_persistance_agent.as_midi(midi_file_path)
+
+        # # TO DO... would be best to prevent abjad from re-illustrating, maybe something like below... 
+        # # but also don't want to re-invent abjad's code here:
+        # ly_file_path, abjad_time = my_persistance_agent.as_ly(illustration_file_path)
+        # timer = abjad.systemtools.Timer()
+        # with timer:
+        #     success = systemtools.IOManager.run_lilypond(ly_file_path)
+        # abjad.systemtools.IOManager.open_file(illustration_file_path)
+
 
 
 class BubbleBase(object):
@@ -311,7 +346,8 @@ class Line(Bubble):
     pitches = None
     clef = None
 
-    # TO DO... keep thinking about this? Best approach? Is "Attachments" the best name? Use this more generally as a "Meta"?
+    # TO DO remove in favor of tagging
+    # ... or maybe keep thinking about this? Best approach? Is "Attachments" the best name? Use this more generally as a "Meta"?
     class Attachments(LineAttachments):
         show_indices = False
         dynamics = ()
@@ -348,7 +384,8 @@ class Line(Bubble):
         # WHY DOESN'T THIS WORK?
         if self.clef:
             clef_obj = Clef(self.clef)
-            attach(clef_obj, music)
+            if len(music) > 0:
+                attach(clef_obj, music[0])
         if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
             leaves = select(music).by_leaf()
             if self.Attachments.show_indices:
