@@ -9,25 +9,55 @@ from calliope.tools import pitch
 
 PROJECT_PATH = "."
 
-def illustrate_me_file(file_name, module_path, illustrate_callable, subfolder=""):
+# TO DO... this is reduntant... remove
+def illustrate_me_file(filename, module_path, illustrate_callable, subfolder=""):
+    illustrate_me(module_path, illustrate_callable=illustrate_callable, filename=filename, subfolder=subfolder, open_pdf=False)
+
+def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="illustrations", as_pdf=True, open_pdf=False, as_midi=False):
     import __main__ as main
-    if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
-        illustration_path = os.path.join(
+    if main.__file__ == module_path: # only conitnue if illustrate_me called from main (as opposed to imported module)
+        module_name = os.path.split(module_path)[1].split(".")[0]
+        illustration_directory_path = os.path.join(
             os.path.dirname(module_path),
             subfolder,
-            file_name,
             )
-        abjad.persist( illustrate_callable() ).as_pdf(illustration_path)
-        return illustration_path
+        if not os.path.exists(illustration_directory_path):
+            os.makedirs(illustration_directory_path)
 
+        # NOTE... this is odd... within sublimetext using the virtual envionment package on a mac ONLY, 
+        # lilypond executable is not founr properly (something to do with os.environ not finding the right PATH info)
+        # ... adding this here solves as a quick-fix
+        mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
+        if os.path.exists("/Applications/LilyPond.app/Contents/Resources/bin/lilypond"):
+            from abjad import abjad_configuration
+            abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 
-def illustrate_me(module_path, illustrate_callable, subfolder=""):
-    import __main__ as main
-    if main.__file__ == module_path: # only import if illustrate_me called from main (as opposed to imported module)
-        module_name = os.path.split(module_path)[1].split(".")[0]
-        pdf_filename = '%s_illustration.pdf' % module_name
-        illustration_path = illustrate_me_file(pdf_filename, module_path, illustrate_callable, subfolder)
-        abjad.systemtools.IOManager.open_file(illustration_path)
+        my_persistance_agent = abjad.persist( illustrate_callable() )
+        
+        if as_pdf:
+            pdf_filename = '%s.pdf' % filename if filename is not None else module_name
+            illustration_file_path = os.path.join(
+                illustration_directory_path,
+                pdf_filename,
+                )
+            my_persistance_agent.as_pdf(illustration_file_path)
+            if open_pdf:
+                abjad.systemtools.IOManager.open_file(illustration_file_path)
+        if as_midi:
+            pdf_filename = '%s.midi' % filename if filename is not None else module_name
+            midi_file_path = os.path.join(
+                illustration_directory_path,
+                pdf_filename,
+                )
+            my_persistance_agent.as_midi(midi_file_path)
+
+        # # TO DO... would be best to prevent abjad from re-illustrating, maybe something like below... 
+        # # but also don't want to re-invent abjad's code here:
+        # ly_file_path, abjad_time = my_persistance_agent.as_ly(illustration_file_path)
+        # timer = abjad.systemtools.Timer()
+        # with timer:
+        #     success = systemtools.IOManager.run_lilypond(ly_file_path)
+        # abjad.systemtools.IOManager.open_file(illustration_file_path)
 
 
 class BubbleBase(object):
@@ -345,36 +375,37 @@ class Line(Bubble):
             return super().music(**kwargs)
 
     def after_music(self, music, **kwargs):
-        music_start = music[0]
-        if self.time_signature:
-            # TO DO... is the numeric commad necessary... maybe just include it at the score level?
-            time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
-            attach(time_command_numeric, music_start)
-            time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
-            attach(time_command, music_start)
-        if self.clef:
-            clef_obj = Clef(self.clef)
-            attach(clef_obj, music_start)
-        if self.start_bar_line:
-            bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
-            attach(bar_command, music_start)
-        if self.rehearsal_mark_number:
-            mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
-            attach(mark, music_start)
+        if len(music) > 0:
+            music_start = music[0]
+            if self.time_signature:
+                # TO DO... is the numeric commad necessary... maybe just include it at the score level?
+                time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
+                attach(time_command_numeric, music_start)
+                time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+                attach(time_command, music_start)
+            if self.clef:
+                clef_obj = Clef(self.clef)
+                attach(clef_obj, music_start)
+            if self.start_bar_line:
+                bar_command =  indicatortools.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
+                attach(bar_command, music_start)
+            if self.rehearsal_mark_number:
+                mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
+                attach(mark, music_start)
 
-        # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
-        # if self.tempo_text or self.tempo_units_per_minute:
-        #     if self.tempo_units_per_minute:
-        #         tempo_reference_duration = Duration(self.tempo_duration)
-        #     else:
-        #         tempo_reference_duration = None
-        #     tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
-        #     attach(tempo, music_start)
+            # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
+            # if self.tempo_text or self.tempo_units_per_minute:
+            #     if self.tempo_units_per_minute:
+            #         tempo_reference_duration = Duration(self.tempo_duration)
+            #     else:
+            #         tempo_reference_duration = None
+            #     tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
+            #     attach(tempo, music_start)
 
-        if self.accidental_style:
-            accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
-            attach(accidental_style_command, music_start)
-        super().after_music(music, **kwargs)
+            if self.accidental_style:
+                accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
+                attach(accidental_style_command, music_start)
+            super().after_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
         return_bubble = copy(self)
@@ -734,7 +765,6 @@ class BubbleScore(BubbleGridMatch):
 
     def get_lilypond_file(self):
         music = self.blow()
-        print(self.stylesheets)
         lilypond_file = lilypondfiletools.make_basic_lilypond_file(music, includes=self.stylesheets, 
             # global_staff_size=self.global_staff_size
             )
