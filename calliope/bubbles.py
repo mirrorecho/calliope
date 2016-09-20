@@ -381,33 +381,34 @@ class Line(Bubble):
     def after_music(self, music, **kwargs):
         if self.pitches:
             pitch.set_pitches(music, pitches=self.pitches)
-        # WHY DOESN'T THIS WORK?
+
         if self.clef:
             clef_obj = Clef(self.clef)
             if len(music) > 0:
                 attach(clef_obj, music[0])
-        if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
-            leaves = select(music).by_leaf()
-            if self.Attachments.show_indices:
-                for i,leaf in enumerate(leaves):
-                    if self.Attachments.show_indices:
-                        markup_object = markuptools.Markup(str(i), direction=Up)
-                        attach(markup_object, leaf)
-            for d in self.Attachments.dynamics:
-                dynamic_object = indicatortools.Dynamic(d[1])
-                attach(dynamic_object, leaves[d[0]])
-            for i in self.Attachments.instructions:
-                markup_object = markuptools.Markup(i[1], direction=Up)
-                attach(markup_object, leaves[i[0]])
-            for s in self.Attachments.slurs:
-                slur_object=spannertools.Slur()
-                attach(slur_object, leaves[s[0]:s[1]+1])
-            for e in self.Attachments.endos:
-                if e[1] == "<":
-                    endo_cobject = abjad.Crescendo()
-                else:
-                    endo_cobject = abjad.Decrescendo()
-                attach(endo_cobject, leaves[e[0][0]:e[0][1]+1])
+
+        # if self.Attachments.instructions or self.Attachments.dynamics or self.Attachments.slurs or self.Attachments.show_indices:
+        #     leaves = select(music).by_leaf()
+        #     if self.Attachments.show_indices:
+        #         for i,leaf in enumerate(leaves):
+        #             if self.Attachments.show_indices:
+        #                 markup_object = markuptools.Markup(str(i), direction=Up)
+        #                 attach(markup_object, leaf)
+        #     for d in self.Attachments.dynamics:
+        #         dynamic_object = indicatortools.Dynamic(d[1])
+        #         attach(dynamic_object, leaves[d[0]])
+        #     for i in self.Attachments.instructions:
+        #         markup_object = markuptools.Markup(i[1], direction=Up)
+        #         attach(markup_object, leaves[i[0]])
+        #     for s in self.Attachments.slurs:
+        #         slur_object=spannertools.Slur()
+        #         attach(slur_object, leaves[s[0]:s[1]+1])
+        #     for e in self.Attachments.endos:
+        #         if e[1] == "<":
+        #             endo_cobject = abjad.Crescendo()
+        #         else:
+        #             endo_cobject = abjad.Decrescendo()
+        #         attach(endo_cobject, leaves[e[0][0]:e[0][1]+1])
         super().after_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
