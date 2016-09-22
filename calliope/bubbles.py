@@ -35,11 +35,14 @@ def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="il
         my_persistance_agent = abjad.persist( illustrate_callable() )
         
         if as_pdf:
-            pdf_filename = '%s.pdf' % filename if filename is not None else module_name
+            pdf_filename = "%s.pdf" % (filename if filename is not None else module_name)
             illustration_file_path = os.path.join(
                 illustration_directory_path,
                 pdf_filename,
                 )
+            print(pdf_filename)
+            print(illustration_file_path)
+
             my_persistance_agent.as_pdf(illustration_file_path)
             if open_pdf:
                 abjad.systemtools.IOManager.open_file(illustration_file_path)
@@ -382,11 +385,11 @@ class Line(Bubble):
                 # TO DO... is the numeric commad necessary... maybe just include it at the score level?
                 time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
                 attach(time_command_numeric, music_start)
-                # time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
-                # TO DO... consider why I wrote the above command... was it just an oversight or does it improve performance???
-                time_command = abjad.TimeSignature( self.time_signature )
-                
-                attach(time_command, music_start)
+
+                time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
+                # time_command = abjad.TimeSignature( self.time_signature )
+                attach(time_command, music)
             if self.clef:
                 clef_obj = Clef(self.clef)
                 attach(clef_obj, music_start)
