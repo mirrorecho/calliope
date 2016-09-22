@@ -13,7 +13,7 @@ PROJECT_PATH = "."
 def illustrate_me_file(filename, module_path, illustrate_callable, subfolder=""):
     illustrate_me(module_path, illustrate_callable=illustrate_callable, filename=filename, subfolder=subfolder, open_pdf=False)
 
-def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="illustrations", as_pdf=True, open_pdf=True, as_midi=False):
+def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="illustrations", as_pdf=True, open_pdf=False, as_midi=False):
     import __main__ as main
     if main.__file__ == module_path: # only conitnue if illustrate_me called from main (as opposed to imported module)
         module_name = os.path.split(module_path)[1].split(".")[0]
@@ -350,6 +350,7 @@ class Line(Bubble):
     start_bar_line = None
     rehearsal_mark_number = None
     accidental_style = "modern-cautionary" # TO DO... necessary?
+    compress_full_bar_rests = None # TO DO... maybe this should be handled somewhere else? (currently it's being repeated where not necessary... at the beginning of every line)
 
     def __init__(self, music_string=None, **kwargs):
         """
@@ -381,7 +382,10 @@ class Line(Bubble):
                 # TO DO... is the numeric commad necessary... maybe just include it at the score level?
                 time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
                 attach(time_command_numeric, music_start)
-                time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+                # time_command =  indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+                # TO DO... consider why I wrote the above command... was it just an oversight or does it improve performance???
+                time_command = abjad.TimeSignature( self.time_signature )
+                
                 attach(time_command, music_start)
             if self.clef:
                 clef_obj = Clef(self.clef)
@@ -392,6 +396,13 @@ class Line(Bubble):
             if self.rehearsal_mark_number:
                 mark = indicatortools.RehearsalMark(number=self.rehearsal_mark_number)
                 attach(mark, music_start)
+            # NOTE... True adds command to compress, False adds compand to expand, None does nothing
+            if self.compress_full_bar_rests == True:
+                rests_command =  indicatortools.LilyPondCommand("compressFullBarRests", "before")
+                attach(rests_command, music_start)
+            elif self.compress_full_bar_rests == False:
+                rests_command =  indicatortools.LilyPondCommand("expandFullBarRests", "before")
+                attach(rests_command, music_start)
 
             # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
             # if self.tempo_text or self.tempo_units_per_minute:
