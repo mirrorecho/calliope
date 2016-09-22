@@ -13,7 +13,7 @@ PROJECT_PATH = "."
 def illustrate_me_file(filename, module_path, illustrate_callable, subfolder=""):
     illustrate_me(module_path, illustrate_callable=illustrate_callable, filename=filename, subfolder=subfolder, open_pdf=False)
 
-def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="illustrations", as_pdf=True, open_pdf=False, as_midi=False):
+def illustrate_me(module_path, illustrate_callable, filename=None, subfolder="illustrations", as_pdf=True, open_pdf=True, as_midi=False):
     import __main__ as main
     if main.__file__ == module_path: # only conitnue if illustrate_me called from main (as opposed to imported module)
         module_name = os.path.split(module_path)[1].split(".")[0]
