@@ -149,6 +149,7 @@ class BubbleBase(object):
         # TO DO... is this the best place for respell, etc.?
         if self.respell:
             pitch.respell(music, self.respell)
+        # TO DO... look at these process_methods in light of "machines" work in copper
         for m in self.process_methods:
             m(music)
 
