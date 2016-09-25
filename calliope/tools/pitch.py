@@ -112,7 +112,7 @@ def respell(music, respell="auto"):
         mutate(music).respell_with_flats()
     elif respell == "sharps":
         mutate(music).respell_with_sharps()
-        print("RESPELLING WITH SHARPS")
+        # print("RESPELLING WITH SHARPS")
     elif respell == "auto":
         print("AUTO RESPELL NOT SUPPORTED YET...")
 
