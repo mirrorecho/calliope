@@ -349,12 +349,15 @@ class Line(Bubble):
     tempo_text = None
     tempo_units_per_minute=None
     tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
+    tempo_command = None
     clef = None
     time_signature = None
     start_bar_line = None
     rehearsal_mark_number = None
     accidental_style = "modern-cautionary" # TO DO... necessary?
     compress_full_bar_rests = None # TO DO... maybe this should be handled somewhere else? (currently it's being repeated where not necessary... at the beginning of every line)
+    transpose = None
+    
 
     def __init__(self, music_string=None, **kwargs):
         """
@@ -382,6 +385,10 @@ class Line(Bubble):
     def after_music(self, music, **kwargs):
         if len(music) > 0:
             music_start = music[0]
+
+            if self.transpose:
+                mutate(music).transpose(self.transpose)
+
             if self.time_signature:
                 # TO DO... is the numeric commad necessary... maybe just include it at the score level?
                 time_command_numeric =  indicatortools.LilyPondCommand("numericTimeSignature", "before")
@@ -409,13 +416,18 @@ class Line(Bubble):
                 attach(rests_command, music_start)
 
             # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
-            # if self.tempo_text or self.tempo_units_per_minute:
-            #     if self.tempo_units_per_minute:
-            #         tempo_reference_duration = Duration(self.tempo_duration)
-            #     else:
-            #         tempo_reference_duration = None
-            #     tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
-            #     attach(tempo, music_start)
+            if self.tempo_text or self.tempo_units_per_minute:
+                if self.tempo_units_per_minute:
+                    tempo_reference_duration = Duration(self.tempo_duration)
+                else:
+                    tempo_reference_duration = None
+                tempo = indicatortools.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
+                attach(tempo, music_start)
+            elif self.tempo_command:
+                tempo_command =  indicatortools.LilyPondCommand("tempo \markup \\fontsize #3 { %s }" % self.tempo_command, "before")
+                # print(tempo_command)
+                attach(tempo_command, music_start)
+
 
             if self.accidental_style:
                 accidental_style_command = indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
@@ -653,6 +665,7 @@ class BubbleWrapContainer(Bubble):
     #             attach(lyrics_command, music)
     #     super().after_music(self, music, **kwargs)
 
+# TO DO... depreciate:
 class Transpose(BubbleWrap):
     transpose_expr = 0
     
