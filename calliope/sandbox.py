@@ -5,11 +5,6 @@
 # ametrical music and systems
 # - - boxes and arrows
 
-# implement an Arrangement bubble class (appropriate name?)... 
-# it can be viewed like other bubbles, but no musical operation should be possible on 
-# it as a Container as a whole
-
-
 # cleanup / integration
 # - - integrate previous "work"
 # - - integrate previous "cycles"
@@ -18,17 +13,16 @@
 
 # a few tools to help with routine tasks
 # - - integrate/refactor score auto-generation from random bubbles with BubbleScore
-# - - templates for scores and parts
+# - - better templates for scores and parts
 
 # beuatifully printed music (with some fancy formatting)
 # - - fonts
-# - - rehearsal marks
-# - - measure numbering
+# - - better rehearsal marks (score vs parts)
+# - - measure numbering at bottom of large scores
 # - - instrument names and cues
 # - - add/remove staves (and account for this in parts)
 
 # TO DO / NEXT UP
-# - - imprints
 # - - odd / compound time signatures
 # - - double and sashed bar lines
 # - - start moving through caesium until it kicks you
@@ -42,376 +36,125 @@
 # - - piano centered dynamics (see http://lsr.di.unimi.it/LSR/Item?id=357 ??)
 # - - unterminated ties
 
-from _settings import *
 
-# needed to run calliope imports locally:
-import sys
-sys.path.append(ROOT_PATH) 
+# ---------------------------- FUTURE:
+# AUTOMATIC METRICAL DURATIONS (research abjad)
+# studio setup!!! 
+#  - - - (mac or linux?)
+# - - - (mac keyboard / mouse?)
+# - - - lower desk is better for tall monitors
+# - I LOATHE GARAGE BAND... need some better way to create playback
+# - fix clefs in short scores
+# - replace some class-defined stuff with modules / introspection (i.e. should not need to create a class to describe grid bubble lines that are described above)
+# - think about data cleanup carefully, and adjust
+# - parts need to be WAY WAY WAY simpler to generate!!!!
+# - - - should be able to specify a few simple settings in module
+# - - - separate PDF and Ly files
+# - - - simple declaritve file(s) for how score/parts are organized
+# - more readable indices (small font, all in a row)
+# measures shojuld be 1-based!!!!!
+# - tremolos won't work with tied notes
+# - conisistency / plan for what's a class attribute and what's not
+# - - - maybe attachment stuff not, pitch/rhythm stuff is?
+# - better indices/colors
+# - separate stylesheets for working score / short score (vs performance score, parts, etc.)
+# - refactor standard stuff into callope
+# - use asserts for error handling
+# - keep relative durations as negative?
+# - bug, first rest in rhythm is removed if rhythm_initial_silence is also 0 (can work around be always using rhythm_initial_silence... but this is screwy)
+# - could go CRAZY (in a good way) with fragments, inheritance, etc. ... spend time on this, it could be fruitful
+# - go through all to dos!
+# IMPLEMENTING INTO CALLIOPE:
+# - orchestrate first, then short score
+# - machines to be arbitrarily applied at logical_tie, event, segment, or phrase level
+# - project startup script
+# - consistent naming with data children (e.g. don't use "children" ... should always say "events", etc.)
+# - adding and removing staves
+# - BOXES BOXES BOXES!!!!
+# - sponsor lilypond development
+# - move some of the arrangement stuff that's currently in base bubble grids to machines / inherited lines (probably would perform better)
+# - initial silence is specific to copper ... make it work in another way (or keep it in the inherited copper classes only)
+# - go back through rep... ESPECIALLY elements & tokei orchestra pieces, accomodate, and make them even better!!!!!!!!!!!!!  (listen to recordints too... )
+# - short score illustrations should include staff-level attachments such as tempo, clef, etc.
+# - fix illustrate_me funkiness added for OSX sublimetext virtual environment support
+# - look ingo abjad's IOManager run_lilypond method ... seems like lilypond_path argument unused... submit a fix?
+# - better way to specify header (title, composer, footer, etc) without sticking it in the stylesheet
+# - Tuples!!!!
+# - deal with changing time signatures within a line
+# - - - way to specify
+# - - - update multimeasure rest generator to accomodate
+# smarter metrical durations (notes vs rests vs beaming)
+# - be clear about what accepts kwargs and what does not... 
+# - better way to show pitch indices in harmony
+# - color code lines, and fragments by line (just tag color... that's enough!)
+# - smart auto-respell pitches
+# - think of sending lines TO fragments in other lines (instead of pulling FROM)?
+# - even cleaner fragments, with slicing and pattern-based alterations/tagging (see Viola1 in orchestration_c)
+# - - - including patterns on fragments (or frag it/line) added together
+# - use inheritance better with fragments
+# - tagging to handle trills
+# - easily construct phrases/segments/events/logical-ties more manually
+# - harmonics machine (reconstitute)
+# - tag at the logical tie/leaf level when defining fragments
+# - simple method to slur a bunch of notes with following notes 
+# - piano/harp/etc. part that can combine events from different lines
+# - refactor so that all fragments.update_by should not be necessary
+# - better error handling when overlapping events create sorting problems in fragments
+# - odd problems if fragments moved before other fragments... fix?
+# - smarter tagging with patterns!!! (and based on note duration and jump)
+# - smarter dynamics tagging
+# - better way to distinguish short score from regular score
+# - auto breaths for wind/brass
+# - REMEMBER THAT THE END TAKES A LONG TIME
+# - for future reference, add more articulations, dymacics BEFORE orchestrating... will save time
+# - auto assign clefs
+# - - - for short scores
+# - - - based on instrument preferences
+# - automate start and stop together orchestration (assign stops/starts)
+# - smarter pitch displacement (stay within range / range of fifths)
+# - cross lines using rhythm overlay (including mixing together into chords)
+# - pulse machine that separates pulses into separate events (so that each pitch can be displaced)
+# - tag to show any data attribute
+# - smarter error handling
+# - better tempo management (why does it slow everything down?) 
+# - - - - including metric modulation (see http://abjad.mbrsi.org/api/tools/indicatortools/MetricModulation.html)
+# - allow slices of data to be tagged
+# - better way to handle octave transposing instruments in scores
+# - maybe. .. warn if orchestrated lines don't inherit from arrangement base classes (i.e. they should be getting rehearsal marks, etc.)
+# - (if necessary) - there's a bug with dupe tie spanners on drones (bug show up if you attempt to print Drone0's music() output)
+# - show measure numbers on multimeasure rests
+# - limit multimeasure rest length to 8 bars? (see below... could create list of lists to determine measure count)
+# - - - - - maybe better... limit to 8 only if greater than 9?
+# - - - - - also, would be ideal to be able to specify break points... 
+# - easily turn colors on and off
+# - add events from multiple lines into a single harmonic event
+# - beaming tags
+# - remember slur_me !
+# should be able to easily add instruction AFTER note
+
+import inspect
+# import abjad
+# c = abjad.scoretools.FixedDurationContainer((2,3), "c1")
+# lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(c)
+# print(format(lilypond_file))
 
-from abjad import *
-from calliope.bubbles import *
-from calliope.tools import pitch, rhythm
 
+class Boo(object):
+	items = ()
 
-# l =  Ly("ametric.timeX") + Ly("test.six")
-# l.show()
-# with open("ly_material/ametric.ly") as data_file:    
-#     ly_string = data_file.read()
-# parser = lilypondparsertools.LilyPondParser()
-# parser.tokenize(ly_string)
-# music = parser(ly_string + " { \\timeX } ")
-# print(ly_string)
-# print(music)
+	@classmethod
+	def class_sequence(cls, *args):
+		# print(inspect.stack()[1][0].f_locals)
+		return list(cls.items) + list(args)
 
-class Test(Bubble):
-    l1 = Placeholder()
-    l2 = Placeholder()
-    l3 = Placeholder()
+	def sequence(self, *args):
+		# print(inspect.stack()[1][0].f_locals)
+		return list(self.items) + list(args)
 
-class TestFirst(GridStart):
-    l1 = Line("{ bf4 bf' c' bf }")
-    l2 = Line("{ c'1 }")
-    l3 = Line("{R1}")
-    tempo_units_per_minute = 120
 
-class TestContinue(TestFirst):
-    tempo_units_per_minute = None
+b = Boo()
+b.items = [1,2,3]
+print(Boo.class_sequence(4,5,6))
+print(b.sequence(4,5,6))
 
 
-class Intro(Ametric):
-    l1 = Tr( Ly("test.one")*3, 1)  + Ly("test.one", pitches=(0,1,2,3))
-    l2 = (Ly("test.three") + Line("{a32 r1\\fermata }")).free_box()
-    l3 = Line("{R1 R1}")
-    time_span_text = "10'' ca"
-    duration = (2,1)
-    start_bar_line=None
-
-class Intro1(AmetricStart, Intro):
-    start_bar_line=None
-    pass
-
-class Intro2(Intro):
-    pass
-
-class Intro3(Intro):
-    pass
-
-class Intro(Test, GridSequence):
-    grid_sequence = (TestFirst, Intro1, Intro2, TestContinue)
-
-music = Intro()
-# print(format(music.score()))
-music.show()
-
-
-            # % \once \override 
-            # % Staff.TimeSignature #'stencil = #(lambda (grob)
-            # % (parenthesize-stencil (grob-interpret-markup grob 
-            # % (markup #:override '(baseline-skip . 0.5) #:column ("X" "X"))
-            # % ) 0.1 0.4 0.4 0.1 ))
-
-# REMEMBER THIS MAY BE USEFUL:
-music_list = scoretools.make_leaves([0], ((1,4)) )
-
-# yo_five = BubbleMaterial("test.five")
-# yo_four = BubbleMaterial("test.four")
-# print(yo_four)
-# print(yo_four.is_simultaneous)
-
-# c = parse("{c1 c1 c1}")
-# print(type(c))
-# print(c)
-
-# class SortMixin():
-#     # def sequence(self, *args, **kwargs):
-#     #     return ("line1","line2","line3","line4")
-#     pass
-
-# class B(SortMixin, Bubble):
-#     # material = Material("test_data")
-#     is_simultaneous = True
-#     line1 = Line("e'4 "*4)
-#     line2 = Line("d'4\\ff "*4)
-#     # pitch_ji = Material("test_data.pitch.ji")
-#     # material_11 = Material("test_data.line11_music")
-#     # line3 = Eval"yo"
-#     # material=("test_data", "test_data_2") # may need to do something like this...
-#     # material=Material("test_data", "test_data_2") # may need to do something like this...
-
-#     # line2 = Dynamics("ff"
-#     #     Line("d'4\\ff "*4)
-#     #     )
-#     # line3 = FromMaterial
-
-#     # def startup(self, *args, **kwargs):
-#     #     # self.line2 = Dynamics("ff", self.line2)
-#     #     # self.lines_from_material("test_data","lines")
-#     #     pass
-#     # print("YO")
-
-# class C(B):
-#     line1 = Line("c'4 "*4)
-
-#     # def sequence(self, *args, **kwargs):
-#     #     return ("line4","line1")
-
-# # d = BubbleSequence((b,c,b,c))
-
-# class E(B):
-#     grid_sequence = (B,C)
-#     line4 = Line("b4 "*8)
-
-# class F(E):
-#     grid_sequence = (E,E)
-#     line5 = Line("a4 "*16)
-
-# class G(Bubble):
-#     line0 = Line("a1 "*4)
-
-# class FancyLine(Line):
-#     def music(self):
-#         m = Material("test_data.line11")
-#         print(m.get())
-#         return m.get()
-
-# class H(F,G):
-#     line2 = Line("a'1 "*4)
-#     line5 = Eval(F, "line1") #maybe this would work?
-#     # line9 = Transpose( Eval("F.line1"), "+m3")
-#     # line11 = Line(material="line11_music") # duseoesn't work
-#     # line11 = WithPitches( FancyLine(), Material("test_data.test_pitches") ),  # WILL GET THIS ONE WORKING!
-#     line11 = FancyLine()
-#     line12 = Transpose( BubbleMaterial("test_data.line11"), "+M2")
-
-
-# t = Transpose( H(), "+m6")
-# t.show()
-
-
-
-# class Z():
-    
-#     def yo*):
-#         print(type)
-
-
-# def yoyo(some_class):
-#     class AnotherOne(some_class):
-#         boo = "ha"
-
-#     return AnotherOne
-
-# I = yoyo(H)
-# print(I.line5)
-
-
-
-# class MyScore(BubbleScore):
-#     flute_staff1 = BubbleStaff( Eval(H, "line5") )
-#     flute_staff2 = BubbleStaff( Eval(H, "line2") )
-#     # tata = 
-#     pass
-
-
-# m = MyScore()
-
-
-# print(format(music.blow()))
-# print(super(H))
-
-# for a in dir(B):
-#     # print(type(getattr(B,a)))
-#     if isinstance(getattr(B,a), B.bubble_types):
-#         print(a)
-
-# print(dir(B))
-
-# m = F()
-# print(format(m.blow()))
-# show(d.blow())
-
-# def sequence(bubbles):
-#     bubble = Bubble()
-#     for i,b in enumerate(bubbles):
-#         attr_name = "seq" + str(i)
-#         b.order = i
-#         setattr(bubble, attr_name, b)
-#     return bubble
-
-
-# b.b4.order=0
-
-# show(b.blow())
-
-# class B2(B1):
-#     flute_line1 = Bubble(Container, lambda : B1_LINES.blow())
-#     flute_line2 = B1.b4
-
-# ALL_LINES = B2()
-
-
-# class YoFluteStaff1(BubbleStaff):
-#     flute_music = ALL_LINES.flute_line1
-
-#     def blow_bubble(self, staff, *args, **kwargs):
-#         instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
-#         attach(instrument, staff)
-
-# class YoFluteStaff2(BubbleStaff):
-#     flute_music = ALL_LINES.flute_line2
-
-#     def blow_bubble(self, staff, *args, **kwargs):
-#         instrument = instrumenttools.Instrument(instrument_name="Flute 1", short_instrument_name="fl.1")
-#         attach(instrument, staff)
-
-# class YoScore(BubbleScore):
-#     b_music = B1()
-#     flute1 = YoFluteStaff1(order=10)
-#     flute2 = YoFluteStaff2(order=11)
-
-# class B1(Bubble):
-#     b2 = Bubble(Staff, lambda : "e'4 "*4, order=0)
-#     b3 = Bubble(Container, lambda : "d'4\\ff "*4, order=1)
-#     b4 = b3
-
-# b = YoScore()
-# print(format(b.blow()))
-
-
-# b = Container("c1 c1 c1 c1")
-# c = Container(b)
-# s = Staff(c)
-# print(format(s))
-
-
-# y = Yo()
-# print(format(y.blow()))
-
-# from bubbles import Bubble
-# from copy import deepcopy
-
-# class Theme(Bubble):
-#     def music(self, *args, **kwargs):
-#         self.use_lines(["theme","counter","bass"])
-#         self.lines["theme"].extend("\\time 2/2 c'4(\\ff d' e' f') " + " d'1 "*2 + "e'2(\\mp f'2) ")
-#         self.lines["counter"].extend("c'4(\\ff d' e' f') " + "e'2(\\mp f'2) " + "d'1 "*2 )
-#         self.lines["bass"].extend("\\clef bass c1\\mf d e f ")
-
-# class Bass2(Bubble):
-#     def music(self, *args, **kwargs):
-#         self.use_lines(["bass2"])
-#         self.lines["bass2"].extend("\\clef bass c,1\\mf " + "d,1 "*3)
-
-# class Theme2(Bass2,Theme):
-#     def music(self, *args, **kwargs):
-#         mutate(self.lines["counter"]).replace(Context("d'2 "*8))
-#         pass
-
-# t1 = Theme()
-# t2 = Theme2()
-# t3 = Theme()
-
-# t = Bubble.sequence([t1,t2,t3])
-# print(inspect_(t).get_duration())
-# s = t.score()
-
-# print(format(s))
-# print(t.lines)
-# show(s)
-
-# c = Container("c'4(\\ff d' e' f') " + "d'1 "*2 + "e'2(\\mp f'2)")
-# s = Staff()
-# s.extend(c)
-# print(format(c))
-
-
-# c = Container()
-# c.is_simultaneous = True
-# v1 = Context(name="voice1", music="b4 "*4)
-# v2 = Context(name="voice2", music="a4 "*4)
-# v3 = Context(name="voice3", music="g8 "*8)
-# c.extend([v1, v2, v3])
-# s1 = Staff(context_name="voice1")
-# s2 = Staff(context_name="voice2")
-# sg = StaffGroup([s1,s2])
-# c.extend(sg)
-
-# show(c)
-
-# s1 = Staff()
-# s2 = Staff()
-
-# print(format(c))
-# print(dir(c))
-
-# class BubbleScore(Score):
-#     pass
-
-# class Bubble1(Bubble):
-#     def music(self, *args, **kwargs):
-#         self.use_voice("voice1")
-#         self.use_voice("voice2")
-#         self.use_voice("voice3")
-#         self.use_voice("voice4")
-#         self.use_voice("voice5")
-#         self.use_voice("voice6")
-#         self.use_voice("voice7")
-#         self.use_voice("voice8")
-
-# class Bubble2(Bubble):
-#     def music(self, *args, **kwargs):
-#         self.use_voice("voice9")
-#         self.use_voice("voice10")
-#         self.use_voice("voice11")
-#         self.use_voice("voice12")
-#         self.use_voice("voice13")
-#         self.use_voice("voice14")
-#         self.use_voice("voice15")
-#         self.use_voice("voice16")
-
-# class B2(Bubble1,Bubble2):
-#     def music(self, *args, **kwargs):
-#         self.lines["voice1"].extend("c'16 ( c'16 ) "*64)
-
-#         self.lines["voice16"].extend("b'16 ( b'16 ) "*64)
-
-# b = Bubble.sequence([B2() for i in range(4)])
-# show(b)
-
-# print(inspect_(b).get_duration())
-# show(b)
-
-# print(dir(b))
-
-# b = B2()
-# show(b)
-
-
-
-        # self.using_material = []
-        # my_material = Material()
-        
-        # KISS!
-        # # a little hacky... but works well... 
-        # for c in reversed( type( self.bubble_wrap() ).mro()[:-2] ):
-        #     # this calls the startup method on every base class
-        #     if hasattr(c, "startup"):
-        #         c.startup( self, *args, **kwargs)
-        # #     if hasattr(c, "material"):
-        # #         for m in reversed(c.material):
-        # #             GLOBAL_MATERIAL.use(m)
-        # #             # if m not in self.using_material: # necessary?
-        # #             #     self.using_material.insert(0,m)
-        # #             my_material.update(GLOBAL_MATERIAL[m])
-        # # for name, value in my_material.items():
-        # #     setattr( self, name, value)
-
-        # MAYBE TO DO... it would be cleaner here to make bubbles for anything
-
-
-# b = Bubble(lines=["v1","v2"])
-# b[0].extend("b4 "*4)
-# b[1].extend("a8 "*8)
-# b.make_staves()
-# print(format(b))
-# show(b)
