@@ -1,5 +1,6 @@
 import inspect, collections
 import abjad
+from calliope import tools, bubbles
 
 # a little metaclass trick to keep class definition order intact.
 # ... see: http://stackoverflow.com/questions/4459531/how-to-read-class-attributes-in-the-same-order-as-declared
@@ -27,6 +28,7 @@ class Bubble(metaclass=OrderedClassMembers):
     process_methods = () # TO DO... depreciate?
     stylesheets = ()
     is_simultaneous=True
+    added_bubbles = ()
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -46,10 +48,11 @@ class Bubble(metaclass=OrderedClassMembers):
             setattr(self, name, value)
         if not self.child_types:
             self.child_types = (Bubble,)
+        self.added_bubbles = []
         self.make_callable("music")
         self.make_callable("sequence")
-        self.setup()
-        self.arrange()
+        # self.setup()
+        # self.arrange()
 
     # TO DO.. depreciate?
     def setup(self, **kwargs):
@@ -59,20 +62,20 @@ class Bubble(metaclass=OrderedClassMembers):
         """
         pass
 
-    # TO DO.. depreciate?
-    def arrange(self, **kwargs):
-        """
-        hook that's called at end of bubble __init__ method, for arranging music
-        (usually dealing with bubble attributes... adding articulations, phrasing, etc.)
-        """
-        pass
+    # # TO DO.. depreciate?
+    # def arrange(self, **kwargs):
+    #     """
+    #     hook that's called at end of bubble __init__ method, for arranging music
+    #     (usually dealing with bubble attributes... adding articulations, phrasing, etc.)
+    #     """
+    #     pass
 
-    # TO DO... depreciate?
-    def latch(self, **kwargs):
-        return_bubble = copy(self)
-        for name, value in kwargs.items():
-            setattr(return_bubble, name, value)
-        return return_bubble
+    # # TO DO... depreciate?
+    # def latch(self, **kwargs):
+    #     return_bubble = copy(self)
+    #     for name, value in kwargs.items():
+    #         setattr(return_bubble, name, value)
+    #     return return_bubble
 
     @classmethod
     def isbubble(cls, bubble, bubble_types=None):
@@ -88,16 +91,27 @@ class Bubble(metaclass=OrderedClassMembers):
             kwargs["context_name"] = self.context_name
         return self.container_type(name=self.name, **kwargs)
 
+    def __setitem__(self, bubble_name, bubble):
+        if not Bubble.isbubble(bubble):
+            self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble_name, bubble)
+        else:
+            setattr(self, bubble_name, bubble)
+            self.added_bubbles.append(bubble_name)
+
+    def __getitem__(self, bubble_name):
+        return getattr(self, bubble_name, None)
+
+    # TO DO... this implementation of add/mul creates odd nested containers... rethink
     def __add__(self, other):
-        return BubbleSequence( bubbles=(self, other) )
+        return bubbles.BubbleSequence( sequenced_bubbles=(self, other) )
 
     def __mul__(self, num):
-        return BubbleSequence( bubbles = [self for i in range(num)] )
+        return bubbles.BubbleSequence( sequenced_bubbles = [self for i in range(num)] )
 
     def after_music(self, music, **kwargs):
         # TO DO... is this the best place for respell, etc.?
         if self.respell:
-            pitch.respell(music, self.respell)
+            tools.respell(music, self.respell)
         # TO DO... look at these process_methods in light of "machines" work in copper
         for m in self.process_methods:
             m(music)
@@ -134,7 +148,7 @@ class Bubble(metaclass=OrderedClassMembers):
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = abad.lilypondfiletools.make_basic_lilypond_file(music, includes=self.stylesheets, 
+        lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(music, includes=self.stylesheets, 
             )
         self.info("got abjad representation of lilypond file... now rendering with lilypond")
         return lilypond_file
@@ -151,8 +165,8 @@ class Bubble(metaclass=OrderedClassMembers):
         for c in class_hierarchy:
             if issubclass(c, Bubble):
                 for b in c.__ordered__:
-                    b_attr = getattr(bubble, b)
-                    if inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
+                    b_attr = getattr(bubble, b, None)
+                    if b_attr and inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
                         my_sequence.append(b)
 
         # This adds all bubble instances to the sequence, also in the defined order
@@ -164,20 +178,21 @@ class Bubble(metaclass=OrderedClassMembers):
         return my_sequence
 
     def sequence(self, **kwargs):
-        return self.class_sequence(self, **kwargs)
+        return self.class_sequence(self, **kwargs) + self.added_bubbles
 
     def blow_bubble(self, bubble_name):
         """
         execute for each bubble attribute to add that bubble's music to the main bubble's music
         """
-        bubble = getattr(self, bubble_name)
-        if inspect.isclass(bubble):
-            # if bubble is a class, then we want to get an instance of that class...
-            bubble = bubble()
-        # if isinstance(bubble, Placeholder) and hasattr(self, "bubble_default"):
-        #     bubble = self.bubble_default   
-        # print(type(bubble.blow()))   
-        return self.bubble_imprint( bubble.blow() )
+        bubble = getattr(self, bubble_name, None)
+        if bubble:
+            if inspect.isclass(bubble):
+                # if bubble is a class, then we want to get an instance of that class...
+                bubble = bubble()
+            # if isinstance(bubble, Placeholder) and hasattr(self, "bubble_default"):
+            #     bubble = self.bubble_default   
+            # print(type(bubble.blow()))   
+            return self.bubble_imprint( bubble.blow() )
 
     # TO DO.. depreciate? (but currently used in MultiLine)
     def bubble_imprint(self, music):
@@ -187,7 +202,6 @@ class Bubble(metaclass=OrderedClassMembers):
         my_music = self.music_container()
         for bubble_name in self.sequence():
             # the bubble attribute specified by the sequence must exist on this bubble object...
-            if hasattr(self, bubble_name):
-               append_music = self.blow_bubble(bubble_name)
-               my_music.append(append_music)
+            append_music = self.blow_bubble(bubble_name)
+            my_music.append(append_music)
         return my_music

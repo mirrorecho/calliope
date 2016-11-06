@@ -45,7 +45,6 @@ class RhythmicStaff(Staff):
     context_name="RhythmicStaff"
     clef="percussion"
 
-# maybe bubble grid match should be applicable for all bubbles???
 class BubbleGridMatch(bubbles.Bubble):
     grid_bubble=None
 
@@ -89,24 +88,24 @@ class StaffGroup(BubbleGridMatch):
     
     def after_music(self, music, **kwargs):
         if self.instrument:
-            attach(self.instrument, music)
+            abjad.attach(self.instrument, music)
         super().after_music(music, **kwargs)
 
     def show(self):
         self.show_pdf()
 
 class Piano(StaffGroup):
-    piano1 = Staff()
-    piano2 = Staff(clef="bass")
+    class Piano1(Staff): pass
+    class Piano2(Staff):
+        clef = "bass"
     context_name = "PianoStaff"
-    sequence = ("piano1", "piano2")
     instrument=abjad.instrumenttools.Piano()
 
 class Harp(StaffGroup):
-    harp1 = Staff()
-    harp2 = Staff(clef="bass")
+    class Harp1(Staff): pass
+    class Harp2(Staff):
+        clef = "bass"
     context_name = "PianoStaff"
-    sequence = ("harp1", "harp2")
     instrument=abjad.instrumenttools.Harp()
 
 class BubbleGridStaff(BubbleGridMatch, Staff):

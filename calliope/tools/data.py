@@ -1,6 +1,5 @@
 import collections
 import abjad
-from calliope import bubbles
 from copy import copy, deepcopy
 
 # d = {}

@@ -137,24 +137,35 @@ import inspect
 # c = abjad.scoretools.FixedDurationContainer((2,3), "c1")
 # lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(c)
 # print(format(lilypond_file))
+from calliope import bubbles
+
+class MyBubble(bubbles.Bubble):
+	yo = "BAH"
 
 
-class Boo(object):
-	items = ()
+b1 = MyBubble()
+b2 = bubbles.Bubble()
+b1["ta"] = bubbles.Line("c1")
 
-	@classmethod
-	def class_sequence(cls, *args):
-		# print(inspect.stack()[1][0].f_locals)
-		return list(cls.items) + list(args)
-
-	def sequence(self, *args):
-		# print(inspect.stack()[1][0].f_locals)
-		return list(self.items) + list(args)
+print(b1["yo"])
 
 
-b = Boo()
-b.items = [1,2,3]
-print(Boo.class_sequence(4,5,6))
-print(b.sequence(4,5,6))
+# class Boo(object):
+# 	items = ()
+
+# 	@classmethod
+# 	def class_sequence(cls, *args):
+# 		# print(inspect.stack()[1][0].f_locals)
+# 		return list(cls.items) + list(args)
+
+# 	def sequence(self, *args):
+# 		# print(inspect.stack()[1][0].f_locals)
+# 		return list(self.items) + list(args)
+
+
+# b = Boo()
+# b.items = [1,2,3]
+# print(Boo.class_sequence(4,5,6))
+# print(b.sequence(4,5,6))
 
 

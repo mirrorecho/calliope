@@ -1,26 +1,34 @@
 # import importlib
 import inspect, os
 import abjad
-from calliope import bubbles
 
 def illustrate_me(
+            bubble = None,
             filename=None, 
             subfolder="illustrations", 
             score_type=None,
             as_pdf=True, 
             open_pdf=True, 
             as_midi=False):
+
+    from calliope import bubbles
+    
     calling_info = inspect.stack()[1]
     calling_module_path = calling_info[1]
     calling_module_name = os.path.split(calling_module_path)[1].split(".")[0]
     calling_module = inspect.getmodule( calling_info[0] )
 
-    # only illustrate if this method is being called from main module (as opposed to import)
+    if not score_type:
+        score_type = bubbles.AutoScore
+
+    # only illustrate if being called from main module (as opposed to import)
     if calling_module.__name__ == "__main__":
 
-        if score_type:
-            my_module_bubble = bubbles.ModuleBubble(calling_module)
-            my_score = score_type( my_module_bubble )
+        if not bubble:
+            bubble = bubbles.ModuleBubble(calling_module)
+        elif inspect.isclass(bubble):
+            bubble = bubble()
+        my_score = score_type( bubble )
         illustration_directory_path = os.path.join(
             os.path.dirname(calling_module_path),
             subfolder,
@@ -29,14 +37,14 @@ def illustrate_me(
             os.makedirs(illustration_directory_path)
 
     #     # NOTE... this is odd... within sublimetext using the virtual envionment package on a mac ONLY, 
-    #     # lilypond executable is not founr properly (something to do with os.environ not finding the right PATH info)
-    #     # ... adding this here solves as a quick-fix
+    #     # lilypond executable is not found properly (something to do with os.environ not finding the right PATH info)
+    #     # ... adding this here as a band-aid to solve that
         mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
         if os.path.exists("/Applications/LilyPond.app/Contents/Resources/bin/lilypond"):
             from abjad import abjad_configuration
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 
-        my_persistance_agent = abjad.persist( my_score.blow() )
+        my_persistance_agent = abjad.persist( my_score.get_lilypond_file() )
 
         filename = filename or calling_module_name
         

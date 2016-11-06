@@ -26,11 +26,11 @@ class Line(bubbles.Bubble):
             self.music_string = music_string
         super().__init__(**kwargs)
 
-    def __add__(self, other):
-        return LineSequence( bubbles=(self, other) )
+    # def __add__(self, other):
+    #     return bubbles.LineSequence( bubbles=(self, other) )
 
-    def __mul__(self, num):
-        return LineSequence( bubbles = [self for i in range(num)] )
+    # def __mul__(self, num):
+    #     return bubbles.LineSequence( bubbles = [self for i in range(num)] )
 
     def music(self, **kwargs):
         if self.music_string:
@@ -46,7 +46,7 @@ class Line(bubbles.Bubble):
             music_start = music[0]
 
             if self.transpose:
-                mutate(music).transpose(self.transpose)
+                abjad.mutate(music).transpose(self.transpose)
 
             if self.time_signature:
                 # TO DO... is the numeric commad necessary... maybe just include it at the score level?

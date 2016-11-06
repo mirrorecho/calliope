@@ -8,6 +8,7 @@ import bubble_test_mark_0
 
 
 # class BaseLineA(machines.DataLine):
+# class BaseLineA(bubble_test_mark_0.BaseLine0):
 class BaseLineA(bubble_test_mark_0.BaseLine0):
     # metrical_durations=ID1( {
     #     1:((3,4),),
@@ -16,8 +17,8 @@ class BaseLineA(bubble_test_mark_0.BaseLine0):
     #     )
     pass
 
-# class Violin1(BaseLineA, bubbles.Arrange):
-#     music = bubbles.Line()
+class Violin1(BaseLineA):
+    music = bubbles.Line("d2 d2")
 
 # class Violin2(BaseLineA, bubbles.Arrange):
 #     music = bubbles.Line()

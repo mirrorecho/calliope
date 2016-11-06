@@ -1,11 +1,11 @@
-from abjad import *
+import abjad
 
 # TO DO... is this used?
 def split(music, durations=((4,4),), cyclic=True, *args, **kwargs):
     # split notes accross bar lines (with ties) .... 
-    split_durations = [Duration(d) for d in durations]
+    split_durations = [abjad.Duration(d) for d in durations]
     leaves = music.select_leaves()
-    result = mutate(leaves).split(split_durations, cyclic=cyclic, *args, **kwargs)
+    result = abjad.mutate(leaves).split(split_durations, cyclic=cyclic, *args, **kwargs)
 
 # TO DO... refactor 
 def by_logical_tie_group_rests(music):

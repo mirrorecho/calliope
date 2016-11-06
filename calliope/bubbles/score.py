@@ -1,6 +1,6 @@
 import inspect
 import abjad
-from calliope import tools, bubbles
+from calliope import bubbles
 
 class Score(bubbles.BubbleGridMatch):
      # NOTE: abjad.Score.__init__ does not take is_simultaneous as an argument,
@@ -21,41 +21,41 @@ class Score(bubbles.BubbleGridMatch):
 
 class AutoScore(Score):
 
-    def __init__(self, module, **kwargs):
-        super().__init__(**kwargs)
-        self.module = module
+    # TO DO... add in stylesheet here
+    def __init__(self, gid_bubble=None, **kwargs):
+        super().__init__(gid_bubble, **kwargs)
+        if self.grid_bubble:
+            for bubble_name in self.grid_bubble.sequence():
+                self[bubble_name] = bubbles.Staff(
+                    instrument=abjad.instrumenttools.Instrument(
+                        instrument_name=bubble_name, short_instrument_name=bubble_name)
+                    )
 
 class ModuleBubble(bubbles.Bubble):
     module = None
     is_simultaneous = True
 
+    def sequence(self, **kwargs):
+        bubble_info = sorted([
+                (
+                    inspect.getsourcefile(m[1]), 
+                    inspect.getsourcelines(m[1])[1], 
+                    m[0]
+                ) if inspect.isclass(m[1])
+                else 
+                (
+                    "z",
+                    0,
+                    m[0],
+                )
+                for m in inspect.getmembers(self.module, bubbles.Line.isbubble)
+            ])
+        return [b[2] for b in bubble_info]
+
     def __init__(self, module, **kwargs):
-        # for s in self.sequence():
+        super().__init__(**kwargs)
         self.module = module
         for n, o in self.module.__dict__.items():
-            # note, needing to append to __ordered__ here because this has already been set by __new__
             if bubbles.Line.isbubble(o):
-                setattr(self, n, o)
-                self.__ordered__.append(n)
-        super().__init__(**kwargs)
+                self[n] = o
 
-
-class ModuleScoreSequence(Score):
-    modules = ()
-
-    def music(self, **kwargs):
-        pass
-
-    def blow_bubble(self, bubble_name):
-        """
-        execute for each bubble attribute to add that bubble's music to the main bubble's music.
-        NOTE that classes that inherit from GridSequence should NOT override blow_bubble
-        """
-        bubble = getattr(self, bubble_name)
-        if isinstance(bubble, Placeholder):
-            bubble = Sequence(
-                bubble_name=bubble_name, 
-                container_type = bubble.container_type,
-                context_name = bubble.context_name,
-                grid_sequence=self.grid_sequence)
-        return bubble.blow()
