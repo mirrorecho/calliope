@@ -6,7 +6,6 @@ from copy import copy, deepcopy
 # b = None
 # print( set(dir(d)) - set(dir(b)) )
 
-# TO DO EVENTUALLY... look into abjad tree data structures (or other tree structures)... may be useful here instead of reinventing the wheel
 class SetAttributeMixin(object):
     def __init__(self, **kwargs):
         super().__init__()
@@ -33,6 +32,11 @@ class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
     original_index = None 
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.children_type:
+            self.children_type = self.__class__
+
     def index_children(self):
         for i, child in enumerate(self.children):
             child.original_index = i
@@ -51,6 +55,7 @@ class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
         """
         return self.root.depthwise_inventory[self.depth].index(self)
 
+    # TO DO... is this every used?
     def copy(self):
         new_self = deepcopy(self)
         # for child in self.children:
@@ -58,6 +63,9 @@ class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
         return new_self
 
     def branch(self, **kwargs):
+        """
+        creates a child object of type self.children_type (appending the child to self), and returns the appended child
+        """
         new_branch = self.children_type(**kwargs)
         self.append( new_branch )
         return new_branch
@@ -68,6 +76,7 @@ class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
             my_return_string = str(self.parent) + " | " + my_return_string
         return my_return_string
 
+# TO DO... consider using pandas here!!!!
 class IndexedData(SetAttributeMixin, collections.UserDict):
     """
     behaves sort of like a cross between a list and a dictionary.
