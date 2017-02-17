@@ -1,11 +1,9 @@
-% 2016-11-03 15:15
+% 2017-02-16 21:40
 
-\version "2.18.2"
+\version "2.19.54"
 \language "english"
 
-\header {
-    tagline = ##f
-}
+\header {}
 
 \layout {}
 
@@ -13,92 +11,69 @@
 
 \score {
     \new Score <<
-        \new Staff {
-            \set Staff.instrumentName = \markup { BaseLine0 }
-            \set Staff.shortInstrumentName = \markup { BaseLine0 }
-            {
+        \new StaffGroup <<
+            \new StaffGroup \with {
+                systemStartDelimiter = #'SystemStartSquare
+            } <<
+                \new Staff {
+                    \set Staff.instrumentName = \markup { "Violin 1" }
+                    \set Staff.shortInstrumentName = \markup { Vln.1 }
+                    {
+                        {
+                            \accidentalStyle modern-cautionary
+                            d'2
+                        }
+                        {
+                            \accidentalStyle modern-cautionary
+                            d2
+                            d2
+                        }
+                    }
+                }
+                \new Staff {
+                    \set Staff.instrumentName = \markup { "Violin 2" }
+                    \set Staff.shortInstrumentName = \markup { Vln.2 }
+                    {
+                        {
+                            \accidentalStyle modern-cautionary
+                            c1
+                        }
+                    }
+                }
+            >>
+            \new Staff {
+                \set Staff.instrumentName = \markup { Viola }
+                \set Staff.shortInstrumentName = \markup { Vla. }
                 {
+                    {
+                        \accidentalStyle modern-cautionary
+                        c1
+                    }
                 }
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { Violin1 }
-            \set Staff.shortInstrumentName = \markup { Violin1 }
-            {
+            \new Staff {
+                \clef "bass"
+                \set Staff.instrumentName = \markup { Cello }
+                \set Staff.shortInstrumentName = \markup { Vc. }
                 {
-                    \accidentalStyle modern-cautionary
-                    d'2
-                }
-                {
-                    \accidentalStyle modern-cautionary
-                    d2
-                    d2
+                    {
+                        \accidentalStyle modern-cautionary
+                        c1
+                    }
                 }
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { Violin2 }
-            \set Staff.shortInstrumentName = \markup { Violin2 }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    c1
-                }
+        >>
+        \new StaffGroup <<
+        >>
+        \new StaffGroup <<
+            \new Staff {
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { Viola }
-            \set Staff.shortInstrumentName = \markup { Viola }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    c1
-                }
+            \new Staff {
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { Cello }
-            \set Staff.shortInstrumentName = \markup { Cello }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    c1
-                }
+            \new Staff {
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { YoMama }
-            \set Staff.shortInstrumentName = \markup { YoMama }
-            {
-                {
-                }
+            \new Staff {
             }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { YoMama1 }
-            \set Staff.shortInstrumentName = \markup { YoMama1 }
-            {
-                {
-                }
-            }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { YoMama2 }
-            \set Staff.shortInstrumentName = \markup { YoMama2 }
-            {
-                {
-                }
-            }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { C }
-            \set Staff.shortInstrumentName = \markup { C }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    c1
-                }
-            }
-        }
+        >>
     >>
 }

@@ -18,4 +18,4 @@ class MySequencedMusic(bubbles.ModuleSequence):
 
 # -------------------------------
 
-tools.illustrate_me(MySequencedMusic)
+tools.illustrate_me(MySequencedMusic, score_type=MyScore)

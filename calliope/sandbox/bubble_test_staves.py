@@ -51,6 +51,7 @@ class MyScore(bubbles.Score):
             instrument=abjad.instrumenttools.Cello(
                 instrument_name="Cello", short_instrument_name="vc.")
             clef="bass"
+            
 
     class ShortScore1(bubbles.StaffGroup): pass
 
