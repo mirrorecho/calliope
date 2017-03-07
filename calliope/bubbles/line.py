@@ -3,6 +3,9 @@ from calliope import bubbles
 
 
 class Line(bubbles.Bubble):
+    """
+    Bubble factory for an abjad Container with a single line of music
+    """
     is_simultaneous = False
     music_string = None
     tempo_text = None
