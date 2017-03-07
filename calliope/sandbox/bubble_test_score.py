@@ -8,14 +8,15 @@ from calliope.sandbox.bubble_test_staves import MyScore
 
 class MySequencedMusic(bubbles.ModuleSequence):
     modules = (
-        ("bubble_test_mark_0", "calliope.sandbox"),
+        ("bubble_test_mark_0", # "calliope.sandbox" # TO DO... WTF with the tuple?????
+        	),
         ("bubble_test_mark_a",),
         # "bubble_test_mark_b",
         )
 
-# m = MySequencedMusic()
-# print(m.sequence())
+m = MySequencedMusic()
+print(m.sequence())
 
 # -------------------------------
 
-tools.illustrate_me(MySequencedMusic, score_type=MyScore)
+tools.illustrate_me(MySequencedMusic)

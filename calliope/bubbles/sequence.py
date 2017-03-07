@@ -42,7 +42,7 @@ class ModuleSequence(bubbles.Bubble):
         if self.initial_module_bubble:
             return_bubbles = [self.initial_module_bubble]
             for m in self.modules[1:]:
-                additional_module = importlib.import_module(*m)
+                additional_module = importlib.import_module(*m) # TO DO: WTF ??????????
                 return_bubbles.append( bubbles.ModuleBubble(additional_module) )
             return return_bubbles
         else:

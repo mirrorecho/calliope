@@ -31,4 +31,4 @@ class Violin1(BaseLineA):
 
 # -------------------------------
 
-# tools.illustrate_me()
+tools.illustrate_me()

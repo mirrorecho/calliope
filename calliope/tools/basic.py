@@ -18,11 +18,13 @@ def illustrate_me(
     calling_module_name = os.path.split(calling_module_path)[1].split(".")[0]
     calling_module = inspect.getmodule( calling_info[0] )
 
+    print(calling_module_path)
+
     if not score_type:
         score_type = bubbles.AutoScore
 
     # only illustrate if being called from main module (as opposed to import)
-    if calling_module.__name__ == "__main__":
+    if not calling_module or calling_module.__name__ == "__main__":
 
         if not bubble:
             bubble = bubbles.ModuleBubble(calling_module)

@@ -4,31 +4,31 @@ from calliope import tools, bubbles
 
 # a little metaclass trick to keep class definition order intact.
 # ... see: http://stackoverflow.com/questions/4459531/how-to-read-class-attributes-in-the-same-order-as-declared
-class OrderedClassMembers(type):
-    @classmethod
-    def __prepare__(self, name, bases):
-        return collections.OrderedDict()
+# class OrderedClassMembers(type):
+#     @classmethod
+#     def __prepare__(self, name, bases):
+#         return collections.OrderedDict()
 
-    def __new__(self, name, bases, classdict):
-        # print(classdict.keys())
-        classdict['__ordered__'] = [key for key in classdict.keys()
-                if key not in ('__module__', '__qualname__')]
-        return type.__new__(self, name, bases, classdict)
+#     def __new__(self, name, bases, classdict):
+#         # print(classdict.keys())
+#         classdict['__ordered__'] = [key for key in classdict.keys()
+#                 if key not in ('__module__', '__qualname__')]
+#         return type.__new__(self, name, bases, classdict)
 
 
-class Bubble(metaclass=OrderedClassMembers):
+class Bubble(object):
     name=None
     container_type=abjad.Container
     context_name=None
     is_simultaneous=False
     child_types = ()
-    commands = ()
-    sequence = ()
+    commands = () # TO DO... depreciate?
+    sequence = () # TO DO... depreciate?
     respell=None # TO DO, best place for this?
     process_methods = () # TO DO... depreciate?
     stylesheets = ()
     is_simultaneous=True
-    added_bubbles = ()
+    added_bubbles = () # TO DO... what is this used for? Remove?
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -157,28 +157,31 @@ class Bubble(metaclass=OrderedClassMembers):
     def class_sequence(cls, bubble=None, **kwargs):
         # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.child_types)]
         # bubbles.sort(key=lambda x : x.order)
-        bubble = bubble or cls
+        # bubble = bubble or cls
         my_sequence = []
 
-        # This adds all bubble classes to the sequence, in the defined order:
+        # # This adds all bubble classes to the sequence, in the defined order:
         class_hierarchy = inspect.getmro(cls)[::-1]
         for c in class_hierarchy:
             if issubclass(c, Bubble):
-                for b in c.__ordered__:
+                for b in c.__dict__:
                     b_attr = getattr(bubble, b, None)
                     if b_attr and inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
                         my_sequence.append(b)
 
-        # This adds all bubble instances to the sequence, also in the defined order
-        # NOTE that instances will always follow AFTER classes...
-        for b in bubble.__ordered__:
-            if isinstance( getattr(bubble, b), bubble.child_types):
-                my_sequence.append(b)
+        # # # This adds all bubble instances to the sequence, also in the defined order
+        # # # NOTE that instances will always follow AFTER classes...
+        if bubble:
+            for b in bubble.__dict__:
+                if isinstance( getattr(bubble, b), bubble.child_types):
+                    my_sequence.append(b)
         
+        # print(cls.__definition_order__)
+        print(my_sequence)
         return my_sequence
 
     def sequence(self, **kwargs):
-        return self.class_sequence(self, **kwargs) + self.added_bubbles
+        return self.class_sequence(self, **kwargs) #+ self.added_bubbles
 
     def blow_bubble(self, bubble_name):
         """

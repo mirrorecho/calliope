@@ -51,35 +51,36 @@ class MyScore(bubbles.Score):
             instrument=abjad.instrumenttools.Cello(
                 instrument_name="Cello", short_instrument_name="vc.")
             clef="bass"
+
             
 
-    class ShortScore1(bubbles.StaffGroup): pass
+    # class ShortScore1(bubbles.StaffGroup): pass
 
-    class ShortScore2(bubbles.StaffGroup):
+    # class ShortScore2(bubbles.StaffGroup):
 
-        class Line1(bubbles.Staff):
-            color="green"
+    #     class Line1(bubbles.Staff):
+    #         color="green"
 
-        class Line2(bubbles.Staff):
-            pass
+    #     class Line2(bubbles.Staff):
+    #         pass
 
-        class Line3(bubbles.Staff):
-            pass
+    #     class Line3(bubbles.Staff):
+    #         pass
 
-        class Line4(bubbles.Staff):
-            pass
+    #     class Line4(bubbles.Staff):
+    #         pass
 
 
 
-# FOR RANDOM TESTING PURPOSES ONLY:
+# # FOR RANDOM TESTING PURPOSES ONLY:
 
-class MyScore2(MyScore):
-    pass
+# class MyScore2(MyScore):
+#     pass
 
-class MyScore3(MyScore2):
-    pass
+# class MyScore3(MyScore2):
+#     pass
 
-class MyScore4(MyScore3, MyScore2):
-    class NewStaff(bubbles.Staff): pass
-    class Strings(MyScore.Strings): pass
+# class MyScore4(MyScore3, MyScore2):
+#     class NewStaff(bubbles.Staff): pass
+#     class Strings(MyScore.Strings): pass
 
