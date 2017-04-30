@@ -2,6 +2,13 @@
 import inspect, os
 import abjad
 
+class SetAttributeMixin(object):
+    def __init__(self, **kwargs):
+        super().__init__()
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
+
 def illustrate_me(
             bubble = None,
             filename=None, 

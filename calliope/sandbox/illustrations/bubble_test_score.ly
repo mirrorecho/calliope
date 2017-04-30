@@ -1,4 +1,4 @@
-% 2017-03-04 01:42
+% 2017-03-22 00:48
 
 \version "2.19.54"
 \language "english"
@@ -26,6 +26,7 @@
                 {
                     \accidentalStyle modern-cautionary
                     d'2
+                    e'2
                 }
                 {
                     \accidentalStyle modern-cautionary
@@ -57,16 +58,6 @@
         \new Staff {
             \set Staff.instrumentName = \markup { Cello }
             \set Staff.shortInstrumentName = \markup { Cello }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    c1
-                }
-            }
-        }
-        \new Staff {
-            \set Staff.instrumentName = \markup { C }
-            \set Staff.shortInstrumentName = \markup { C }
             {
                 {
                     \accidentalStyle modern-cautionary

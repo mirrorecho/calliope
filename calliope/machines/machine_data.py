@@ -1,17 +1,18 @@
 # -*- encoding: utf-8 -*-
 
 import abjad
-from calliope import bubbles
-from copper import machines
-# from copper.machines.tools import IndexedData as ID # just to avoid a lot of typing
+from calliope import structures
 
-class LeafData(machines.AttachmentTagData, machines.Tree):
+class LeafData(structures.TagSet, structures.Tree):
     # TO DO... how/whether to use this????
     original_duration = 0
     ticks = 0
     rest = False
 
-class LogicalTieData(machines.AttachmentTagData, machines.Tree):
+class MachineDataBubble(structures.TagSet, structures.Tree, bubbles.Bubble)
+    pass
+
+class LogicalTieData(MachineDataBubble):
     original_duration = 0
     ticks = 0
     rest = False
@@ -35,7 +36,7 @@ class LogicalTieData(machines.AttachmentTagData, machines.Tree):
     def ticks_after(self):
         return self.ticks_before + self.ticks
 
-class ParentAttachmentTagData(machines.AttachmentTagData, machines.Tree):
+class EventDataBase(MachineDataBubble):
     @property
     def ticks(self):
         return sum([l.ticks for l in self.leaves])
@@ -50,7 +51,7 @@ class ParentAttachmentTagData(machines.AttachmentTagData, machines.Tree):
     def ticks_after(self):
         return self.ticks_before + self.ticks
 
-class EventData(ParentAttachmentTagData):
+class EventData(EventDataBase):
     # TO DO... should every logical tie in an event have the same pitch?
 
     pitch = 0 # note, this could be set to a list/tuple to indicate a chord
@@ -80,7 +81,7 @@ class EventData(ParentAttachmentTagData):
                 self.pop(-1)
 
 
-class CellData(ParentAttachmentTagData):
+class CellData(EventDataBase):
     # pitch_segment = None
     # rhythm_segment = None
     # pitch_reverse = False
@@ -89,8 +90,8 @@ class CellData(ParentAttachmentTagData):
     children_type = EventData
 
 
-class PhraseData(ParentAttachmentTagData):
+class PhraseData(EventDataBase):
     children_type = CellData
 
-class TreeData(ParentAttachmentTagData):
+class MachineData(EventDataBase):
     children_type = PhraseData

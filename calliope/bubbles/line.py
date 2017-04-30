@@ -52,7 +52,7 @@ class Line(bubbles.Bubble):
                 abjad.mutate(music).transpose(self.transpose)
 
             if self.time_signature:
-                # TO DO... is the numeric commad necessary... maybe just include it at the score level?
+                # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?
                 time_command_numeric =  abjad.indicatortools.LilyPondCommand("numericTimeSignature", "before")
                 abjad.attach(time_command_numeric, music_start)
 

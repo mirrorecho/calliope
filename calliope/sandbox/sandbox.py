@@ -2,6 +2,8 @@
 
 # KEEP IT SIMPLE! ... abjad already provides a structure, don't re-invent the wheel
 
+# THINK ABOUT... REPEATABLE VS FLEXIBLE
+
 # ametrical music and systems
 # - - boxes and arrows
 
