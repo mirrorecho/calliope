@@ -165,7 +165,6 @@ class Bubble(object):
         class_hierarchy = inspect.getmro(cls)[::-1]
         for c in class_hierarchy:
             if issubclass(c, Bubble):
-                print(c)
                 for b in c.__dict__:
                     b_attr = getattr(bubble, b, None)
                     if b_attr and inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
@@ -173,7 +172,9 @@ class Bubble(object):
 
         # # # This adds all bubble instances to the sequence, also in the defined order
         # # # NOTE that instances will always follow AFTER classes...
-        if bubble:
+        if bubble is not None:
+            print("YOYOYOYOY")
+            print(bubble.__dict__)
             for b in bubble.__dict__:
                 if isinstance( getattr(bubble, b), bubble.child_types):
                     my_sequence.append(b)
@@ -182,7 +183,7 @@ class Bubble(object):
         return my_sequence
 
     def sequence(self, **kwargs):
-        return self.class_sequence(self, **kwargs) #+ self.added_bubbles
+        return self.class_sequence(bubble=self, **kwargs) #+ self.added_bubbles
 
     def blow_bubble(self, bubble_name):
         """
