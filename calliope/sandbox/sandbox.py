@@ -133,36 +133,70 @@
 # - beaming tags
 # - remember slur_me !
 # should be able to easily add instruction AFTER note
+# ---------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------
 
-import inspect
-# import abjad
-# c = abjad.scoretools.FixedDurationContainer((2,3), "c1")
-# lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(c)
-# print(format(lilypond_file))
-from calliope import bubbles
+class YoMethod1():
 
-class MyBubble(bubbles.Bubble):
-	yo = "BAH"
+    args = None
+    kwargs = None
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self):
+        print(self.args)
+        print(self.kwargs)
+
+class YoMethod2(YoMethod1):
+
+    def __call__(self, *args, **kwargs)::
+        self.append_list += args
+        
+        super().__call__()
+
+class MyStuff1():
+    calling2 = YoMethod2("wow", echo="dog")
+
+class MyStuff2(MyStuff1):
+    def __init__(self, *args, **kwargs):
+        self.calling2.append_list = args
+
+m = MyStuff2()
+m.calling2("j","k")
 
 
-b1 = MyBubble()
-b2 = bubbles.Bubble()
-b1["ta"] = bubbles.Line("c1")
 
-print(b1["yo"])
+# import inspect
+# # import abjad
+# # c = abjad.scoretools.FixedDurationContainer((2,3), "c1")
+# # lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(c)
+# # print(format(lilypond_file))
+# from calliope import bubbles
+
+# class MyBubble(bubbles.Bubble):
+#   yo = "BAH"
+
+
+# b1 = MyBubble()
+# b2 = bubbles.Bubble()
+# b1["ta"] = bubbles.Line("c1")
+
+# print(b1["yo"])
 
 
 # class Boo(object):
-# 	items = ()
+#   items = ()
 
-# 	@classmethod
-# 	def class_sequence(cls, *args):
-# 		# print(inspect.stack()[1][0].f_locals)
-# 		return list(cls.items) + list(args)
+#   @classmethod
+#   def class_sequence(cls, *args):
+#       # print(inspect.stack()[1][0].f_locals)
+#       return list(cls.items) + list(args)
 
-# 	def sequence(self, *args):
-# 		# print(inspect.stack()[1][0].f_locals)
-# 		return list(self.items) + list(args)
+#   def sequence(self, *args):
+#       # print(inspect.stack()[1][0].f_locals)
+#       return list(self.items) + list(args)
 
 
 # b = Boo()

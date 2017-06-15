@@ -3,16 +3,16 @@ import abjad
 # class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
 
 class Tree(abjad.datastructuretools.TreeContainer):
-    children_type = None
+    child_types = ()
 
     # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful
     original_index = None 
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        if not self.children_type:
-            self.children_type = self.__class__
+        if not self.child_types:
+            self.child_types = (self.__class__,)
 
     def index_children(self):
         for i, child in enumerate(self.children):
@@ -39,11 +39,12 @@ class Tree(abjad.datastructuretools.TreeContainer):
         #     new_self.append(child.copy())
         return new_self
 
-    def branch(self, **kwargs):
+    # TO DO: still needed?
+    def branch(self, *args, **kwargs):
         """
         creates a child object of type self.children_type (appending the child to self), and returns the appended child
         """
-        new_branch = self.children_type(**kwargs)
+        new_branch = self.child_types[0](*args, **kwargs)
         self.append( new_branch )
         return new_branch
 

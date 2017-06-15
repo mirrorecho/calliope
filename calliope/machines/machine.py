@@ -1,6 +1,8 @@
 from calliope import machines
 
-class Machine(bubbles.LineTalea):
+class Machine(bubbles.LineTalea, machines.MachineBubbleBase):
+    children_type = Phrase
+
     """
     Base class .... creates music out of defined segments of material in the data attribute 
     (a tree structure of data about phrases, cells, events and logical ties).
@@ -13,10 +15,8 @@ class Machine(bubbles.LineTalea):
     Singular set_ methods set the attribues on indiviaul objects, usually based on data elsewhere in the data structure, or defined at the class
     level.
     """
-    data = None
 
     def __init__(self, **kwargs):
-        self.data = machines.MachineData()
         self.set_phrases(**kwargs)
         self.cleanup_data(**kwargs)
         self.update_data(**kwargs)
@@ -29,10 +29,6 @@ class Machine(bubbles.LineTalea):
     @property
     def events(self):
         return self.data.events
-
-    @property
-    def logical_ties(self):
-        return self.data.leaves
 
     def set_leaf(self, leaf, **kwargs):
         pass

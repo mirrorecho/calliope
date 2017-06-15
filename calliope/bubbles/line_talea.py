@@ -8,6 +8,10 @@ class LineTalea(bubbles.Line):
     """
 
     metrical_durations = None  # ID(max=4, default=((1,1),))
+
+
+    metrical_durations = ( (1,1),(1,1) ) # TO DO... rethink this with new machine structure
+
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
     auto_split_rests = True
@@ -63,7 +67,8 @@ class LineTalea(bubbles.Line):
         )
 
     def get_rhythm_music(self, **kwargs):
-        return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations.flattened()])
+        # return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations.flattened()])
+        return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations])
 
     def replace_multimeasure_rests(self, music):
         """

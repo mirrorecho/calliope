@@ -1,17 +1,20 @@
 
-from copper.machines.arrange_attachments import *
-from copper.machines.segmented_line import *
-from copper.machines.rhythms import *
-from copper.machines.pitches import *
+# TO DO.. rename this?
+from calliope.machines.machine_data import *
 
-from copper.machines.pitches_displaced import *
-from copper.machines.rhythms_multiplied import *
-from copper.machines.rhythms_broken import *
-from copper.machines.rhythms_pulsed import *
+# from calliope.machines.arrange_attachments import *
+# from calliope.machines.segmented_line import *
+# from calliope.machines.rhythms import *
+# from calliope.machines.pitches import *
+
+# from calliope.machines.pitches_displaced import *
+# from calliope.machines.rhythms_multiplied import *
+# from calliope.machines.rhythms_broken import *
+# from calliope.machines.rhythms_pulsed import *
 
 
-from copper.machines.drones import *
-from copper.machines.harmony import *
-from copper.machines.reverse import *
-from copper.machines.fragment_line import *
-from copper.machines import slurs
+# from calliope.machines.drones import *
+# from calliope.machines.harmony import *
+# from calliope.machines.reverse import *
+# from calliope.machines.fragment_line import *
+# from calliope.machines import slurs

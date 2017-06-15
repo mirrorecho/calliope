@@ -28,7 +28,7 @@ class Bubble(object):
     process_methods = () # TO DO... depreciate?
     stylesheets = ()
     is_simultaneous=True
-    added_bubbles = () # TO DO... what is this used for? Remove?
+    # added_bubbles = () # TO DO... what is this used for? Keep?
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -48,7 +48,7 @@ class Bubble(object):
             setattr(self, name, value)
         if not self.child_types:
             self.child_types = (Bubble,)
-        self.added_bubbles = []
+        # self.added_bubbles = []
         self.make_callable("music")
         self.make_callable("sequence")
         # self.setup()
@@ -91,17 +91,18 @@ class Bubble(object):
             kwargs["context_name"] = self.context_name
         return self.container_type(name=self.name, **kwargs)
 
-    def __setitem__(self, bubble_name, bubble):
-        if not Bubble.isbubble(bubble):
-            self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble_name, bubble)
-        else:
-            setattr(self, bubble_name, bubble)
-            self.added_bubbles.append(bubble_name)
+    # def __setitem__(self, bubble_name, bubble):
+    #     if not Bubble.isbubble(bubble):
+    #         self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble_name, bubble)
+    #     else:
+    #         setattr(self, bubble_name, bubble)
+    #         self.added_bubbles.append(bubble_name)
 
-    def __getitem__(self, bubble_name):
-        return getattr(self, bubble_name, None)
+    # def __getitem__(self, bubble_name):
+    #     return getattr(self, bubble_name, None)
 
     # TO DO... this implementation of add/mul creates odd nested containers... rethink
+    # Could also conflict with abjad tree structures
     def __add__(self, other):
         return bubbles.BubbleSequence( sequenced_bubbles=(self, other) )
 
@@ -164,6 +165,7 @@ class Bubble(object):
         class_hierarchy = inspect.getmro(cls)[::-1]
         for c in class_hierarchy:
             if issubclass(c, Bubble):
+                print(c)
                 for b in c.__dict__:
                     b_attr = getattr(bubble, b, None)
                     if b_attr and inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
@@ -177,7 +179,6 @@ class Bubble(object):
                     my_sequence.append(b)
         
         # print(cls.__definition_order__)
-        print(my_sequence)
         return my_sequence
 
     def sequence(self, **kwargs):
