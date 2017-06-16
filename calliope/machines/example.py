@@ -29,13 +29,18 @@ class ManualCell(machines.Cell):
     event2 = machines.Event(beats=1, pitch=-2)
     event3 = machines.Event(beats=2, pitch=-3)
 
+    def yoyoyo(self):
+    	pass
+
 c = ManualCell()
-print("yoyoyoyoyoyoyoyo")
+# print("yoyoyoyoyoyoyoyo")
 print(c.sequence())
-print("yoyoyoyoyoyoyoyo")
-c.set_data()
-print(c.leaves)
-print(c)
+# print(c.__dict__)
+# print(c.__class__.__dict__)
+# print("yoyoyoyoyoyoyoyo")
+# c.set_data()
+# print(c.leaves)
+# print(c)
 
 
 # CELL_A = machines.Cell(rhythm=(1,1,2), pitches=(-3,-2,0))

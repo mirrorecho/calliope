@@ -13,7 +13,7 @@ def main():
         name='calliope',
         packages=('calliope',),
         url='https://github.com/mirrorecho/calliope/',
-        version='0.1',
+        version='2.2',
         zip_safe=False,
         )
 

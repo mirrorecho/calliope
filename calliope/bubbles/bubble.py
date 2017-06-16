@@ -163,22 +163,25 @@ class Bubble(object):
 
         # # This adds all bubble classes to the sequence, in the defined order:
         class_hierarchy = inspect.getmro(cls)[::-1]
+        print(class_hierarchy)
         for c in class_hierarchy:
             if issubclass(c, Bubble):
                 for b in c.__dict__:
                     b_attr = getattr(bubble, b, None)
-                    if b_attr and inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
-                        my_sequence.append(b)
+                    if b_attr:
+                        if inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
+                            my_sequence.append(b)
+                        elif isinstance(b_attr, bubble.child_types):
+                            my_sequence.append(b)
 
-        # # # This adds all bubble instances to the sequence, also in the defined order
-        # # # NOTE that instances will always follow AFTER classes...
-        if bubble is not None:
-            print("YOYOYOYOY")
-            print(bubble.__dict__)
-            for b in bubble.__dict__:
-                if isinstance( getattr(bubble, b), bubble.child_types):
-                    my_sequence.append(b)
-        
+        # # # # This adds all bubble instances to the sequence, also in the defined order
+        # # # # NOTE that instances will always follow AFTER classes...
+        # # # # TO DO... is this needed????
+        # if bubble is not None:
+        #     # print(dir(bubble))
+        #     for b in bubble.__dict__:
+        #         if isinstance( getattr(bubble, b), bubble.child_types):
+        #             my_sequence.append(b)
         # print(cls.__definition_order__)
         return my_sequence
 
