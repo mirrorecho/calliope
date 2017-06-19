@@ -30,9 +30,6 @@ class ManualCell(machines.Cell):
     event2 = machines.Event(beats=1, pitch=-2)
     event3 = machines.Event(beats=2, pitch=-3)
 
-    def yoyoyo(self):
-        pass
-
 c = ManualCell()
 # print(c.sequence())
 # print(c.__dict__)
