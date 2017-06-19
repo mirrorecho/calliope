@@ -37,18 +37,24 @@ class MachineBubbleBase(bubbles.LineTalea, structures.Tree):
         """
         # TO DO... maybe this should just be in __init__????
         for bubble_name in self.sequence():
-            print(bubble_name)
+            # print(bubble_name)
+            # TO DO: WARNING: will this work for class-based bubbles
             bubble = getattr(self, bubble_name)
-            if isinstance(bubble, self.children_type):
-                print("appending: " + bubble_name)
-                self.append(bubble)
+            self.append(bubble)
 
 
-    def get_signed_ticks_list(self):
+    def get_signed_ticks_list(self, append_rest=False):
         # TO DO.. there's probably a more elegant one-liner for this!
         return_list = []
         for l in self.leaves:
             return_list.extend(l.get_signed_ticks_list())
+        
+        if append_rest:
+            ticks_end = self.ticks
+            metrical_duration_ticks = self.get_metrical_duration_ticks()
+            if metrical_duration_ticks > ticks_end:
+                return_list.append(int(ticks_end - metrical_duration_ticks))
+
         return return_list
 
     def process_rhythm_music(self, music, **kwargs):
@@ -89,7 +95,7 @@ class LogicalTieData(MachineBubbleBase):
         self.pitch = pitch
 
     def get_signed_ticks_list(self):
-        return [self.ticks]
+        return [self.ticks if not self.rest else 0 - self.ticks]
 
     @property
     def beats(self):
@@ -97,7 +103,7 @@ class LogicalTieData(MachineBubbleBase):
 
     @beats.setter
     def beats(self, value):
-        self.ticks = value * self.rhythm_default_multiplier
+        self.ticks = int(value * self.rhythm_default_multiplier)
 
     @property
     def use_ancestor_attachments(self):
@@ -127,12 +133,14 @@ class Event(MachineBubbleBase):
     child_types = (LogicalTieData,)
     from_line = None # used in FragmentLine for EventData that's copied from another line (tracks where it's copied from)
 
-    def __init__(self, name=None, beats=None, tie_name="tie", *args, **kwargs):
+    def __init__(self, name=None, beats=None, pitch=None, tie_name="tie", *args, **kwargs):
         super().__init__(name, **kwargs)
         if beats:
             child_tie = self.branch(tie_name)
             setattr(self, tie_name, child_tie)
             child_tie.set_data(beats=beats, **kwargs)
+        if pitch:
+            self.pitch = pitch
 
     # def set_data(self, beats, pitch=0, **kwargs):
     #     self.pitch = pitch

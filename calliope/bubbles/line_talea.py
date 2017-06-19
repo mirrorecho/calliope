@@ -6,7 +6,8 @@ class LineTalea(bubbles.Line):
     """
     LineTalea is a Line bubble with a music method that ... 
     """
-
+    # TO DO: combine with machine and machine_data???
+    
     metrical_durations = None  # ID(max=4, default=((1,1),))
 
 
@@ -25,9 +26,11 @@ class LineTalea(bubbles.Line):
         .... based on the defined metrical durations for this object
         """
 
-        return int(sum([d[0]/d[1] for d in self.metrical_durations.flattened()]) * self.rhythm_denominator)
+        # TO DO: determine how to deal with this with pandas?
+        # return int(sum([d[0]/d[1] for d in self.metrical_durations.flattened()]) * self.rhythm_denominator)
+        return int(sum([d[0]/d[1] for d in self.metrical_durations]) * self.rhythm_denominator)
 
-    def get_signed_ticks_list(self):
+    def get_signed_ticks_list(self, append_rest=False):
         """
         hook to return flattened list of all ticks, padded at the end based on the length, with rests as negative values
         """
@@ -37,7 +40,7 @@ class LineTalea(bubbles.Line):
         test_durations = [1, -1, 1, -1 ] 
 
         # TO DO... this is a bad place for this!!!!!!!!!!!!!!!!!!:
-        self.metrical_durations = tools.IndexedData(max=4, default=((1,1),))
+        # self.metrical_durations = tools.IndexedData(max=4, default=((1,1),))
         
         return [d * self.rhythm_default_multiplier for d in test_durations]
 
@@ -55,7 +58,7 @@ class LineTalea(bubbles.Line):
         # return ticks_list
 
     def get_talea(self):
-        return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(), self.rhythm_denominator)
+        return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(append_rest=True), self.rhythm_denominator)
 
     def get_rhythm_maker(self):
         return abjad.rhythmmakertools.TaleaRhythmMaker(

@@ -163,7 +163,7 @@ class Bubble(object):
 
         # # This adds all bubble classes to the sequence, in the defined order:
         class_hierarchy = inspect.getmro(cls)[::-1]
-        print(class_hierarchy)
+        # print(class_hierarchy)
         for c in class_hierarchy:
             if issubclass(c, Bubble):
                 for b in c.__dict__:
