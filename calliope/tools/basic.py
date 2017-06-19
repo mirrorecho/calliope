@@ -32,8 +32,7 @@ def illustrate_me(
 
     # only illustrate if being called from main module (as opposed to import)
     if not calling_module or calling_module.__name__ == "__main__":
-
-        if not bubble:
+        if bubble is None:
             bubble = bubbles.ModuleBubble(calling_module)
         elif inspect.isclass(bubble):
             bubble = bubble()

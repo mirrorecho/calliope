@@ -26,6 +26,11 @@ class Machine(bubbles.Line, structures.Tree):
         super().__init__(**kwargs) 
         structures.Tree.__init__(self) # TO DO: necessary???
 
+        for bubble_name in self.sequence():
+            # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
+            bubble = getattr(self, bubble_name)       
+            self.append(bubble)
+
     def __call__(self, name=None, **kwargs):
         return_bubble = copy.copy(self) # TO DO... consider deep copy here
         if name:
@@ -39,12 +44,11 @@ class Machine(bubbles.Line, structures.Tree):
         can also be overriden or used as a hook for setting/manipulating attributes
         """
         # TO DO... maybe this should just be in __init__????
-        for bubble_name in self.sequence():
-            # print(bubble_name)
-            # TO DO: WARNING: will this work for class-based bubbles
-            bubble = getattr(self, bubble_name)
-            self.append(bubble)
-
+        # for bubble_name in self.sequence():
+        #     # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
+        #     bubble = getattr(self, bubble_name)       
+        #     self.append(bubble)
+        pass
 
     def get_metrical_duration_ticks(self):
         """

@@ -26,10 +26,11 @@ class AutoScore(Score):
         super().__init__(gid_bubble, **kwargs)
         if self.grid_bubble:
             for bubble_name in self.grid_bubble.sequence():
-                self[bubble_name] = bubbles.Staff(
+                bubble = bubbles.Staff(
                     instrument=abjad.instrumenttools.Instrument(
                         instrument_name=bubble_name, short_instrument_name=bubble_name)
                     )
+                setattr(self, bubble_name, bubble)
 
 class ModuleBubble(bubbles.Bubble):
     module = None

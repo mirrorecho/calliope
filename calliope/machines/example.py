@@ -1,4 +1,4 @@
-from calliope import structures, bubbles, machines
+from calliope import tools, structures, bubbles, machines
 
 # class InventoryBasedCell(machines.Cell):
 #     pitch_inventory = None # set to structures.SeriesCollection  in sub-classes
@@ -30,13 +30,19 @@ class ManualCell(machines.Cell):
     event2 = machines.Event(beats=1, pitch=-2)
     event3 = machines.Event(beats=2, pitch=-3)
 
-c = ManualCell()
+
+class SimplePhrase(machines.Phrase):
+    cella = ManualCell()
+    cellb = ManualCell()
+    cellb.event1a = machines.Event(beats=1, rest=True)
+
 # print(c.sequence())
 # print(c.__dict__)
 # print(c.__class__.__dict__)
-c.set_data()
-# print(c.get_talea())
-print(c)
+s = SimplePhrase()
+sc = bubbles.AutoScore(s)
+print(sc.sequence())
+# tools.illustrate_me( bubble=s )
 
 
 # CELL_A = machines.Cell(rhythm=(1,1,2), pitches=(-3,-2,0))

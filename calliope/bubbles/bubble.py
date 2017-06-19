@@ -16,6 +16,7 @@ from calliope import tools, bubbles
 #         return type.__new__(self, name, bases, classdict)
 
 
+# TO DO MAYBE: all bubbles inherit from tree structure????
 class Bubble(object):
     name=None
     container_type=abjad.Container
@@ -149,7 +150,7 @@ class Bubble(object):
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = abjad.lilypondfiletools.make_basic_lilypond_file(music, includes=self.stylesheets, 
+        lilypond_file = abjad.lilypondfiletools.LilyPondFile.new(music, includes=self.stylesheets, 
             )
         self.info("got abjad representation of lilypond file... now rendering with lilypond")
         return lilypond_file

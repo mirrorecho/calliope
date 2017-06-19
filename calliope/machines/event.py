@@ -8,14 +8,11 @@ class Event(machines.Machine):
     child_types = (machines.LogicalTie,)
     from_line = None # used in FragmentLine for EventData that's copied from another line (tracks where it's copied from)
 
-    def __init__(self, name=None, beats=None, pitch=None, rest=False, tie_name="tie", *args, **kwargs):
+    def __init__(self, name=None, beats=None, rest=False, tie_name="tie0", *args, **kwargs):
         super().__init__(name, **kwargs)
         if beats:
-            child_tie = self.branch(tie_name)
+            child_tie = self.branch(tie_name, beats=beats, rest=rest, **kwargs)
             setattr(self, tie_name, child_tie) # TO DO... this is a little screwy...
-            child_tie.set_data(beats=beats, rest=rest, **kwargs)
-        if pitch:
-            self.pitch = pitch
 
     # def set_data(self, beats, pitch=0, **kwargs):
     #     self.pitch = pitch
