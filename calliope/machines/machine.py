@@ -5,32 +5,32 @@ from calliope import tools, structures, bubbles, machines
 # TO DO... re-add TagSet once this is properly implemented
 # TO DO... how/whether to use this????
 # class LeafData(structures.TagSet, structures.Tree):
-class LeafData(structures.Tree):
-    original_duration = 0
-    ticks = 0
-    rest = False
+# class LeafData(structures.Tree):
+#     original_duration = 0
+#     ticks = 0
+#     rest = False
 
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(structures.TagSet, structures.Tree, bubbles.LineTalea):
-class Machine(bubbles.Line, structures.Tree):
+class Machine(bubbles.Line):
 
-    name = None
     # TO DO... create a way to automate metrical durations for workshopping/testing
     metrical_durations = ( (1,1),(1,1) ) 
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
 
-    def __init__(self, name=None, **kwargs):
-        if name:
-            self.name=name
-        super().__init__(**kwargs) 
-        structures.Tree.__init__(self) # TO DO: necessary???
+    # def __init__(self, name=None, **kwargs):
+    #     if name:
+    #         self.name=name
+    #     super().__init__(**kwargs) 
+    #     structures.Tree.__init__(self) # TO DO: necessary???
 
-        for bubble_name in self.sequence():
-            # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
-            bubble = getattr(self, bubble_name)       
-            self.append(bubble)
+    #     for bubble_name in self.sequence():
+    #         # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
+    #         bubble = getattr(self, bubble_name)       
+    #         self.append(bubble)
 
+    # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
         return_bubble = copy.copy(self) # TO DO... consider deep copy here
         if name:

@@ -2,34 +2,21 @@ import inspect, collections
 import abjad
 from calliope import tools, bubbles
 
-# a little metaclass trick to keep class definition order intact.
-# ... see: http://stackoverflow.com/questions/4459531/how-to-read-class-attributes-in-the-same-order-as-declared
-# class OrderedClassMembers(type):
-#     @classmethod
-#     def __prepare__(self, name, bases):
-#         return collections.OrderedDict()
-
-#     def __new__(self, name, bases, classdict):
-#         # print(classdict.keys())
-#         classdict['__ordered__'] = [key for key in classdict.keys()
-#                 if key not in ('__module__', '__qualname__')]
-#         return type.__new__(self, name, bases, classdict)
-
 
 # TO DO MAYBE: all bubbles inherit from tree structure????
-class Bubble(object):
-    name=None
+class Bubble(abjad.datastructuretools.TreeContainer):
     container_type=abjad.Container
     context_name=None
     is_simultaneous=False
     child_types = ()
-    commands = () # TO DO... depreciate?
-    sequence = () # TO DO... depreciate?
     respell=None # TO DO, best place for this?
     process_methods = () # TO DO... depreciate?
-    stylesheets = ()
+    stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
-    # added_bubbles = () # TO DO... what is this used for? Keep?
+    
+    # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful
+    original_index = None 
+    original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
     def make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
@@ -43,17 +30,85 @@ class Bubble(object):
             else:
                 setattr(self, attr_name, lambda : attr)
 
-    def __init__(self, **kwargs):
+    def append_children(self):
+        for bubble_name in type(self).class_sequence():
+            # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
+            bubble = getattr(self, bubble_name)
+            bubble.name = bubble_name     
+            self[bubble_name] = bubble
+
+    def __init__(self, name=None, *args, **kwargs):
         # the first arg is always the music, if passed:
-        for name, value in kwargs.items():
-            setattr(self, name, value)
+        super().__init__()
+        if name:
+            self.name=name
         if not self.child_types:
             self.child_types = (Bubble,)
+        for name, value in kwargs.items():
+            setattr(self, name, value)
         # self.added_bubbles = []
         self.make_callable("music")
         self.make_callable("sequence")
-        # self.setup()
-        # self.arrange()
+        self.append_children()
+
+
+    def __setitem__(self, bubble_name, bubble):
+        if not Bubble.isbubble(bubble, bubble_types=self.child_types):
+            self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble)
+        else:
+            if type(bubble_name) in (int, slice):
+                # if setting based on integer index or slice, use abjad's tree container default behavior
+                abjad.datastructuretools.TreeContainer.__setitem__(self, bubble_name, bubble)
+            else:
+                bubble.name = bubble_name
+                setattr(self, bubble_name, bubble)
+                new_child = True
+
+                for i, b in enumerate(self.children):
+                    if b.name == bubble_name:
+                        abjad.datastructuretools.TreeContainer.__setitem__(self, i, bubble)
+                        new_child = False
+                        break
+                if new_child:
+                    abjad.datastructuretools.TreeContainer.__setitem__(self,
+                        slice(len(self), len(self)),
+                        [bubble]
+                        )
+
+
+    def index_children(self):
+        for i, child in enumerate(self.children):
+            child.original_index = i
+            child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
+
+    @property
+    def my_index(self):
+        return self.parent.index(self)
+        # return self.graph_order[-1] # NOTE... this does the same thing... which performs better??
+
+
+    @property
+    def depthwise_index(self):
+        """
+        Not sure how well this performs, but it works
+        """
+        return self.root.depthwise_inventory[self.depth].index(self)
+
+    # TO DO... is this every used?
+    def copy(self):
+        new_self = deepcopy(self)
+        # for child in self.children:
+        #     new_self.append(child.copy())
+        return new_self
+
+    # TO DO: still needed?
+    def branch(self, *args, **kwargs):
+        """
+        creates a child object of type self.children_type (appending the child to self), and returns the appended child
+        """
+        new_branch = self.child_types[0](*args, **kwargs)
+        self.append( new_branch )
+        return new_branch
 
     # TO DO.. depreciate?
     def setup(self, **kwargs):
@@ -92,16 +147,6 @@ class Bubble(object):
             kwargs["context_name"] = self.context_name
         return self.container_type(name=self.name, **kwargs)
 
-    # def __setitem__(self, bubble_name, bubble):
-    #     if not Bubble.isbubble(bubble):
-    #         self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble_name, bubble)
-    #     else:
-    #         setattr(self, bubble_name, bubble)
-    #         self.added_bubbles.append(bubble_name)
-
-    # def __getitem__(self, bubble_name):
-    #     return getattr(self, bubble_name, None)
-
     # TO DO... this implementation of add/mul creates odd nested containers... rethink
     # Could also conflict with abjad tree structures
     def __add__(self, other):
@@ -122,9 +167,9 @@ class Bubble(object):
         my_music = self.music()
         self.after_music(my_music)
         # TO DO... depreciate commands?
-        for c in self.commands:
-            command = indicatortools.LilyPondCommand(c[0], c[1])
-            attach(command, my_music)
+        # for c in self.commands:
+        #     command = indicatortools.LilyPondCommand(c[0], c[1])
+        #     attach(command, my_music)
         return my_music
 
     def warn(self, msg, data=None, **kwargs):
@@ -144,9 +189,9 @@ class Bubble(object):
             self.warn(msg or "(no message)", data)
         return condition
 
-    def __str__(self):
-        music = self.blow()
-        return(format(music))
+    # def __str__(self):
+    #     music = self.blow()
+    #     return(format(music))
 
     def get_lilypond_file(self):
         music = self.blow()
@@ -156,24 +201,20 @@ class Bubble(object):
         return lilypond_file
 
     @classmethod
-    def class_sequence(cls, bubble=None, **kwargs):
-        # bubbles = [getattr(self,b) for b in dir(self) if isinstance(getattr(self,b), self.child_types)]
-        # bubbles.sort(key=lambda x : x.order)
-        # bubble = bubble or cls
+    def class_sequence(cls, **kwargs):
         my_sequence = []
 
         # # This adds all bubble classes to the sequence, in the defined order:
         class_hierarchy = inspect.getmro(cls)[::-1]
-        # print(class_hierarchy)
+        child_types = cls.child_types or (Bubble, )
+
         for c in class_hierarchy:
             if issubclass(c, Bubble):
-                for b in c.__dict__:
-                    b_attr = getattr(bubble, b, None)
-                    if b_attr:
-                        if inspect.isclass(b_attr) and issubclass(b_attr, bubble.child_types) and not b in my_sequence:
-                            my_sequence.append(b)
-                        elif isinstance(b_attr, bubble.child_types):
-                            my_sequence.append(b)
+                for name, attr in c.__dict__.items():
+                    if inspect.isclass(attr) and issubclass(attr, child_types) and not name in my_sequence:
+                        my_sequence.append(name)
+                    elif isinstance(attr, child_types):
+                        my_sequence.append(name)
 
         # # # # This adds all bubble instances to the sequence, also in the defined order
         # # # # NOTE that instances will always follow AFTER classes...
@@ -183,11 +224,13 @@ class Bubble(object):
         #     for b in bubble.__dict__:
         #         if isinstance( getattr(bubble, b), bubble.child_types):
         #             my_sequence.append(b)
+
         # print(cls.__definition_order__)
         return my_sequence
 
     def sequence(self, **kwargs):
-        return self.class_sequence(bubble=self, **kwargs) #+ self.added_bubbles
+        # my_sequence = self.class_sequence(**kwargs) #+ self.added_bubbles
+        return [b.name for b in self.children]
 
     def blow_bubble(self, bubble_name):
         """

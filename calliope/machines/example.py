@@ -1,3 +1,4 @@
+import inspect, abjad
 from calliope import tools, structures, bubbles, machines
 
 # class InventoryBasedCell(machines.Cell):
@@ -14,7 +15,7 @@ from calliope import tools, structures, bubbles, machines
 
 # class CopperCell(InventoryBasedCell):
 #     pitch_inventory = structures.SeriesCollection({
-#         "hi": ( 2, 0,-1),
+        # "hi": ( 2, 0,-1),
 #         "low": (-5,-3,-1),
 #         "mid": (-3, 0,-1),
 #         })
@@ -24,25 +25,45 @@ from calliope import tools, structures, bubbles, machines
 #         "long": (4, 1, 1),
 #       })
 
-class ManualCell(machines.Cell):
-    event1 = machines.Event(beats=2, pitch=0)
-    event1a = machines.Event(beats=0.5, rest=True)
-    event2 = machines.Event(beats=1, pitch=-2)
-    event3 = machines.Event(beats=2, pitch=-3)
+# class ManualCell(machines.Cell):
+#     event1 = machines.Event(beats=2, pitch=0)
+#     event1a = machines.Event(beats=0.5, rest=True)
+#     event2 = machines.Event(beats=1, pitch=-2)
+#     event3 = machines.Event(beats=2, pitch=-3)
 
 
-class SimplePhrase(machines.Phrase):
-    cella = ManualCell()
-    cellb = ManualCell()
-    cellb.event1a = machines.Event(beats=1, rest=True)
+# class SimplePhrase(machines.Phrase):
+#     cella = ManualCell()
+#     cellb = ManualCell()
+#     cellb.event1a = machines.Event(beats=1, rest=True)
 
-# print(c.sequence())
-# print(c.__dict__)
-# print(c.__class__.__dict__)
-s = SimplePhrase()
-sc = bubbles.AutoScore(s)
-print(sc.sequence())
-# tools.illustrate_me( bubble=s )
+# # print(c.sequence())
+# # print(c.__dict__)
+# # print(c.__class__.__dict__)
+# s = SimplePhrase()
+# sc = bubbles.AutoScore(s)
+# print(sc.sequence())
+# # tools.illustrate_me( bubble=s )
+
+
+class Boo(object):
+    a = 1
+    b = 2
+
+class Wow(bubbles.Bubble):
+    w2 = bubbles.Bubble()
+    w1 = bubbles.Bubble()
+
+    class Wow2(bubbles.Bubble):
+        www="yo"
+        www4 = bubbles.Bubble()
+
+
+w = Wow()
+w["w3"] = bubbles.Bubble()
+
+print(w.sequence())
+
 
 
 # CELL_A = machines.Cell(rhythm=(1,1,2), pitches=(-3,-2,0))

@@ -53,10 +53,12 @@ class ModuleBubble(bubbles.Bubble):
             ])
         return [b[2] for b in bubble_info]
 
+    # def append_children(self):
+    #     for n, o in self.module.__dict__.items():
+    #         if bubbles.Line.isbubble(o):
+    #             self[n] = o
+
     def __init__(self, module, **kwargs):
         super().__init__(**kwargs)
         self.module = module
-        for n, o in self.module.__dict__.items():
-            if bubbles.Line.isbubble(o):
-                self[n] = o
 
