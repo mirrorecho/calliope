@@ -45,7 +45,7 @@ class Line(bubbles.Bubble):
         else:
             return super().music(**kwargs)
 
-    def after_music(self, music, **kwargs):
+    def process_music(self, music, **kwargs):
         if len(music) > 0:
             music_start = music[0]
 
@@ -114,9 +114,9 @@ class MultiLine(Line):
     is_simultaneous = True
     instruction = None
 
-    def bubble_imprint(self, music):
+    def child_music(self, child_bubble):
         my_music = Container()
-        my_music.append(music)
+        my_music.append( child_bubble.blow() )
         return my_music
 
     def music(self, **kwargs):

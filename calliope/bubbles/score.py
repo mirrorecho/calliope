@@ -13,30 +13,30 @@ class Score(bubbles.BubbleGridMatch):
     hide_empty = False 
     title = ""
 
-    def after_music(self, music, **kwargs):
-        super().after_music(music, **kwargs)
-        # music.add_final_bar_line()
+    def process_music(self, music, **kwargs):
+        super().process_music(music, **kwargs)
         self.info("finished creating abjad music container object for the score")
 
 
 class AutoScore(Score):
 
     # TO DO... add in stylesheet here
-    def __init__(self, gid_bubble=None, **kwargs):
-        super().__init__(gid_bubble, **kwargs)
+    def __init__(self, grid_bubble=None, **kwargs):
+        super().__init__(grid_bubble, **kwargs)
         if self.grid_bubble:
             for bubble_name in self.grid_bubble.sequence():
                 bubble = bubbles.Staff(
                     instrument=abjad.instrumenttools.Instrument(
                         instrument_name=bubble_name, short_instrument_name=bubble_name)
                     )
-                setattr(self, bubble_name, bubble)
+                self[bubble_name] = bubble
 
 class ModuleBubble(bubbles.Bubble):
     module = None
     is_simultaneous = True
 
-    def sequence(self, **kwargs):
+    @classmethod
+    def class_sequence(self, **kwargs):
         bubble_info = sorted([
                 (
                     inspect.getsourcefile(m[1]), 
@@ -53,12 +53,4 @@ class ModuleBubble(bubbles.Bubble):
             ])
         return [b[2] for b in bubble_info]
 
-    # def append_children(self):
-    #     for n, o in self.module.__dict__.items():
-    #         if bubbles.Line.isbubble(o):
-    #             self[n] = o
-
-    def __init__(self, module, **kwargs):
-        super().__init__(**kwargs)
-        self.module = module
 

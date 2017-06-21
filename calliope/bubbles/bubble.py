@@ -3,14 +3,12 @@ import abjad
 from calliope import tools, bubbles
 
 
-# TO DO MAYBE: all bubbles inherit from tree structure????
 class Bubble(abjad.datastructuretools.TreeContainer):
     container_type=abjad.Container
     context_name=None
     is_simultaneous=False
     child_types = ()
     respell=None # TO DO, best place for this?
-    process_methods = () # TO DO... depreciate?
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
     # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the abjad TreeContainer
@@ -95,7 +93,6 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         return self.parent.index(self)
         # return self.graph_order[-1] # NOTE... this does the same thing... which performs better??
 
-
     @property
     def depthwise_index(self):
         """
@@ -119,29 +116,6 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         self.append( new_branch )
         return new_branch
 
-    # TO DO.. depreciate?
-    def setup(self, **kwargs):
-        """
-        hook that's called at end of bubble __init__ method (just before arrange), 
-        for adjusting bubble atributes / actual bubble material, etc.
-        """
-        pass
-
-    # # TO DO.. depreciate?
-    # def arrange(self, **kwargs):
-    #     """
-    #     hook that's called at end of bubble __init__ method, for arranging music
-    #     (usually dealing with bubble attributes... adding articulations, phrasing, etc.)
-    #     """
-    #     pass
-
-    # # TO DO... depreciate?
-    # def latch(self, **kwargs):
-    #     return_bubble = copy(self)
-    #     for name, value in kwargs.items():
-    #         setattr(return_bubble, name, value)
-    #     return return_bubble
-
     @classmethod
     def isbubble(cls, bubble, bubble_types=None):
         bubble_types = bubble_types or (cls,)
@@ -163,23 +137,6 @@ class Bubble(abjad.datastructuretools.TreeContainer):
 
     def __mul__(self, num):
         return bubbles.BubbleSequence( sequenced_bubbles = [self for i in range(num)] )
-
-    def after_music(self, music, **kwargs):
-        # TO DO... is this the best place for respell, etc.?
-        if self.respell:
-            tools.respell(music, self.respell)
-        # TO DO... look at these process_methods in light of "machines" work in copper
-        for m in self.process_methods:
-            m(music)
-
-    def blow(self, **kwargs):
-        my_music = self.music()
-        self.after_music(my_music)
-        # TO DO... depreciate commands?
-        # for c in self.commands:
-        #     command = indicatortools.LilyPondCommand(c[0], c[1])
-        #     attach(command, my_music)
-        return my_music
 
     def warn(self, msg, data=None, **kwargs):
         print("WARNING - %s: %s" % (self.__class__.__name__, msg)  )
@@ -225,45 +182,29 @@ class Bubble(abjad.datastructuretools.TreeContainer):
                         my_sequence.append(name)
                     elif isinstance(attr, child_types):
                         my_sequence.append(name)
-
-        # # # # This adds all bubble instances to the sequence, also in the defined order
-        # # # # NOTE that instances will always follow AFTER classes...
-        # # # # TO DO... is this needed????
-        # if bubble is not None:
-        #     # print(dir(bubble))
-        #     for b in bubble.__dict__:
-        #         if isinstance( getattr(bubble, b), bubble.child_types):
-        #             my_sequence.append(b)
-
-        # print(cls.__definition_order__)
         return my_sequence
 
     def sequence(self, **kwargs):
         # my_sequence = self.class_sequence(**kwargs) #+ self.added_bubbles
         return [b.name for b in self.children]
 
-    def blow_bubble(self, bubble_name):
-        """
-        execute for each bubble attribute to add that bubble's music to the main bubble's music
-        """
-        bubble = getattr(self, bubble_name, None)
-        if bubble:
-            if inspect.isclass(bubble):
-                # if bubble is a class, then we want to get an instance of that class...
-                bubble = bubble()
-            # if isinstance(bubble, Placeholder) and hasattr(self, "bubble_default"):
-            #     bubble = self.bubble_default   
-            # print(type(bubble.blow()))   
-            return self.bubble_imprint( bubble.blow() )
+    def child_music(self, child_bubble):
+        # can be overridden to add custom stuff for each child of a particular bubble
+        return child_bubble.blow()
 
-    # TO DO.. depreciate? (but currently used in MultiLine)
-    def bubble_imprint(self, music):
-        return music
+    def process_music(self, music, **kwargs):
+        # TO DO... is this the best place for respell, etc.?
+        if self.respell:
+            tools.respell(music, self.respell)
 
     def music(self, **kwargs):
         my_music = self.music_container()
-        for bubble_name in self.sequence():
-            # the bubble attribute specified by the sequence must exist on this bubble object...
-            append_music = self.blow_bubble(bubble_name)
-            my_music.append(append_music)
+        for child_bubble in self.children:
+            my_music.append( child_music( child_bubble ) )
         return my_music
+
+    def blow(self, **kwargs):
+        music = self.music(**kwargs)
+        self.process_music(my_music, **kwargs)
+        return music
+

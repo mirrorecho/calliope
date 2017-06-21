@@ -33,7 +33,7 @@ def illustrate_me(
     # only illustrate if being called from main module (as opposed to import)
     if not calling_module or calling_module.__name__ == "__main__":
         if bubble is None:
-            bubble = bubbles.ModuleBubble(calling_module)
+            bubble = bubbles.ModuleBubble(module=calling_module)
         elif inspect.isclass(bubble):
             bubble = bubble()
         my_score = score_type( bubble )
@@ -46,9 +46,9 @@ def illustrate_me(
 
     #     # NOTE... this is odd... within sublimetext using the virtual envionment package on a mac ONLY, 
     #     # lilypond executable is not found properly (something to do with os.environ not finding the right PATH info)
-    #     # ... adding this here as a band-aid to solve that
+    #     # ... adding this here as a band-aid:
         mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
-        if os.path.exists("/Applications/LilyPond.app/Contents/Resources/bin/lilypond"):
+        if os.path.exists(mac_default_lilypond_path):
             from abjad import abjad_configuration
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 

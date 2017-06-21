@@ -8,15 +8,13 @@ class Wrap(bubbles.Bubble):
     """
     creates a new container/bubble around the inner bubble
     """
-    def __init__(self, music_bubble=None, **kwargs):
-        self.music_bubble = lambda : music_bubble
+    def __init__(self, inner_bubble=None, **kwargs):
+        self.inner_bubble = lambda : inner_bubble # TO DO... why the lambda?
         super().__init__(**kwargs)
 
     def music(self, **kwargs):
         my_music = self.music_container()
-        bubble = self.music_bubble()
-        if isinstance(bubble, bubbles.Bubble): # just as a precaution
-            my_music.append( bubble.blow() )
+        my_music.append( self.inner_bubble().blow() )
         return my_music
 
 
@@ -30,13 +28,13 @@ class Staff(Wrap):
     instrument = None
     clef = None
 
-    def after_music(self, music, **kwargs):
+    def process_music(self, music, **kwargs):
         if self.instrument:
             abjad.attach(self.instrument, music)
         if self.clef:
             clef_obj = abjad.Clef(self.clef)
             abjad.attach(clef_obj, music)
-        super().after_music(music, **kwargs)
+        super().process_music(music, **kwargs)
 
     def show(self):
         self.show_pdf()
@@ -54,19 +52,13 @@ class BubbleGridMatch(bubbles.Bubble):
         if grid_bubble:
             self.grid_bubble = grid_bubble
         super().__init__(**kwargs)
-        BubbleGridMatch.set_grid_bubbles(self)
+        self.set_grid_bubbles(self)
 
-    @classmethod
-    def set_grid_bubbles(cls, parent_bubble):
-        if inspect.isclass(parent_bubble):
-            sequence_method = parent_bubble.class_sequence
-        else:
-            sequence_method = parent_bubble.sequence
-        for bubble_name in sequence_method():
-            bubble = getattr(parent_bubble, bubble_name, None)
-            if BubbleGridMatch.isbubble(bubble):
-                bubble.grid_bubble = bubble.grid_bubble or parent_bubble.grid_bubble
-                BubbleGridMatch.set_grid_bubbles(bubble)
+    def set_grid_bubbles(self, parent_bubble):
+        # TO DO... there might be a better way to iterate through all children...
+        for child_bubble in parent_bubble.children:
+            child_bubble.grid_bubble = child_bubble.grid_bubble or parent_bubble.grid_bubble
+            self.set_grid_bubbles(child_bubble)
 
     def music(self, **kwargs):
         my_music = self.music_container()
@@ -86,10 +78,10 @@ class StaffGroup(BubbleGridMatch):
     child_types=(Staff, BubbleGridMatch)
     instrument = None
     
-    def after_music(self, music, **kwargs):
+    def process_music(self, music, **kwargs):
         if self.instrument:
             abjad.attach(self.instrument, music)
-        super().after_music(music, **kwargs)
+        super().process_music(music, **kwargs)
 
     def show(self):
         self.show_pdf()
@@ -117,7 +109,7 @@ class BubbleGridStaff(BubbleGridMatch, Staff):
     clef=None
 
 class InstrumentStaffGroup(StaffGroup):
-    def after_music(self, music, **kwargs):
-        super().after_music(music, **kwargs)
+    def process_music(self, music, **kwargs):
+        super().process_music(music, **kwargs)
         abjad.set_(music).systemStartDelimiter = "SystemStartSquare"
 
