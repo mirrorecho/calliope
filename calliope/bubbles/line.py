@@ -21,13 +21,14 @@ class Line(bubbles.Bubble):
     transpose = None
     
 
-    def __init__(self, music_string=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         overriding __init__ simply to be able to use music_string as a positional argument
         """
-        if music_string:
-            self.music_string = music_string
-        super().__init__(**kwargs)
+        if len(args) > 0 and type(args[0]) is str:
+            self.music_string = args[0]
+            args = args[1:]
+        super().__init__(*args, **kwargs)
 
     # def __add__(self, other):
     #     return bubbles.LineSequence( bubbles=(self, other) )

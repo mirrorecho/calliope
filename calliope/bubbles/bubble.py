@@ -47,28 +47,34 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         if not self.child_types:
             self.child_types = (Bubble,)
         for name, value in kwargs.items():
+
             setattr(self, name, value)
         self._init_make_callable("music")
         self._init_make_callable("sequence")
         self._init_append_children()
 
 
-    def __setitem__(self, bubble_name, bubble):
+    def __setitem__(self, arg, bubble):
         if inspect.isclass(bubble):
             bubble = bubble()
-        if not isinstance(bubble, self.child_types):
-            self.warn("attempted to add child which is not an allowed child type - attribute/child not added", bubble)
+        if type(arg) is slice:
+            # needed for base TreeContainer implementation:
+            abjad.datastructuretools.TreeContainer.__setitem__(self, arg, bubble)
+        elif not isinstance(bubble, self.child_types):
+            print(type(arg))
+            print(bubble)
+            self.warn("attempted to add child but not an allowed child type - attribute/child not added", bubble)
         else:
-            if type(bubble_name) in (int, slice):
+            if type(arg) is int:
                 # if setting based on integer index or slice, use abjad's tree container default behavior
-                abjad.datastructuretools.TreeContainer.__setitem__(self, bubble_name, bubble)
+                abjad.datastructuretools.TreeContainer.__setitem__(self, arg, bubble)
             else:
-                bubble.name = bubble_name
-                setattr(self, bubble_name, bubble)
+                bubble.name = arg
+                setattr(self, arg, bubble)
                 new_child = True
 
                 for i, b in enumerate(self.children):
-                    if b.name == bubble_name:
+                    if b.name == arg:
                         abjad.datastructuretools.TreeContainer.__setitem__(self, i, bubble)
                         new_child = False
                         break
@@ -192,9 +198,10 @@ class Bubble(abjad.datastructuretools.TreeContainer):
             self.warn(msg or "(no message)", data)
         return condition
 
-    # def __str__(self):
-    #     music = self.blow()
-    #     return(format(music))
+    @property
+    def ly(self):
+        music = self.blow()
+        return(format(music))
 
     def get_lilypond_file(self):
         music = self.blow()

@@ -25,11 +25,31 @@ from calliope import tools, structures, bubbles, machines
 #         "long": (4, 1, 1),
 #       })
 
-# class ManualCell(machines.Cell):
-#     event1 = machines.Event(beats=2, pitch=0)
-#     event1a = machines.Event(beats=0.5, rest=True)
-#     event2 = machines.Event(beats=1, pitch=-2)
-#     event3 = machines.Event(beats=2, pitch=-3)
+class ManualCell(machines.Cell):
+    e1 = machines.Event(beats=1, pitch=4)
+    e2 = machines.Event(beats=1.5, pitch=3)
+
+MY = machines.Cell(
+    machines.Event(beats=3, pitch=2),
+    machines.Event(beats=1, pitch=1),
+    )
+
+class MyPhrase(machines.Phrase):
+    c1 = ManualCell()
+    c2 = MY
+
+p = MyPhrase()
+p.respell = "flats"
+print(p.ly)
+
+
+tools.illustrate_me( bubble=p )
+
+# TO DO: 
+# - make sure score (and all bubble wraps) still work
+# - get basic ilustration working again
+# - MORE TESTS FOR APPEND VS [] ON BUBBLES
+# - machine tagging
 
 
 # class SimplePhrase(machines.Phrase):
@@ -45,24 +65,6 @@ from calliope import tools, structures, bubbles, machines
 # print(sc.sequence())
 # # tools.illustrate_me( bubble=s )
 
-
-class Boo(object):
-    a = 1
-    b = 2
-
-class Wow(bubbles.Bubble):
-    w2 = bubbles.Bubble()
-    w1 = bubbles.Bubble()
-
-    class Wow2(bubbles.Bubble):
-        www="yo"
-        www4 = bubbles.Bubble()
-
-
-w = Wow()
-w["w3"] = bubbles.Bubble()
-
-print(w.children)
 
 
 
@@ -85,7 +87,7 @@ print(w.children)
 #         "long": (4, 1, 1),
 #     })
 
-
+ 
 # class PhraseA(CopperPhrase):
 #     cell_a = Cell(pitches="hi", rhythm="medium")
 #     cell_b = Cell(pitches="low", rhythm="medium")
