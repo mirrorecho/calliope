@@ -13,12 +13,13 @@ class Bubble(abjad.datastructuretools.TreeContainer):
     process_methods = () # TO DO... depreciate?
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
-    
+    # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the abjad TreeContainer
+
     # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful
     original_index = None 
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
-    def make_callable(self, attr_name):
+    def _init_make_callable(self, attr_name):
         attr = getattr(self, attr_name, None)
         if attr is not None:
             if isinstance(attr, Bubble):
@@ -30,31 +31,33 @@ class Bubble(abjad.datastructuretools.TreeContainer):
             else:
                 setattr(self, attr_name, lambda : attr)
 
-    def append_children(self):
+    def _init_append_children(self):
         for bubble_name in type(self).class_sequence():
             # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
             bubble = getattr(self, bubble_name)
             bubble.name = bubble_name     
             self[bubble_name] = bubble
 
-    def __init__(self, name=None, *args, **kwargs):
-        # the first arg is always the music, if passed:
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        children = args
+        super().__init__(children)
+        name = kwargs.pop("name", None)
         if name:
-            self.name=name
+            self.name = name
         if not self.child_types:
             self.child_types = (Bubble,)
         for name, value in kwargs.items():
             setattr(self, name, value)
-        # self.added_bubbles = []
-        self.make_callable("music")
-        self.make_callable("sequence")
-        self.append_children()
+        self._init_make_callable("music")
+        self._init_make_callable("sequence")
+        self._init_append_children()
 
 
     def __setitem__(self, bubble_name, bubble):
-        if not Bubble.isbubble(bubble, bubble_types=self.child_types):
-            self.warn("attempted to add non-bubble object as bubble - attribute not added", bubble)
+        if inspect.isclass(bubble):
+            bubble = bubble()
+        if not isinstance(bubble, self.child_types):
+            self.warn("attempted to add child which is not an allowed child type - attribute/child not added", bubble)
         else:
             if type(bubble_name) in (int, slice):
                 # if setting based on integer index or slice, use abjad's tree container default behavior
@@ -75,7 +78,7 @@ class Bubble(abjad.datastructuretools.TreeContainer):
                         [bubble]
                         )
 
-
+    # TO DO... used? depreciate?
     def index_children(self):
         for i, child in enumerate(self.children):
             child.original_index = i

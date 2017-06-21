@@ -19,17 +19,6 @@ class Machine(bubbles.Line):
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
 
-    # def __init__(self, name=None, **kwargs):
-    #     if name:
-    #         self.name=name
-    #     super().__init__(**kwargs) 
-    #     structures.Tree.__init__(self) # TO DO: necessary???
-
-    #     for bubble_name in self.sequence():
-    #         # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
-    #         bubble = getattr(self, bubble_name)       
-    #         self.append(bubble)
-
     # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
         return_bubble = copy.copy(self) # TO DO... consider deep copy here
@@ -38,26 +27,11 @@ class Machine(bubbles.Line):
         for name, value in kwargs.items():
             setattr(return_bubble, name, value)
 
-    def set_data(self, *args, **kwargs):
-        """
-        by default, appends bubbles in the sequence as children in the tree
-        can also be overriden or used as a hook for setting/manipulating attributes
-        """
-        # TO DO... maybe this should just be in __init__????
-        # for bubble_name in self.sequence():
-        #     # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
-        #     bubble = getattr(self, bubble_name)       
-        #     self.append(bubble)
-        pass
-
     def get_metrical_duration_ticks(self):
         """
-        returns a number representing the total number of ticks in this line(relative to the object's rhythm_denominator)
+        returns a number representing the total number of ticks in this line (relative to the object's rhythm_denominator)
         .... based on the defined metrical durations for this object
         """
-
-        # TO DO: determine how to deal with this with pandas?
-        # return int(sum([d[0]/d[1] for d in self.metrical_durations.flattened()]) * self.rhythm_denominator)
         return int(sum([d[0]/d[1] for d in self.metrical_durations]) * self.rhythm_denominator)
 
     def get_signed_ticks_list(self, append_rest=False):

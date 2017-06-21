@@ -62,7 +62,7 @@ class Wow(bubbles.Bubble):
 w = Wow()
 w["w3"] = bubbles.Bubble()
 
-print(w.sequence())
+print(w.children)
 
 
 
