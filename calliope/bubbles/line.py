@@ -93,7 +93,7 @@ class Line(bubbles.Bubble):
             if self.accidental_style:
                 accidental_style_command = abjad.indicatortools.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
                 abjad.attach(accidental_style_command, music_start)
-            super().after_music(music, **kwargs)
+            super().process_music(music, **kwargs)
 
     def free_box(self, arrows=0, **kwargs):
         return_bubble = copy(self)

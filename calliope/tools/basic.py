@@ -27,8 +27,7 @@ def illustrate_me(
 
     print(calling_module_path)
 
-    if not score_type:
-        score_type = bubbles.AutoScore
+    score_type = score_type or bubbles.AutoScore
 
     # only illustrate if being called from main module (as opposed to import)
     if not calling_module or calling_module.__name__ == "__main__":

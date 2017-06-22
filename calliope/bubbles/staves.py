@@ -9,12 +9,16 @@ class Wrap(bubbles.Bubble):
     creates a new container/bubble around the inner bubble
     """
     def __init__(self, inner_bubble=None, **kwargs):
-        self.inner_bubble = lambda : inner_bubble # TO DO... why the lambda?
+        self.get_inner_bubble = lambda : inner_bubble # TO DO... why the lambda?
         super().__init__(**kwargs)
 
     def music(self, **kwargs):
         my_music = self.music_container()
-        my_music.append( self.inner_bubble().blow() )
+
+        # TO DO: why all this nonsense????
+        inner_bubble = self.get_inner_bubble()
+        if inner_bubble:
+            my_music.append( self.inner_bubble().blow() )
         return my_music
 
 
@@ -46,12 +50,12 @@ class RhythmicStaff(Staff):
 class BubbleGridMatch(bubbles.Bubble):
     grid_bubble=None
 
-    def __init__(self, grid_bubble=None, **kwargs):
+    def __init__(self, grid_bubble=None, *args, **kwargs):
         # set the grid bubble for any sub-bubbles (if not already defined) ... that way music bubbles passed to score
         # will be passed along to staff groups, and so on
-        if grid_bubble:
+        if grid_bubble is not None:
             self.grid_bubble = grid_bubble
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         self.set_grid_bubbles(self)
 
     def set_grid_bubbles(self, parent_bubble):
@@ -62,14 +66,15 @@ class BubbleGridMatch(bubbles.Bubble):
 
     def music(self, **kwargs):
         my_music = self.music_container()
-        for bubble_name in self.sequence():
+        for child_bubble in self.children:
             # the bubble attribute specified by the sequence must exist on this bubble object...
-            if hasattr(self, bubble_name):
-                append_music = self.blow_bubble(bubble_name)
-                if hasattr(self.grid_bubble, bubble_name):
-                    append_music_inner = self.grid_bubble.blow_bubble(bubble_name)
-                    append_music.append(append_music_inner)
-                my_music.append(append_music)
+            append_music = self.child_music(child_bubble)
+            print(type(append_music), "BOBOBOBOBO")
+            if child_bubble in self.grid_bubble:
+                append_music.append(
+                    self.grid_bubble.child_music( self.grid_bubble[bubble_name] )
+                    )
+            my_music.append(append_music)
         return my_music
 
 class StaffGroup(BubbleGridMatch):

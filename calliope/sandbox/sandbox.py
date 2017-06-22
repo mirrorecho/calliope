@@ -4,6 +4,11 @@
 
 # THINK ABOUT... REPEATABLE VS FLEXIBLE
 
+# - make sure score (and all bubble wraps) still work
+# - get basic ilustration working again
+# - MORE TESTS FOR APPEND VS [] ON BUBBLES
+# - machine tagging
+
 # ametrical music and systems
 # - - boxes and arrows
 
@@ -136,36 +141,15 @@
 # ---------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------
 
-class YoMethod1():
+from calliope import tools, bubbles
 
-    args = None
-    kwargs = None
+class MyLine(bubbles.Line):
+    music_string = "a4 a4"
 
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+class Yo(bubbles.Bubble):
+    m1 = MyLine()
 
-    def __call__(self):
-        print(self.args)
-        print(self.kwargs)
-
-class YoMethod2(YoMethod1):
-
-    def __call__(self, *args, **kwargs)::
-        self.append_list += args
-        
-        super().__call__()
-
-class MyStuff1():
-    calling2 = YoMethod2("wow", echo="dog")
-
-class MyStuff2(MyStuff1):
-    def __init__(self, *args, **kwargs):
-        self.calling2.append_list = args
-
-m = MyStuff2()
-m.calling2("j","k")
-
+tools.illustrate_me(bubble=Yo())
 
 
 # import inspect

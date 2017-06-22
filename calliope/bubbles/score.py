@@ -21,13 +21,14 @@ class Score(bubbles.BubbleGridMatch):
 class AutoScore(Score):
 
     # TO DO... add in stylesheet here
-    def __init__(self, grid_bubble=None, **kwargs):
-        super().__init__(grid_bubble, **kwargs)
-        if self.grid_bubble:
+    def __init__(self, grid_bubble=None, *args, **kwargs):
+        super().__init__(grid_bubble=grid_bubble, *args, **kwargs)
+        if self.grid_bubble is not None:
             for bubble_name in self.grid_bubble.sequence():
                 bubble = bubbles.Staff(
                     instrument=abjad.instrumenttools.Instrument(
-                        instrument_name=bubble_name, short_instrument_name=bubble_name)
+                        instrument_name=bubble_name, 
+                        short_instrument_name=bubble_name)
                     )
                 self[bubble_name] = bubble
 

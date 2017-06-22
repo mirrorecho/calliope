@@ -25,33 +25,6 @@ from calliope import tools, structures, bubbles, machines
 #         "long": (4, 1, 1),
 #       })
 
-class ManualCell(machines.Cell):
-    e1 = machines.Event(beats=1, pitch=4)
-    e2 = machines.Event(beats=1.5, pitch=3)
-
-MY = machines.Cell(
-    machines.Event(beats=3, pitch=2),
-    machines.Event(beats=1, pitch=1),
-    )
-
-class MyPhrase(machines.Phrase):
-    c1 = ManualCell()
-    c2 = MY
-
-p = MyPhrase()
-p.respell = "flats"
-print(p.ly)
-
-
-tools.illustrate_me( bubble=p )
-
-# TO DO: 
-# - make sure score (and all bubble wraps) still work
-# - get basic ilustration working again
-# - MORE TESTS FOR APPEND VS [] ON BUBBLES
-# - machine tagging
-
-
 # class SimplePhrase(machines.Phrase):
 #     cella = ManualCell()
 #     cellb = ManualCell()

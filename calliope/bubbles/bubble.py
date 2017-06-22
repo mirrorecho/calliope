@@ -37,15 +37,16 @@ class Bubble(abjad.datastructuretools.TreeContainer):
             self[bubble_name] = bubble
 
     def __init__(self, *args, **kwargs):
+
         children = args
         super().__init__(children)
+
         name = kwargs.pop("name", None)
         if name:
             self.name = name
         if not self.child_types:
             self.child_types = (Bubble,)
         for name, value in kwargs.items():
-
             setattr(self, name, value)
         self._init_make_callable("music")
         self._init_make_callable("sequence")
@@ -204,7 +205,7 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         return my_music
 
     def blow(self, **kwargs):
-        music = self.music(**kwargs)
+        my_music = self.music(**kwargs)
         self.process_music(my_music, **kwargs)
-        return music
+        return my_music
 
