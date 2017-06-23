@@ -201,7 +201,7 @@ class Bubble(abjad.datastructuretools.TreeContainer):
     def music(self, **kwargs):
         my_music = self.music_container()
         for child_bubble in self.children:
-            my_music.append( child_music( child_bubble ) )
+            my_music.append( self.child_music( child_bubble ) )
         return my_music
 
     def blow(self, **kwargs):

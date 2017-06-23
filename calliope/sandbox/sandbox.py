@@ -148,8 +148,11 @@ class MyLine(bubbles.Line):
 
 class Yo(bubbles.Bubble):
     m1 = MyLine()
+    m2 = MyLine()
 
-tools.illustrate_me(bubble=Yo())
+print(Yo().ly)
+
+tools.illustrate_me(bubble=Yo(), open_pdf=False)
 
 
 # import inspect

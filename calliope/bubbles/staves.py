@@ -69,7 +69,6 @@ class BubbleGridMatch(bubbles.Bubble):
         for child_bubble in self.children:
             # the bubble attribute specified by the sequence must exist on this bubble object...
             append_music = self.child_music(child_bubble)
-            print(type(append_music), "BOBOBOBOBO")
             if child_bubble in self.grid_bubble:
                 append_music.append(
                     self.grid_bubble.child_music( self.grid_bubble[bubble_name] )

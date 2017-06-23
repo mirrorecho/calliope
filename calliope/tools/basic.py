@@ -36,6 +36,9 @@ def illustrate_me(
         elif inspect.isclass(bubble):
             bubble = bubble()
         my_score = score_type( bubble )
+
+        print(my_score.ly)
+
         illustration_directory_path = os.path.join(
             os.path.dirname(calling_module_path),
             subfolder,
