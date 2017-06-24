@@ -141,17 +141,41 @@
 # ---------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------
 
+import abjad
 from calliope import tools, bubbles
 
-class MyLine2(bubbles.Line):
+
+class MyScore(bubbles.Score):
+
+    class Strings(bubbles.StaffGroup):
+        
+        class Violins(bubbles.InstrumentStaffGroup):
+            class Violin1(bubbles.Staff):
+                instrument=abjad.instrumenttools.Violin(
+                    instrument_name="Violin 1", short_instrument_name="vln.1")
+
+            class Violin2(bubbles.Staff):
+                instrument=abjad.instrumenttools.Violin(
+                    instrument_name="Violin 2", short_instrument_name="vln.2")
+
+        class Viola(bubbles.Staff):
+            instrument=abjad.instrumenttools.Viola(
+                instrument_name="Viola", short_instrument_name="vla.")
+
+        class Cello(bubbles.Staff):
+            instrument=abjad.instrumenttools.Cello(
+                instrument_name="Cello", short_instrument_name="vc.")
+            clef="bass"
+
+class Violin1(bubbles.Line):
     music_string = "b4 b4"
 
-class MyLine1(bubbles.Line):
+class Viola(bubbles.Line):
     music_string = "a4 a4"
 
-LINE3 = MyLine2()
+Cello = Viola(music_string="c'2")
 
-tools.illustrate_me(open_pdf=False)
+tools.illustrate_me(score_type=MyScore)
 
 
 # import inspect

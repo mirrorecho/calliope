@@ -38,8 +38,6 @@ def illustrate_me(
     
         my_score = score_type( bubble )
 
-        print(my_score.ly)
-
         illustration_directory_path = os.path.join(
             os.path.dirname(calling_module_path),
             subfolder,

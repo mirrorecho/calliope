@@ -8,6 +8,8 @@ class Wrap(bubbles.Bubble):
     """
     creates a new container/bubble around the inner bubble
     """
+    grid_bubble = None # needed for grid bubble matching
+
     def __init__(self, inner_bubble=None, **kwargs):
         self.get_inner_bubble = lambda : inner_bubble # TO DO... why the lambda?
         super().__init__(**kwargs)
@@ -60,6 +62,7 @@ class BubbleGridMatch(bubbles.Bubble):
     def set_grid_bubbles(self, parent_bubble):
         # TO DO... there might be a better way to iterate through all children...
         for child_bubble in parent_bubble.children:
+            print(child_bubble)
             child_bubble.grid_bubble = child_bubble.grid_bubble or parent_bubble.grid_bubble
             self.set_grid_bubbles(child_bubble)
 
