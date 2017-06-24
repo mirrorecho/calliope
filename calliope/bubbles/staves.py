@@ -53,8 +53,7 @@ class BubbleGridMatch(bubbles.Bubble):
     def __init__(self, grid_bubble=None, *args, **kwargs):
         # set the grid bubble for any sub-bubbles (if not already defined) ... that way music bubbles passed to score
         # will be passed along to staff groups, and so on
-        if grid_bubble is not None:
-            self.grid_bubble = grid_bubble
+        kwargs["grid_bubble"] = grid_bubble
         super().__init__(*args, **kwargs)
         self.set_grid_bubbles(self)
 
@@ -64,17 +63,13 @@ class BubbleGridMatch(bubbles.Bubble):
             child_bubble.grid_bubble = child_bubble.grid_bubble or parent_bubble.grid_bubble
             self.set_grid_bubbles(child_bubble)
 
-    def music(self, **kwargs):
-        my_music = self.music_container()
-        for child_bubble in self.children:
-            # the bubble attribute specified by the sequence must exist on this bubble object...
-            append_music = self.child_music(child_bubble)
-            if child_bubble in self.grid_bubble:
-                append_music.append(
-                    self.grid_bubble.child_music( self.grid_bubble[bubble_name] )
-                    )
-            my_music.append(append_music)
-        return my_music
+    def child_music(self, child_bubble):
+        return_music = super().child_music(child_bubble)
+        if child_bubble.name in self.grid_bubble.sequence():
+            return_music.append(
+                self.grid_bubble.child_music( self.grid_bubble[child_bubble.name] )
+                )
+        return return_music
 
 class StaffGroup(BubbleGridMatch):
     is_simultaneous = None

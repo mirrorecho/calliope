@@ -33,7 +33,6 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         for bubble_name in type(self).class_sequence():
             # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
             bubble = getattr(self, bubble_name)
-            bubble.name = bubble_name     
             self[bubble_name] = bubble
 
     def __init__(self, *args, **kwargs):
@@ -60,15 +59,13 @@ class Bubble(abjad.datastructuretools.TreeContainer):
             # needed for base TreeContainer implementation:
             abjad.datastructuretools.TreeContainer.__setitem__(self, arg, bubble)
         elif not isinstance(bubble, self.child_types):
-            print(type(arg))
-            print(bubble)
             self.warn("attempted to add child but not an allowed child type - attribute/child not added", bubble)
         else:
             if type(arg) is int:
                 # if setting based on integer index or slice, use abjad's tree container default behavior
                 abjad.datastructuretools.TreeContainer.__setitem__(self, arg, bubble)
             else:
-                bubble.name = arg
+                bubble.name = arg # just as a precaution
                 setattr(self, arg, bubble)
                 new_child = True
 

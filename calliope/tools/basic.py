@@ -35,6 +35,7 @@ def illustrate_me(
             bubble = bubbles.ModuleBubble(module=calling_module)
         elif inspect.isclass(bubble):
             bubble = bubble()
+    
         my_score = score_type( bubble )
 
         print(my_score.ly)

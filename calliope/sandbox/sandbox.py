@@ -143,16 +143,15 @@
 
 from calliope import tools, bubbles
 
-class MyLine(bubbles.Line):
+class MyLine2(bubbles.Line):
+    music_string = "b4 b4"
+
+class MyLine1(bubbles.Line):
     music_string = "a4 a4"
 
-class Yo(bubbles.Bubble):
-    m1 = MyLine()
-    m2 = MyLine()
+LINE3 = MyLine2()
 
-print(Yo().ly)
-
-tools.illustrate_me(bubble=Yo(), open_pdf=False)
+tools.illustrate_me(open_pdf=False)
 
 
 # import inspect

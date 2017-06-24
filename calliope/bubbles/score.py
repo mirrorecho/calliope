@@ -36,8 +36,7 @@ class ModuleBubble(bubbles.Bubble):
     module = None
     is_simultaneous = True
 
-    @classmethod
-    def class_sequence(self, **kwargs):
+    def _init_append_children(self):
         bubble_info = sorted([
                 (
                     inspect.getsourcefile(m[1]), 
@@ -52,6 +51,11 @@ class ModuleBubble(bubbles.Bubble):
                 )
                 for m in inspect.getmembers(self.module, bubbles.Line.isbubble)
             ])
-        return [b[2] for b in bubble_info]
+        bubble_sequence = [b[2] for b in bubble_info]
+
+        for bubble_name in bubble_sequence:
+            # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
+            bubble = self.module.__dict__[bubble_name]
+            self[bubble_name] = bubble
 
 
