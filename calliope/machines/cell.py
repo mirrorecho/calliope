@@ -5,11 +5,10 @@ class Cell(machines.Machine):
 
     def __init__(self, *args, **kwargs):
         self.child_types = child_types = (machines.Cell, machines.Event)
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if "rhythm" in kwargs:
             for i, r in enumerate(kwargs["rhythm"]):
                 if "pitches" in kwargs:
                     pitch = kwargs["pitches"][i % len(kwargs["pitches"]) ]
-                print(r)
                 self["r%s" % i] = machines.Event(beats=r, pitch=pitch)
