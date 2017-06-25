@@ -178,12 +178,14 @@ class MyScore(bubbles.Score):
 # class Viola(bubbles.Line):
 #     music_string = "a4 a4"
 
-m =    machines.Line(
-        machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
-        name="line1"
-        )
+# m =    machines.Line(
+#         machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
+#         name="line1"
+#         )
 
-print(m.children[0].beats)
+# print(m.ly)
+
+print("yo")
 
 # BASE_MUSIC = machines.Score(
 #     machines.Line(
