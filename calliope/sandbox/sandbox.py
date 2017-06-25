@@ -144,7 +144,6 @@
 import abjad
 from calliope import tools, bubbles
 
-
 class MyScore(bubbles.Score):
 
     class Strings(bubbles.StaffGroup):
