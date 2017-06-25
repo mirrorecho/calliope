@@ -98,28 +98,6 @@ tools.illustrate_me(bubble=bubbles.Bubble(p1) )
 #     # tempo_units_per_minute = 48
 #     time_signature = (4,4)
 
-# class BubbleStructure(bubles.Bubble):
-#     name = None
-
-#     def __init__(self, name=None, **kwargs):
-#         if name:
-#             self.name=name
-#         super().__init__(**kwargs) 
-
-#     def __call__(self, name=None, **kwargs):
-#         return_bubble = copy.copy(self) # TO DO... consider deep copy here
-#         if name:
-#             return_bubble.name = name
-#         for name, value in kwargs.items():
-#             setattr(return_bubble, name, value)
-
-#     def set_data(self):
-#         pass
-
-
-#     def get_signed_ticks_list(self):
-#         pass
-
 
 
 # class CellA():

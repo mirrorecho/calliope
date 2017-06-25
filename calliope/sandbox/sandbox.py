@@ -5,21 +5,24 @@
 # THINK ABOUT... REPEATABLE VS FLEXIBLE
 
 # - working machines at each level
+# - blocks/grids
+# - machine arranging
+# - machine tagging
 # - some creative and convenient ways to construct cells and phrases
 # - working sequences
 # - auto naming? (or names/attrs optional?)
 # - test each type of bubble and machine... write auto tests?
 # - - - - MORE TESTS FOR APPEND VS [] ON BUBBLES
-# - machine tagging
+
+
+# cleanup / integration
+# - - integrate previous "work" ???
+# - - integrate previous "cycles" ???
+# - - integrate previous "cloud"
+# - - fix sequence weirdness
 
 # ametrical music and systems
 # - - boxes and arrows
-
-# cleanup / integration
-# - - integrate previous "work"
-# - - integrate previous "cycles"
-# - - integrate previous "cloud"
-# - - fix sequence weirdness
 
 # a few tools to help with routine tasks
 # - - integrate/refactor score auto-generation from random bubbles with BubbleScore
@@ -145,7 +148,7 @@
 # ---------------------------------------------------------------------------------
 
 import abjad
-from calliope import tools, bubbles
+from calliope import tools, bubbles, machines
 
 class MyScore(bubbles.Score):
 
@@ -169,15 +172,35 @@ class MyScore(bubbles.Score):
                 instrument_name="Cello", short_instrument_name="vc.")
             clef="bass"
 
-class Violin1(bubbles.Line):
-    music_string = "b4 b4"
+# class Violin1(bubbles.Line):
+#     music_string = "b4 b4"
 
-class Viola(bubbles.Line):
-    music_string = "a4 a4"
+# class Viola(bubbles.Line):
+#     music_string = "a4 a4"
 
-Cello = Viola(music_string="c'2")
+m =    machines.Line(
+        machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
+        name="line1"
+        )
 
-tools.illustrate_me(score_type=MyScore)
+print(m.children[0].beats)
+
+# BASE_MUSIC = machines.Score(
+#     machines.Line(
+#         machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
+#         name="line1"
+#         ),
+#     machines.Line(
+#         machines.Cell(rhythms)
+#         name="line2"
+#         )
+#     machines.Line(
+#         machines.Cell(rhythms)
+#         name="line3"
+#         )
+#     )
+
+# tools.illustrate_me()
 
 
 # import inspect
