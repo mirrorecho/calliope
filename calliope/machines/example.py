@@ -1,6 +1,17 @@
 import inspect, abjad
 from calliope import tools, structures, bubbles, machines
 
+c1 = machines.Cell(name="mycell", pitches=(-2,-4,-5), rhythm=(2,1,1))
+c2 = machines.Cell(
+	machines.Event(beats=2, pitch=3), 
+	machines.Event(beats=2, pitch=4), 
+	name="mycell2")
+
+p1 = machines.Phrase(c1, c2, name="phrase1")
+
+tools.illustrate_me(bubble=bubbles.Bubble(p1) )
+
+
 # class InventoryBasedCell(machines.Cell):
 #     pitch_inventory = None # set to structures.SeriesCollection  in sub-classes
 #     rhythm_inventory = None # ditto

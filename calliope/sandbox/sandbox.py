@@ -4,9 +4,12 @@
 
 # THINK ABOUT... REPEATABLE VS FLEXIBLE
 
-# - make sure score (and all bubble wraps) still work
-# - get basic ilustration working again
-# - MORE TESTS FOR APPEND VS [] ON BUBBLES
+# - working machines at each level
+# - some creative and convenient ways to construct cells and phrases
+# - working sequences
+# - auto naming? (or names/attrs optional?)
+# - test each type of bubble and machine... write auto tests?
+# - - - - MORE TESTS FOR APPEND VS [] ON BUBBLES
 # - machine tagging
 
 # ametrical music and systems

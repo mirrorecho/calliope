@@ -107,14 +107,6 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         #     new_self.append(child.copy())
         return new_self
 
-    # TO DO: still needed?
-    def branch(self, *args, **kwargs):
-        """
-        creates a child object of type self.children_type (appending the child to self), and returns the appended child
-        """
-        new_branch = self.child_types[0](*args, **kwargs)
-        self.append( new_branch )
-        return new_branch
 
     @classmethod
     def isbubble(cls, bubble, bubble_types=None):
