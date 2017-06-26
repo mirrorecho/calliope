@@ -1,4 +1,4 @@
-% 2017-06-23 23:34
+% 2017-06-25 17:56
 
 \version "2.19.54"
 \language "english"
@@ -11,42 +11,39 @@
 
 \score {
     \new Score <<
-        \context StaffGroup = "Strings" <<
-            \context StaffGroup = "Violins" \with {
-                systemStartDelimiter = #'SystemStartSquare
-            } <<
-                \context Staff = "Violin1" {
-                    \set Staff.instrumentName = \markup { "Violin 1" }
-                    \set Staff.shortInstrumentName = \markup { Vln.1 }
-                    {
-                        \accidentalStyle modern-cautionary
-                        b4
-                        b4
-                    }
-                }
-                \context Staff = "Violin2" {
-                    \set Staff.instrumentName = \markup { "Violin 2" }
-                    \set Staff.shortInstrumentName = \markup { Vln.2 }
-                }
-            >>
-            \context Staff = "Viola" {
-                \set Staff.instrumentName = \markup { Viola }
-                \set Staff.shortInstrumentName = \markup { Vla. }
+        \context Staff = "c1" {
+            \set Staff.instrumentName = \markup { C1 }
+            \set Staff.shortInstrumentName = \markup { C1 }
+            {
                 {
                     \accidentalStyle modern-cautionary
-                    a4
-                    a4
+                    bf4
+                    a'2
+                    r4
+                    r8
+                    a'8
+                    r2.
+                    r1
+                    r1
                 }
             }
-            \context Staff = "Cello" {
-                \clef "bass"
-                \set Staff.instrumentName = \markup { Cello }
-                \set Staff.shortInstrumentName = \markup { Vc. }
+        }
+        \context Staff = "c2" {
+            \set Staff.instrumentName = \markup { C2 }
+            \set Staff.shortInstrumentName = \markup { C2 }
+            {
                 {
                     \accidentalStyle modern-cautionary
-                    c'2
+                    r4
+                    c2
+                    c'4 ~
+                    c'8 [
+                    a'8 ]
+                    r2.
+                    r1
+                    r1
                 }
             }
-        >>
+        }
     >>
 }

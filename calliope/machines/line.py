@@ -2,7 +2,7 @@ import abjad
 from calliope import machines
 
 # TO DO MAYBE... rethink this naming (i.e. could cause confusion/conflict with calliope.Line)?
-class Line(machines.Machine):
+class Line(machines.EventMachine):
     child_types = (machines.Phrase, machines.Cell, machines.Event,)
 
     # TO DO: would be awesome to implement these!

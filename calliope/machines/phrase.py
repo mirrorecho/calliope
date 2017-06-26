@@ -1,4 +1,4 @@
 from calliope import machines
 
-class Phrase(machines.Machine):
+class Phrase(machines.EventMachine):
     child_types = (machines.Cell, machines.Event)

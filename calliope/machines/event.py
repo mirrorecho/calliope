@@ -1,6 +1,6 @@
 from calliope import machines
 
-class Event(machines.Machine):
+class Event(machines.EventMachine):
 
     pitch = 0 # note, this could be set to a list/tuple to indicate a chord
     original_pitch = 0 # just a way to track what's going on if pitch is transposed
@@ -8,32 +8,16 @@ class Event(machines.Machine):
     child_types = (machines.LogicalTie,)
     from_line = None # used in FragmentLine for EventData that's copied from another line (tracks where it's copied from)
 
-    def __init__(self, tie_name="tie", beats=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if beats:
-            self[tie_name] = machines.LogicalTie(name=tie_name, beats=beats, *args, **kwargs)
+    # def __init__(self, tie_name="tie", beats=None, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if beats:
+    #         # TO DO MAYBE: None indicating rest is a little confusing here (since at the LogicalTie level None for pitch means to use the Event pitch)
+    #         rest = "pitch" in kwargs and kwargs["pitch"] == None
 
-    # def set_data(self, beats, pitch=0, **kwargs):
-    #     self.pitch = pitch
-    #     child_tie = self.branch()
-    #     child_tie.set_data(beats=beats, **kwargs)
+    #         self[tie_name] = machines.LogicalTie(name=tie_name, beats=beats, rest=rest, *args, **kwargs)
 
-    @property
-    def first_non_rest(self):
-        for l in self.children:
-            if not l.rest:
-                return l
+    def append_rhythm(self, beats):
+        my_tie = machines.LogicalTie()
+        my_tie.beats = beats
+        self.append( my_tie )
 
-    @property
-    def last_non_rest(self):
-        for l in self.children[::-1]:
-            if not l.rest:
-                return l
-
-    def remove_bookend_rests(self):
-        if self.children:
-            if self.children[0].rest:
-                self.pop(0)
-        if self.children:
-            if self.children[-1].rest:
-                self.pop(-1)

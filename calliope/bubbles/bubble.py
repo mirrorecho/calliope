@@ -46,6 +46,7 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         if not self.child_types:
             self.child_types = (Bubble,)
         for name, value in kwargs.items():
+            print(name)
             setattr(self, name, value)
         self._init_make_callable("music")
         self._init_make_callable("sequence")

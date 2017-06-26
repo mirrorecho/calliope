@@ -115,7 +115,7 @@ class MultiLine(Line):
     instruction = None
 
     def child_music(self, child_bubble):
-        my_music = Container()
+        my_music = self.container_type()
         my_music.append( child_bubble.blow() )
         return my_music
 

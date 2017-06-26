@@ -19,13 +19,15 @@ class Machine(bubbles.Line):
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
 
+
     # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
-        return_bubble = copy.copy(self) # TO DO... consider deep copy here
+        return_bubble = copy.deepcopy(self)
         if name:
             return_bubble.name = name
         for name, value in kwargs.items():
             setattr(return_bubble, name, value)
+        return return_bubble
 
     def get_metrical_duration_ticks(self):
         """
@@ -33,20 +35,6 @@ class Machine(bubbles.Line):
         .... based on the defined metrical durations for this object
         """
         return int(sum([d[0]/d[1] for d in self.metrical_durations]) * self.rhythm_denominator)
-
-    def get_signed_ticks_list(self, append_rest=False):
-        # TO DO.. there's probably a more elegant one-liner for this!
-        return_list = []
-        for l in self.leaves:
-            return_list.extend(l.get_signed_ticks_list())
-        
-        if append_rest:
-            ticks_end = self.ticks
-            metrical_duration_ticks = self.get_metrical_duration_ticks()
-            if metrical_duration_ticks > ticks_end:
-                return_list.append(int(ticks_end - metrical_duration_ticks))
-
-        return return_list
 
 
     def cleanup_data(self, **kwargs):
@@ -101,7 +89,7 @@ class Machine(bubbles.Line):
                     chord.written_duration = copy.deepcopy(note.written_duration)
                     m = abjad.mutate([note])
                     m.replace(chord)
-            elif isinstance(pitch, int):
+            elif isinstance(pitch, (int, str)):
                 if event.respell=="flats":
                     named_pitch = abjad.NamedPitch(pitch).respell_with_flats()
                 elif event.respell=="sharps":
@@ -111,7 +99,7 @@ class Machine(bubbles.Line):
                 for note in music_logical_tie:
                     note.written_pitch = named_pitch
             else:
-                self.warn("can't set pitch because '%s' is not int, list, or tuple" % pitch,  data_logical_tie )
+                self.warn("can't set pitch because '%s' is not str, int, list, or tuple" % pitch,  data_logical_tie )
 
     def get_talea(self):
         return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(append_rest=True), self.rhythm_denominator)
@@ -145,12 +133,27 @@ class Machine(bubbles.Line):
         return my_music
 
     @property
-    def ticks(self):
-        return sum([l.ticks for l in self.leaves])
+    def logical_ties(self):
+        return self.leaves
 
     @property
     def beats(self):
         return self.ticks / self.rhythm_default_multiplier
+
+class EventMachine(Machine):
+    def __init__(self, *args, **kwargs):
+        rhythm = kwargs.pop("rhythm", None)
+        pitches = kwargs.pop("pitches", None)
+
+        super().__init__(*args, **kwargs)
+        if rhythm:
+            self.rhythm = rhythm
+        if pitches:
+            self.pitches = pitches
+
+    @property
+    def ticks(self):
+        return sum([l.ticks for l in self.logical_ties])
 
     @property
     def ticks_before(self):
@@ -163,5 +166,76 @@ class Machine(bubbles.Line):
         return self.ticks_before + self.ticks
 
     @property
-    def logical_ties(self):
+    def rhythm(self):
+        return [l.beats for l in self.logical_ties]
+
+    def append_rhythm(self, beats):
+        # note, this is overriden on Event so that events will create a rhythm out of 
+        # logical ties as opposed to events of events in an infinite loop
+        self.append( machines.Event(rhythm=(beats,) ))
+
+    @rhythm.setter
+    def rhythm(self, values):
+        my_length = len(self.logical_ties)
+        for i, v in enumerate(values):
+            if i < my_length:
+                self.logical_ties[i].beats = v
+            else:
+                self.append_rhythm(v)
+
+    @property
+    def pitches(self):
         return self.leaves
+
+    @pitches.setter
+    def pitches(self, values):
+        my_length = len(self.logical_ties)
+        for i, v in enumerate(values[:my_length]):
+            if i < my_length:
+                self.logical_ties[i].pitch = v
+                self.logical_ties[i].rest = v is None
+
+    @property
+    def first_non_rest(self):
+        for l in self.logical_ties:
+            if not l.rest:
+                return l
+
+    @property
+    def last_non_rest(self):
+        for l in self.logical_ties[::-1]:
+            if not l.rest:
+                return l
+
+    def get_signed_ticks_list(self, append_rest=False):
+        # TO DO.. there's probably a more elegant one-liner for this!
+        return_list = []
+        for l in self.logical_ties:
+            return_list.extend(l.get_signed_ticks_list())
+        
+        if append_rest:
+            ticks_end = self.ticks
+            metrical_duration_ticks = self.get_metrical_duration_ticks()
+            if metrical_duration_ticks > ticks_end:
+                return_list.append(int(ticks_end - metrical_duration_ticks))
+
+        return return_list
+
+    def add_bookend_rests(self, beats_before=0, beats_after=0):
+        if beats_before > 0:
+            first_event = self.logical_ties[0].parent
+            first_event.insert(0, machines.LogicalTie(rest=True, beats=beats_before))
+        if beats_after > 0:
+            last_event = self.logical_ties[-1].parent
+            last_event.append(machines.LogicalTie(rest=True, beats=beats_after))
+
+    def remove_bookend_rests(self):
+        if self.logical_ties:
+            if self.logical_ties[0].rest:
+                self.logical_ties[0].parent.pop(0)
+        if self.logical_ties:
+            if self.logical_ties[-1].rest:
+                self.logical_ties[-1].parent.pop(-1)
+
+    # TO DO... add slur
+    # def slur()

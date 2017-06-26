@@ -6,11 +6,13 @@
 
 # - working machines at each level
 # - blocks/grids
+# - way to get all phrases, cells, events
 # - machine arranging
 # - machine tagging
 # - some creative and convenient ways to construct cells and phrases
 # - working sequences
 # - auto naming? (or names/attrs optional?)
+# - machine querying?
 # - test each type of bubble and machine... write auto tests?
 # - - - - MORE TESTS FOR APPEND VS [] ON BUBBLES
 
@@ -178,14 +180,71 @@ class MyScore(bubbles.Score):
 # class Viola(bubbles.Line):
 #     music_string = "a4 a4"
 
-m =    machines.Line(
-        machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
-        name="line1"
-        )
+c1 = machines.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
+    metrical_durations = [(4,4)] * 4,
+    name="c1")
 
-# print(m.ly)
+cb = machines.CellBlock(
+    c1,
+    c1(pitches=(None,"c","c'"), name="c2"),
+    metrical_durations = [(4,4)] * 4,
+    )
 
-print("yo")
+# comp = cb.comp(
+#     Q["c1"][:-1].sub(Q[0]())
+#     )
+
+class Query(object):
+    arguments = ()
+
+    def __getitem__(self, arg):
+        q = Query()
+        q.arguments = self.arguments + (arg,)
+        return q
+
+    def __str__(self):
+        return "Query: " + str(self.arguments)
+
+    def __call__(self, *args, **kwargs):
+        q = Query()
+        q.arguments = self.arguments + args
+        return q
+
+    def leaves(self, *args, **kwargs):
+        q = Query()
+        q.arguments = self.arguments + (("leaves"),)
+        return q        
+
+    def nodes(self, *args, **kwargs):
+        q = Query()
+        q.arguments = self.arguments  + (("nodes", args, kwargs),)
+        return q    
+
+Q = Query()
+
+class QBubble(bubbles.Bubble):
+
+    def query(self, q):
+        print(q)
+
+    def select(self, *args):
+        print(args)
+
+# and vs or relationships
+# sequence or match
+# traverse all, or just children
+# by name
+# by index
+# by sice
+# by attr = value
+# SILVER STAR:lamba
+# GOLD STAR: by where
+
+b = QBubble()
+b.query( 
+    Q["c1"].nodes( machines.Cell )(lambda x : x.beats > 4)
+    )
+
 
 # BASE_MUSIC = machines.Score(
 #     machines.Line(
