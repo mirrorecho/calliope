@@ -194,20 +194,16 @@ cb = machines.CellBlock(
 #     Q["c1"][:-1].sub(Q[0]())
 #     )
 
-class QueryArgument(object):
+class Query(object):
     args = None # set to list of: strings (names), ints (indices), or slices.. which all work similarly for retrieving tree children
     types = None # set to list of types
     methods = None # set to list of lambda functions
     kwargs = None # set to dictionary to match object attributes
     condition = "or" # "or" or "and"
     children_query = None
+    sub_logical_query = None
 
-    def __init__(self, *args, **kwargs):
-        self.args = []
-        self.types = []
-        self.methods = []
-        self.kwargs = kwargs
-
+    def add_arguments(self, *args, **kwargs):
         for arg in args:
             if isclass(arg):
                 self.types.append(arg)
@@ -215,15 +211,16 @@ class QueryArgument(object):
             elif callable(arg):
                 args.methods.append(arg)
                 args.remove(arg)
-        self.args = args
+        self.args += args
+        self.kwargs += kwargs
 
+    def __init__(self, *args, **kwargs):
+        self.args = []
+        self.types = []
+        self.methods = []
+        self.kwargs = {}
+        self.add_arguments(*args, **kwargs)
 
-
-
-
-class Query(object):
-    or_arguments = ()
-    and_arguments = ()
 
     def __getitem__(self, arg):
         q = Query()
