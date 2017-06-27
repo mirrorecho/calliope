@@ -149,7 +149,7 @@
 # ---------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------
 
-import abjad
+import inspect, abjad
 from calliope import tools, bubbles, machines
 
 class MyScore(bubbles.Score):
@@ -199,65 +199,74 @@ class Query(object):
     types = None # set to list of types
     methods = None # set to list of lambda functions
     kwargs = None # set to dictionary to match object attributes
-    condition = "or" # "or" or "and"
-    children_query = None
-    sub_logical_query = None
+    sub_queries = ()
+    mode = "children" # "and", "children", "leaves", "nodes", or "with"
 
     def add_arguments(self, *args, **kwargs):
         for arg in args:
-            if isclass(arg):
+            if inspect.issubclass(arg, bubbles.Bubble):
                 self.types.append(arg)
                 args.remove(arg)
             elif callable(arg):
                 args.methods.append(arg)
                 args.remove(arg)
-        self.args += args
-        self.kwargs += kwargs
+        self.args.extend(args)
+        self.kwargs.update(kwargs)
 
     def __init__(self, *args, **kwargs):
         self.args = []
         self.types = []
         self.methods = []
         self.kwargs = {}
+        self.mode = kwargs.pop("mode", "children")
         self.add_arguments(*args, **kwargs)
 
-
-    def __getitem__(self, arg):
-        q = Query()
-        q.arguments = self.arguments + (arg,)
-        return q
+    def __getitem__(self, *args):
+        self.add_arguments(*args)
+        return self
 
     def __str__(self):
         return "Query: " + str(self.arguments)
 
     def __call__(self, *args, **kwargs):
-        q = Query()
-        q.arguments = self.arguments + args
-        return q
+        self.add_arguments(*args, **kwargs)
 
-    def leaves(self, *args, **kwargs):
-        q = Query()
-        q.arguments = self.arguments + (("leaves"),)
-        return q        
+    @property
+    def leaves(self):
+        self.sub_query = Query(mode="leaves")
+        self.mode = "leaves"
+        self.add_arguments(*args, **kwargs)
 
-    def nodes(self, *args, **kwargs):
-        q = Query()
-        q.arguments = self.arguments  + (("nodes", args, kwargs),)
-        return q    
+    @property
+    def nodes(self):
+        self.mode = "nodes"
+        self.add_arguments(*args, **kwargs)
+
+    @property
+    def children(self):
+        self.mode = "nodes"
+        self.add_arguments(*args, **kwargs)
+
+    @property
+    def with(self):
+        pass
+
+    def bubble_nodes_universe(self, bubble):
+        return getattr(bubble, self.mode, ())
 
 Q = Query()
 
 class QBubble(bubbles.Bubble):
 
     def query(self, q):
-        print(q)
+        print(q.args)
 
     def select(self, *args):
         print(args)
 
 # and vs or relationships
 # sequence or match
-# traverse all, or just children
+# of or with? (i.e. certain cells of certain phrases, or certain phrases along with certain cells underneath)
 # by name
 # by index
 # by sice
@@ -266,9 +275,24 @@ class QBubble(bubbles.Bubble):
 # GOLD STAR: by where
 
 b = QBubble()
-b.query( 
-    Q[1:](machines.Cell)
+b(
+    Q["c1"].select(machines.Phrase)[
+        Q[1],
+        Q[2].select[1].attrs(tags=[">","."], duration=4),
+        Q[5:23].select[:-1],
+    ](myattr1="yes")(myattr2="yes")
     )
+b.query(
+    Q.children(
+        myattr1="yes", 
+        Q(machines.Cell)(index=1) 
+        )(myattr2="yes")
+    )
+
+(
+    Q.children... attr=yes,
+    Q
+)
 
 
 # BASE_MUSIC = machines.Score(
