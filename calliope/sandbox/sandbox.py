@@ -276,10 +276,10 @@ class QBubble(bubbles.Bubble):
 
 b = QBubble()
 b(
-    Q["c1"].select(machines.Phrase)[
+    Q["c1"].with(machines.Phrase)[
         Q[1],
-        Q[2].select[1].attrs(tags=[">","."], duration=4),
-        Q[5:23].select[:-1],
+        Q[2].with[1].attrs(tags=[">","."], duration=4),
+        Q[5:23].with[:-1],
     ](myattr1="yes")(myattr2="yes")
     )
 b.query(
@@ -290,8 +290,11 @@ b.query(
     )
 
 (
-    Q.children... attr=yes,
-    Q
+    Q.next
+)
+
+(
+
 )
 
 
