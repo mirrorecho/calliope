@@ -200,19 +200,21 @@ class MyScore(bubbles.Score):
 
 
 class QBase(object):
-    mode = "children" # "children", "leaves", "nodes", or "self"    
-    sub_logical_q = None
-    children_q = None
+    scope = None # "children", "leaves", "nodes", or "self" ... None for not applicable
+    sub_scope = None
+    scope_q = None
+    filter_scope = False # if False, filters apply to 
 
-    args = None # set to list of: strings (names), ints (indices), or slices.. which all work similarly for retrieving tree children
+    args = None # set to list of: strings (names), ints (indices), slices, types, or methods... which all work similarly for retrieving tree children
     # types = None # set to list of types
     # methods = None # set to list of lambda functions
     kwargs = None # set to dictionary to match object attributes
 
     def add_arguments(self, *args, **kwargs):
-        # for arg in args:
-        #     if isinstance(arg, QBase):
-        #         self.sub_logical_q.append(arg)
+        for arg in args:
+            if isinstance(arg, QBase):
+                arg.scope = None # scope has no meaning for sub-logical objects
+                arg.sub_scope = None
         #     elif inspect.issubclass(arg, bubbles.Bubble):
         #         self.types.append(arg)
         #         args.remove(arg)
@@ -224,26 +226,28 @@ class QBase(object):
 
     def __init__(self, *args, **kwargs):
         self.args = []
-        # self.types = []
-        # self.methods = []
         self.kwargs = {}
-        self.mode = kwargs.pop("mode", "children")
+        self.scope = kwargs.pop("scope", None) or self.scope
         self.add_arguments(*args, **kwargs)
 
     def last_decendant_q(self):
-        if self.children_q:
-            return last_decendant_q(self.children_q)
+        if self.scope_q:
+            return last_decendant_q(self.scope_q)
         else:
             return self
 
     def __getitem__(self, *args):
         decendant = self.last_decendant_q()
-        decendant.children_q = QOr(*args)
+        decendant.scope_q = Q(*args)
+        decendant.scope_q.scope = decendant.sub_scope
         return self
 
-    def stringpart(self, line_prefix="", line_suffix="\n"):
+    def stringpart(self, line_prefix="    ", line_suffix="\n"):
         indent = "|  "
-        return_string = "%s%s:%s:%s" % (line_prefix, type(self).__name__, self.mode, line_suffix)
+        return_string = ""
+        if self.scope: 
+            return_string += "[" + self.scope + "]" + line_suffix
+        return_string += "%s%s:%s" % (line_prefix, self.logical_name, line_suffix)
         for arg in self.args:
             if isinstance(arg, QBase):
                 return_string += arg.stringpart(line_prefix+indent, line_suffix)
@@ -254,47 +258,52 @@ class QBase(object):
         return return_string
 
     def __str__(self):
-        return self.stringpart()
+        return_string = self.stringpart()
+        if self.scope_q:
+            return_string +=  str(self.scope_q) + "\n--------------------------------------"
+        return return_string
 
-
-    def __call__(self, *args, **kwargs):
+    @property
+    def logical_name(self):
+        if isinstance(self, QOr):
+            return "Or"
         if isinstance(self, QAnd):
-            my_and = self
+            return "And"
         else:
-            my_and = QAnd()            
-            my_and.args.append(self)
-        my_or = QOr(*args, **kwargs)
-        my_and.args.append(my_or)
-        return my_and
+            return "??"
 
     @property
     def leaves(self):
-        self.sub_query = Query(mode="leaves")
-        self.mode = "leaves"
-        self.add_arguments(*args, **kwargs)
+        self.scope = "leaves"
+        self.sub_scope = "leaves"
+        return self
 
     @property
     def nodes(self):
-        self.mode = "nodes"
-        self.add_arguments(*args, **kwargs)
+        self.scope = "nodes"
+        self.sub_scope = "nodes"
+        return self
 
     @property
     def children(self):
-        self.mode = "children"
-        self.add_arguments(*args, **kwargs)
+        self.scope = "children"
+        self.sub_scope = "children"
+        return self
 
     # @property
     # def select(self):
     #     pass
 
-    def nodes_universe(self, bubble):
-        if self.mode == "self":
+    def nodes_in_scope(self, bubble):
+        if self.scope == "self":
             return (bubble,)
-        return getattr(bubble, self.mode, ())
+        if self.scope == "twigs":
+            return [l.parent for l in self.leaves]
+        return getattr(bubble, self.scope, ())
 
     def query_nodes(self, bubble):
         return_nodes = []
-        for i, node in enumerate(self.nodes_universe(bubble)):
+        for i, node in enumerate(self.nodes_in_scope(bubble)):
             if self.bubble_node_match(node, i):
                 return_nodes.append(node)
         return return_nodes
@@ -303,6 +312,13 @@ class QBase(object):
         return True
 
 class QAnd(QBase):
+    def __call__(self, *args, **kwargs):
+        if len(args) + len(kwargs) > 1:
+            self.add_arguments( QOr(*args, **kwargs) )
+        else:    
+            self.add_arguments(*args, **kwargs)
+        return self
+
     def bubble_node_match(self, bubble, index):
         for arg in self.args:
             if isinstance(arg, int):
@@ -328,7 +344,19 @@ class QAnd(QBase):
 
 
 class QOr(QBase):
+    def __call__(self, *args, **kwargs):
+        new_and = QAnd(self)
+        new_and.scope = self.scope
+        self.scope = None
+        if len(args) + len(kwargs) > 1:
+            new_and.add_arguments( QOr(*args, **kwargs) )
+        else:    
+            new_and.add_arguments(*args, **kwargs)
+        return new_and
+
     def bubble_node_match(self, bubble, index):
+        if not self.args and not self.kwargs:
+            return True
         for arg in self.args:
             if isinstance(arg, int):
                 if arg == index:
@@ -354,13 +382,36 @@ class QOr(QBase):
 # class QWith(QBase):
 #     pass
 
-Q = QOr(mode="self")
+class QueryMaker(QBase):
+    scope = "self"
+    sub_scope = "children"
 
-q = Q(1, 2, 3, QAnd(4, "yoyo"), tag="special_3", )(machines.Line)
+    def __getitem__(self, *args):
+        return_q = QAnd(scope=self.scope)
+        return return_q.__getitem__(*args[0])
 
 
+    def __call__(self, *args, **kwargs):
+        if len(args) + len(kwargs) > 1:
+            return QOr(scope=self.scope, *args, **kwargs)
+        else:    
+            return QAnd(scope=self.scope, *args, **kwargs)
+
+
+Q = QueryMaker()
+q = Q[2:4, 5](machines.Line)
+
+
+# q = Q[1,2,3,4](machines.Line)(
+#     1, 
+#     2, 
+#     3, 
+#     Q(4)("yoyo1", "yoyo2"), 
+#     tag="special_3", 
+#     )
+
+# q = Q().children[]
 print(q)
-
 
 # class QBubble(bubbles.Bubble):
 
