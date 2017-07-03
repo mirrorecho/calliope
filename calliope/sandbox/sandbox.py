@@ -180,56 +180,92 @@ class MyScore(bubbles.Score):
 # class Viola(bubbles.Line):
 #     music_string = "a4 a4"
 
-c1 = machines.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
-    metrical_durations = [(4,4)] * 4,
-    name="c1")
+# c1 = machines.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
+#     metrical_durations = [(4,4)] * 4,
+#     name="c1")
 
-cb = machines.CellBlock(
-    c1,
-    c1(pitches=(None,"c","c'"), name="c2"),
-    metrical_durations = [(4,4)] * 4,
-    )
-
-# comp = cb.comp(
-#     Q["c1"][:-1].sub(Q[0]())
+# cb = machines.CellBlock(
+#     c1,
+#     c1(pitches=(None,"c","c'"), name="c2"),
+#     metrical_durations = [(4,4)] * 4,
 #     )
 
-class Query(object):
+# # comp = cb.comp(
+# #     Q["c1"][:-1].sub(Q[0]())
+# #     )
+
+# class Query(object):
+
+
+
+
+class QBase(object):
+    mode = "children" # "children", "leaves", "nodes", or "self"    
+    sub_logical_q = None
+    children_q = None
+
     args = None # set to list of: strings (names), ints (indices), or slices.. which all work similarly for retrieving tree children
-    types = None # set to list of types
-    methods = None # set to list of lambda functions
+    # types = None # set to list of types
+    # methods = None # set to list of lambda functions
     kwargs = None # set to dictionary to match object attributes
-    sub_queries = ()
-    mode = "children" # "and", "children", "leaves", "nodes", or "with"
 
     def add_arguments(self, *args, **kwargs):
-        for arg in args:
-            if inspect.issubclass(arg, bubbles.Bubble):
-                self.types.append(arg)
-                args.remove(arg)
-            elif callable(arg):
-                args.methods.append(arg)
-                args.remove(arg)
+        # for arg in args:
+        #     if isinstance(arg, QBase):
+        #         self.sub_logical_q.append(arg)
+        #     elif inspect.issubclass(arg, bubbles.Bubble):
+        #         self.types.append(arg)
+        #         args.remove(arg)
+        #     elif callable(arg):
+        #         args.methods.append(arg)
+        #         args.remove(arg)
         self.args.extend(args)
         self.kwargs.update(kwargs)
 
     def __init__(self, *args, **kwargs):
         self.args = []
-        self.types = []
-        self.methods = []
+        # self.types = []
+        # self.methods = []
         self.kwargs = {}
         self.mode = kwargs.pop("mode", "children")
         self.add_arguments(*args, **kwargs)
 
+    def last_decendant_q(self):
+        if self.children_q:
+            return last_decendant_q(self.children_q)
+        else:
+            return self
+
     def __getitem__(self, *args):
-        self.add_arguments(*args)
+        decendant = self.last_decendant_q()
+        decendant.children_q = QOr(*args)
         return self
 
+    def stringpart(self, line_prefix="", line_suffix="\n"):
+        indent = "|  "
+        return_string = "%s%s:%s:%s" % (line_prefix, type(self).__name__, self.mode, line_suffix)
+        for arg in self.args:
+            if isinstance(arg, QBase):
+                return_string += arg.stringpart(line_prefix+indent, line_suffix)
+            else:
+                return_string += "%s%s%s" % (line_prefix+indent, arg, line_suffix)
+        for key, value in self.kwargs.items():
+            return_string += "%s%s=%s%s" % (line_prefix+indent, key, value, line_suffix)
+        return return_string
+
     def __str__(self):
-        return "Query: " + str(self.arguments)
+        return self.stringpart()
+
 
     def __call__(self, *args, **kwargs):
-        self.add_arguments(*args, **kwargs)
+        if isinstance(self, QAnd):
+            my_and = self
+        else:
+            my_and = QAnd()            
+            my_and.args.append(self)
+        my_or = QOr(*args, **kwargs)
+        my_and.args.append(my_or)
+        return my_and
 
     @property
     def leaves(self):
@@ -244,25 +280,95 @@ class Query(object):
 
     @property
     def children(self):
-        self.mode = "nodes"
+        self.mode = "children"
         self.add_arguments(*args, **kwargs)
 
-    @property
-    def with(self):
-        pass
+    # @property
+    # def select(self):
+    #     pass
 
-    def bubble_nodes_universe(self, bubble):
+    def nodes_universe(self, bubble):
+        if self.mode == "self":
+            return (bubble,)
         return getattr(bubble, self.mode, ())
 
-Q = Query()
+    def query_nodes(self, bubble):
+        return_nodes = []
+        for i, node in enumerate(self.nodes_universe(bubble)):
+            if self.bubble_node_match(node, i):
+                return_nodes.append(node)
+        return return_nodes
 
-class QBubble(bubbles.Bubble):
+    def bubble_node_match(self, bubble, index):
+        return True
 
-    def query(self, q):
-        print(q.args)
+class QAnd(QBase):
+    def bubble_node_match(self, bubble, index):
+        for arg in self.args:
+            if isinstance(arg, int):
+                if arg != index:
+                    return False
+            elif isinstance(arg, slice):
+                print("TO DO...need to implement slice queries!")
+            elif inspect.isinstance(arg, QBase):
+                if not arg.bubble_node_match(bubble, index):
+                    return False
+            elif isinstance(arg, str):
+                if bubble.name != arg:
+                    return False
+            elif inspect.isclass(arg):
+                if not isinstance(bubble, arg):
+                    return False
+            elif callable(arg):
+                print("TO DO...need to callable queries!")
+        for key, value in kwargs.items():
+            if getattr(bubble, key, None) != value:
+                return False
+        return True
 
-    def select(self, *args):
-        print(args)
+
+class QOr(QBase):
+    def bubble_node_match(self, bubble, index):
+        for arg in self.args:
+            if isinstance(arg, int):
+                if arg == index:
+                    return True
+            elif isinstance(arg, slice):
+                print("TO DO...need to implement slice queries!")
+            elif inspect.isinstance(arg, QBase):
+                if arg.bubble_node_match(bubble, index):
+                    return True
+            elif isinstance(arg, str):
+                if bubble.name == arg:
+                    return True
+            elif inspect.isclass(arg):
+                if isinstance(bubble, arg):
+                    return True
+            elif callable(arg):
+                print("TO DO...need to callable queries!")
+        for key, value in kwargs.items():
+            if getattr(bubble, key, None) == value:
+                return True
+        return False
+
+# class QWith(QBase):
+#     pass
+
+Q = QOr(mode="self")
+
+q = Q(1, 2, 3, QAnd(4, "yoyo"), tag="special_3", )(machines.Line)
+
+
+print(q)
+
+
+# class QBubble(bubbles.Bubble):
+
+#     def query(self, q):
+#         print(q.args)
+
+#     def select(self, *args):
+#         print(args)
 
 # and vs or relationships
 # sequence or match
@@ -274,28 +380,32 @@ class QBubble(bubbles.Bubble):
 # SILVER STAR:lamba
 # GOLD STAR: by where
 
-b = QBubble()
-b(
-    Q["c1"].with(machines.Phrase)[
-        Q[1],
-        Q[2].with[1].attrs(tags=[">","."], duration=4),
-        Q[5:23].with[:-1],
-    ](myattr1="yes")(myattr2="yes")
-    )
-b.query(
-    Q.children(
-        myattr1="yes", 
-        Q(machines.Cell)(index=1) 
-        )(myattr2="yes")
-    )
+# b = QBubble()
+# b(
+#     Q["c1"].with(machines.Phrase)[
+#         Q[1],
+#         Q[2].with[1].attrs(tags=[">","."], duration=4),
+#         Q[5:23].with[:-1],
+#     ](myattr1="yes")(myattr2="yes")
+#     )
+# b.query(
+#     Q.children(
+#         myattr1="yes", 
+#         Q(machines.Cell)(index=1) 
+#         )(myattr2="yes")
+#     )
 
-(
-    Q.next
-)
 
-(
+# # "and", "children", "leaves", "nodes", or "with"
+# q = ("children", (
 
-)
+#         )  
+#     )
+
+# (
+#     Q.next
+# )
+
 
 
 # BASE_MUSIC = machines.Score(
