@@ -1,3 +1,4 @@
+from calliope.bubbles.mapping import *
 from calliope.bubbles.bubble import *
 
 from calliope.bubbles.staves import *

@@ -14,17 +14,7 @@ class Cell(machines.EventMachine):
         #         self["r%s" % i] = machines.Event(beats=r, pitch=pitch)
 
 
-class BlockMixin(bubbles.SimulLine):
-
-    def comp(self):
-        pass
-
-    @property
-    def ticks(self):
-        return max([c.ticks for c in self])
-
-
-class CellBlock(BlockMixin, Cell):
+class CellBlock(machines.BlockMixin, Cell):
     child_types = (Cell,)
     pass
 

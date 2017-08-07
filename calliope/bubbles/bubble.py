@@ -6,7 +6,6 @@ from calliope import tools, bubbles
 class Bubble(abjad.datastructuretools.TreeContainer):
     container_type=abjad.Container
     context_name=None
-    is_simultaneous=False
     child_types = ()
     respell=None # TO DO, best place for this?
     stylesheets = () # TO DO, best place for this?
@@ -88,6 +87,17 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         for i, child in enumerate(self.children):
             child.original_index = i
             child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
+
+    def map_to(self, *args, **kwargs):
+        # TO DO... IMPLEMENT MORE FULLY
+        bubble_type = args[0]
+        if type(args[1]) is bubbles.Mapping:
+            my_mapping = args[1]
+        return bubble_type( *my_mapping.map_root.map_bubble(self, as_copy=True) )
+
+    def map_filter(self, *args, **kwargs):
+        if args[0] is Mapping:
+            my_mapping = args[0]
 
     @property
     def my_index(self):

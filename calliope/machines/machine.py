@@ -12,6 +12,17 @@ from calliope import tools, structures, bubbles, machines
 
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(structures.TagSet, structures.Tree, bubbles.LineTalea):
+
+class BlockMixin(bubbles.SimulLine):
+
+    def comp(self): #????????
+        pass
+
+    @property
+    def ticks(self):
+        return max([c.ticks for c in self])
+        
+
 class Machine(bubbles.Line):
 
     # TO DO... create a way to automate metrical durations for workshopping/testing

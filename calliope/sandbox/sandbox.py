@@ -190,216 +190,581 @@ class MyScore(bubbles.Score):
 #     metrical_durations = [(4,4)] * 4,
 #     )
 
-# # comp = cb.comp(
-# #     Q["c1"][:-1].sub(Q[0]())
-# #     )
 
-# class Query(object):
+class T(machines.Event):
+
+    def tag(self, *args):
+        my_ret = Map()
+        my_ret.machine = self
+        return my_ret
 
 
+class Map(object):
+    """
+    """
 
+    machine = None
+    index = None
 
-class QBase(object):
-    scope = None # "children", "leaves", "nodes", or "self" ... None for not applicable
-    sub_scope = None
-    scope_q = None
-    filter_scope = False # if False, filters apply to 
-
-    args = None # set to list of: strings (names), ints (indices), slices, types, or methods... which all work similarly for retrieving tree children
-    # types = None # set to list of types
-    # methods = None # set to list of lambda functions
-    kwargs = None # set to dictionary to match object attributes
-
-    def add_arguments(self, *args, **kwargs):
-        for arg in args:
-            if isinstance(arg, QBase):
-                arg.scope = None # scope has no meaning for sub-logical objects
-                arg.sub_scope = None
-        #     elif inspect.issubclass(arg, bubbles.Bubble):
-        #         self.types.append(arg)
-        #         args.remove(arg)
-        #     elif callable(arg):
-        #         args.methods.append(arg)
-        #         args.remove(arg)
-        self.args.extend(args)
-        self.kwargs.update(kwargs)
-
-    def __init__(self, *args, **kwargs):
-        self.args = []
-        self.kwargs = {}
-        self.scope = kwargs.pop("scope", None) or self.scope
-        self.add_arguments(*args, **kwargs)
-
-    def last_decendant_q(self):
-        if self.scope_q:
-            return last_decendant_q(self.scope_q)
-        else:
-            return self
-
-    def __getitem__(self, *args):
-        decendant = self.last_decendant_q()
-        decendant.scope_q = Q(*args)
-        decendant.scope_q.scope = decendant.sub_scope
+    # TO DO ... implement slice:
+    # TO DO ... implement multiple indeces:
+    def __getitem__(self, args):
+        # self.index = args
+        # print("tagging %s with..." % self.index)
+        print(args)
         return self
 
-    def stringpart(self, line_prefix="    ", line_suffix="\n"):
-        indent = "|  "
-        return_string = ""
-        if self.scope: 
-            return_string += "[" + self.scope + "]" + line_suffix
-        return_string += "%s%s:%s" % (line_prefix, self.logical_name, line_suffix)
-        for arg in self.args:
-            if isinstance(arg, QBase):
-                return_string += arg.stringpart(line_prefix+indent, line_suffix)
-            else:
-                return_string += "%s%s%s" % (line_prefix+indent, arg, line_suffix)
-        for key, value in self.kwargs.items():
-            return_string += "%s%s=%s%s" % (line_prefix+indent, key, value, line_suffix)
-        return return_string
+    def __call__(self, *args):
+        # print(args)
+        return self
 
     def __str__(self):
-        return_string = self.stringpart()
-        if self.scope_q:
-            return_string +=  str(self.scope_q) + "\n--------------------------------------"
-        return return_string
+        pass
 
     @property
-    def logical_name(self):
-        if isinstance(self, QOr):
-            return "Or"
-        if isinstance(self, QAnd):
-            return "And"
-        else:
-            return "??"
-
-    @property
-    def leaves(self):
-        self.scope = "leaves"
-        self.sub_scope = "leaves"
-        return self
-
-    @property
-    def nodes(self):
-        self.scope = "nodes"
-        self.sub_scope = "nodes"
-        return self
+    def me(self):
+        pass
 
     @property
     def children(self):
-        self.scope = "children"
-        self.sub_scope = "children"
+        pass
+
+    @property
+    def sl(self):
         return self
 
-    # @property
-    # def select(self):
-    #     pass
 
-    def nodes_in_scope(self, bubble):
-        if self.scope == "self":
-            return (bubble,)
-        if self.scope == "twigs":
-            return [l.parent for l in self.leaves]
-        return getattr(bubble, self.scope, ())
+t = T()
 
-    def query_nodes(self, bubble):
-        return_nodes = []
-        for i, node in enumerate(self.nodes_in_scope(bubble)):
-            if self.bubble_node_match(node, i):
-                return_nodes.append(node)
-        return return_nodes
+t.tag( ">", "." )
 
-    def bubble_node_match(self, bubble, index):
-        return True
+print("-----")
 
-class QAnd(QBase):
-    def __call__(self, *args, **kwargs):
-        if len(args) + len(kwargs) > 1:
-            self.add_arguments( QOr(*args, **kwargs) )
-        else:    
-            self.add_arguments(*args, **kwargs)
+# [9:15]( "." ) should be no problem
+# [9:12]("()") would be IDEAL
+
+# class Viola1(FromSomethingr):
+#     # fragments = Frag.make(
+#     #     Frag.it(2,7, tags="("),
+#     #     Frag.it(2,8, tags=")"),
+#     #     Frag.it(2,9, tags="-"),
+#     #     Frag.it(2,10, tags="-"),
+#     #     Frag.it(2,11, tags="("),
+#     #     Frag.it(2,12, tags=")"),
+#     #     Frag.it(1,10, ),
+#     #     Frag.it(1,11, ),
+#     #     )
+#     arrange_from = SHORT_SCORE.arrange(
+
+#         )
+
+
+    # TO DO EVENTUALLY, distill fragments down to something like this:
+    # bites = Bites(
+    #     Off(line=2)[7:10](
+    #                     7, tags=["(","<"] )(
+    #                     9, duration=3),
+    #     Off(line=2)[13](duration=4),
+    #     )
+
+
+class OrAnd(object):
+    def __init__(self, *args):
+        pass
+
+    def __call__(self, *args):
+        # print(args)
         return self
 
-    def bubble_node_match(self, bubble, index):
-        for arg in self.args:
-            if isinstance(arg, int):
-                if arg != index:
-                    return False
-            elif isinstance(arg, slice):
-                print("TO DO...need to implement slice queries!")
-            elif inspect.isinstance(arg, QBase):
-                if not arg.bubble_node_match(bubble, index):
-                    return False
-            elif isinstance(arg, str):
-                if bubble.name != arg:
-                    return False
-            elif inspect.isclass(arg):
-                if not isinstance(bubble, arg):
-                    return False
-            elif callable(arg):
-                print("TO DO...need to callable queries!")
-        for key, value in kwargs.items():
-            if getattr(bubble, key, None) != value:
-                return False
-        return True
+class AndOr(object):
+    def __init__(self, *args):
+        pass
+
+    def __call__(self, *args):
+        # print(args)
+        return self
 
 
-class QOr(QBase):
-    def __call__(self, *args, **kwargs):
-        new_and = QAnd(self)
-        new_and.scope = self.scope
-        self.scope = None
-        if len(args) + len(kwargs) > 1:
-            new_and.add_arguments( QOr(*args, **kwargs) )
-        else:    
-            new_and.add_arguments(*args, **kwargs)
-        return new_and
+[] <- selector: specifieds nodes to select, and moves selector down one level
+() <- call copies selected nodes and returns context to the original level
 
-    def bubble_node_match(self, bubble, index):
-        if not self.args and not self.kwargs:
-            return True
-        for arg in self.args:
-            if isinstance(arg, int):
-                if arg == index:
-                    return True
-            elif isinstance(arg, slice):
-                print("TO DO...need to implement slice queries!")
-            elif inspect.isinstance(arg, QBase):
-                if arg.bubble_node_match(bubble, index):
-                    return True
-            elif isinstance(arg, str):
-                if bubble.name == arg:
-                    return True
-            elif inspect.isclass(arg):
-                if isinstance(bubble, arg):
-                    return True
-            elif callable(arg):
-                print("TO DO...need to callable queries!")
-        for key, value in kwargs.items():
-            if getattr(bubble, key, None) == value:
-                return True
-        return False
-
-# class QWith(QBase):
-#     pass
-
-class QueryMaker(QBase):
-    scope = "self"
-    sub_scope = "children"
-
-    def __getitem__(self, *args):
-        return_q = QAnd(scope=self.scope)
-        return return_q.__getitem__(*args[0])
+t(1,2,3,4)
 
 
-    def __call__(self, *args, **kwargs):
-        if len(args) + len(kwargs) > 1:
-            return QOr(scope=self.scope, *args, **kwargs)
-        else:    
-            return QAnd(scope=self.scope, *args, **kwargs)
+t.copy(
+    Map.children()
+        [1,2,3,4]()
+    )
 
 
-Q = QueryMaker()
-q = Q[2:4, 5](machines.Line)
+t.select(
+    Map()
+    )
+
+
+t.update(
+    Map()
+    )
+
+t(
+    Map()(
+        Map.children()
+            [1,3,4]("-", "()"
+                Map()
+                    [4](".")
+            )
+        )
+    )
+
+class Clarinet1(ArrangeF):
+yoyo(
+    Map.children() # children, leaves, twigs? (lines/phrases/cells/smallest_cells/events/logical_ties/
+        [AndOr(machines.Event)(4), 2, 4:5, 9:10]
+        [6][2:46](
+            Map()
+                [3](".")
+                [7]("-")
+            )
+        [1]( "(" )
+        ["line1"][3]( ")", "." )
+        [8]( "(" )
+        [9:15](
+            Map()
+                [10](".")
+                [11]("-")
+            )
+        [9:12]("()")
+        [12:15].sl
+        [16]()
+)
+
+class Clarinet1(machines.Line):
+    # metrical_durations = MEDIUM_METRICAL_DURATIONS + {
+    # 11: ((1,4),(1,4),(2,4),),
+    # 19: ((1,4),(1,4),(1,4),(1,4)),
+    # 20: ((1,4),(1,4),(2,4)),
+    # 24: ((1,4),(1,4),(1,4),(1,4)),
+    # 25: ((1,4),(1,4),(2,4)),
+    # 26: ((1,4),(1,4),(1,4),(1,4)),
+    # 32: ((2,4),(1,4),(1,4),),
+    # 35: ((1,4),(1,4),(1,4),(1,4)),
+    # }
+    phrase1 = SECTION_F.map_phrase( Map.children
+        [6][1:9]( Map.me
+            [1]("p", "\<")
+            [2:4].sl
+            [4]("mf", "-", transpose=12)
+            [5:7, 7:9, 15:17, 17:19].sl
+            )
+        )
+    phrase2 = SECTION_F.map_phrase( Map.children
+        [6][40:49]( Map.me
+            [40](".")
+            [41:43].sl
+            [43,44]("-")
+            [45:47].sl
+            [47]("-")
+            [48](".")
+            )
+        )
+    phrase3 = SECTION_F.map_phrase( Map.children
+        [6][55:59, 61:65, 67:73, 78:82]( Map.me
+            [55,56]("-")
+            [57](".")
+            [58, 61, 62]("-")
+            [63](".")
+            [64,67]("-")
+            [68](".")
+            [69:71].sl
+            [71]("-")
+            [72](".")
+            [78:80, 80:82].sl
+            [81](duration=2.5)
+            )
+        )
+    phrase4 = SECTION_F.map_phrase( Map.children
+        [3][58:62,63:71]("-", Map.me
+            [58]("\<","mp")
+            [61]("f")
+            [70](duration=3)
+            )
+        ))
+    phrase5 = SECTION_F.map_phrase( Map.children
+        [1][40:58]("-", chord_positions=0, map=Map.children
+            [43](duration=2.5)
+            [44]("\<")
+            [70]("ff",">")
+            )
+        )
+
+
+# Q()
+#     [6](
+#         [1].tag("p","\<"),
+#         [2:3].sl(),
+#         [5:6].sl(),
+#         [7:8].sl(),
+#         [15:16].sl(),
+#         [17:18].sl(),
+#         [40]
+#     )
+
+
+# Q()
+#     [6](
+#         [1]("p","\<"),
+#         [2:3].sl(),
+#         [5:6].sl()("fff"), # <- the fff here is st an example
+#         [7:8].sl(),
+#         [15:16].sl(),
+#         [17:18].sl(),
+#         [40]("."),
+#         [41:42].sl(),
+#         [43,44]("_"),
+#         [45:46].sl(),
+#     )
+
+
+# WON'T BE POSSIBE WITH SLICES:
+# Q()
+#     [6](
+#         [1]("p","\<"),
+#         [2:3].sl,
+#         [5:6].sl("fff"), # <- the fff here is st an example
+#         [7:8].sl,
+#         [15:16].sl,
+#         [17:18].sl,
+#         [40]("."),
+#         [41:42].sl,
+#         [43,44]("_"),
+#         [45:46].sl,
+#     )
+
+
+# Q()
+#     [6](
+#         [1]("p","\<"),
+#         [2:3].sl,
+#         [5:6].sl("fff"), # <- the fff here is st an example
+#         [7:8].sl,
+#         [15:16].sl,
+#         [17:18].sl,
+#         [40]("."),
+#         [41:42].sl,
+#         [43,44]("_"),
+#         [45:46].sl,
+#     )
+
+
+
+
+
+
+# ===========================================================================
+# ===========================================================================
+# ===========================================================================
+# USE THIS!
+# ===========================================================================
+# ===========================================================================
+# ===========================================================================
+
+# class QBase(object):
+#     scope = None # "children", "leaves", "nodes", or "self" ... None for not applicable
+#     sub_q = None
+#     is_filtering_sub_q = False
+
+#     args = None # set to list of: strings (names), ints (indices), slices, types, or methods... which all work similarly for retrieving tree children
+#     kwargs = None # set to dictionary to match object attributes
+
+#     def add_arguments(self, *args, **kwargs):
+#         for arg in args:
+#             if isinstance(arg, QBase):
+#                 arg.scope = None # scope has no meaning for sub-logical objects
+#                 arg.sub_scope = None
+#         #     elif inspect.issubclass(arg, bubbles.Bubble):
+#         #         self.types.append(arg)
+#         #         args.remove(arg)
+#         #     elif callable(arg):
+#         #         args.methods.append(arg)
+#         #         args.remove(arg)
+#         self.args.extend(args)
+#         self.kwargs.update(kwargs)
+
+#     def __init__(self, *args, **kwargs):
+#         self.args = []
+#         self.kwargs = {}
+#         self.scope = kwargs.pop("scope", None) or self.scope
+#         self.add_arguments(*args, **kwargs)
+    
+#     def last_decendant_q(self):
+#         if self.scope_q:
+#             return last_decendant_q(self.scope_q)
+#         else:
+#             return self
+
+#     def __getitem__(self, *args):
+#         decendant = self.last_decendant_q()
+#         decendant.sub_q = QOr(*args)
+#         decendant.sub_q.scope = decendant.sub_scope
+#         return self
+
+#     def stringpart(self, line_prefix="    ", line_suffix="\n"):
+#         indent = "|  "
+#         return_string = ""
+#         if self.scope: 
+#             return_string += "[" + self.scope + "]" + line_suffix
+#         return_string += "%s%s:%s" % (line_prefix, self.logical_name, line_suffix)
+#         for arg in self.args:
+#             if isinstance(arg, QBase):
+#                 return_string += arg.stringpart(line_prefix+indent, line_suffix)
+#             else:
+#                 return_string += "%s%s%s" % (line_prefix+indent, arg, line_suffix)
+#         for key, value in self.kwargs.items():
+#             return_string += "%s%s=%s%s" % (line_prefix+indent, key, value, line_suffix)
+#         return return_string
+
+#     def __str__(self):
+#         return_string = self.stringpart()
+#         if self.sub_q:
+#             return_string +=  str(self.sub_q) + "\n--------------------------------------"
+#         return return_string
+
+#     @property
+#     def logical_name(self):
+#         if isinstance(self, QOr):
+#             return "Or"
+#         if isinstance(self, QAnd):
+#             return "And"
+#         else:
+#             return "??"
+
+#     @property
+#     def leaves(self):
+#         self.scope = "leaves"
+#         self.sub_scope = "leaves"
+#         return self
+
+#     @property
+#     def nodes(self):
+#         self.scope = "nodes"
+#         self.sub_scope = "nodes"
+#         return self
+
+#     @property
+#     def children(self):
+#         self.scope = "children"
+#         self.sub_scope = "children"
+#         return self
+
+#     def nodes_in_scope(self, bubble):
+#         if self.scope == "self":
+#             return (bubble,)
+#         if self.scope == "twigs":
+#             return [l.parent for l in self.leaves]
+#         return getattr(bubble, self.scope, ())
+
+#     def query_nodes(self, bubble):
+#         return_nodes = []
+#         for i, node in enumerate(self.nodes_in_scope(bubble)):
+#             if self.bubble_node_match(node, i):
+#                 return_nodes.append(node)
+#         return return_nodes
+
+#     def bubble_node_match(self, bubble, index):
+#         return True
+
+# class QAnd(QBase):
+#     def __call__(self, *args, **kwargs):
+#         if len(args) + len(kwargs) > 1:
+#             self.add_arguments( QOr(*args, **kwargs) )
+#         else:    
+#             self.add_arguments(*args, **kwargs)
+#         return self
+
+#     def bubble_node_match(self, bubble, index):
+#         for arg in self.args:
+#             if isinstance(arg, int):
+#                 if arg != index:
+#                     return False
+#             elif isinstance(arg, slice):
+#                 print("TO DO...need to implement slice queries!")
+#             elif inspect.isinstance(arg, QBase):
+#                 if not arg.bubble_node_match(bubble, index):
+#                     return False
+#             elif isinstance(arg, str):
+#                 if bubble.name != arg:
+#                     return False
+#             elif inspect.isclass(arg):
+#                 if not isinstance(bubble, arg):
+#                     return False
+#             elif callable(arg):
+#                 print("TO DO...need to callable queries!")
+#         for key, value in kwargs.items():
+#             if getattr(bubble, key, None) != value:
+#                 return False
+#         return True
+
+
+# class QOr(QBase):
+#     def __call__(self, *args, **kwargs):
+#         new_and = QAnd(self)
+#         new_and.scope = self.scope
+#         self.scope = None
+#         if len(args) + len(kwargs) > 1:
+#             new_and.add_arguments( QOr(*args, **kwargs) )
+#         else:    
+#             new_and.add_arguments(*args, **kwargs)
+#         return new_and
+
+#     def bubble_node_match(self, bubble, index):
+#         if not self.args and not self.kwargs:
+#             return True
+#         for arg in self.args:
+#             if isinstance(arg, int):
+#                 if arg == index:
+#                     return True
+#             elif isinstance(arg, slice):
+#                 print("TO DO...need to implement slice queries!")
+#             elif inspect.isinstance(arg, QBase):
+#                 if arg.bubble_node_match(bubble, index):
+#                     return True
+#             elif isinstance(arg, str):
+#                 if bubble.name == arg:
+#                     return True
+#             elif inspect.isclass(arg):
+#                 if isinstance(bubble, arg):
+#                     return True
+#             elif callable(arg):
+#                 print("TO DO...need to callable queries!")
+#         for key, value in kwargs.items():
+#             if getattr(bubble, key, None) == value:
+#                 return True
+#         return False
+
+# # class QWith(QBase):
+# #     pass
+
+# class QueryMaker(QBase):
+#     scope = "self"
+
+#     def __getitem__(self, *args):
+#         return_q = QAnd(scope=self.scope)
+#         return return_q.__getitem__(*args )
+
+
+#     def __call__(self, *args, **kwargs):
+#         if len(args) + len(kwargs) > 1:
+#             return QOr(scope=self.scope, *args, **kwargs)
+#         else:    
+#             return QAnd(scope=self.scope, *args, **kwargs)
+
+
+# Q = QueryMaker()
+
+# Q[:] # shorthand for:
+# Q.children
+
+# Q.children(a=1, b=2, Q() )
+
+# Q[:-1] # all children except the last
+# Q.children[:-1] # same 
+
+# Q(use_me=True)[:-1] # only if root has attr use_me=True, then all children except the last
+# Q(use_me=True).children[:-1] # same 
+
+# # vs:
+# Q.children(use_me=True)[:-1] # all children that have use_me=True
+
+# Q.children[:-1](use_me=True) # all children that have use_me=True
+
+# Q.children[:-1](use_me=True)[1:]
+
+# # equivalent
+# Q.children(1,2,4) # filtered by child index 1,2,4
+# Q[1,2,4] # sliced by child index 1,2,4
+# Q.children[1,2,4](1,2,4) #sliced by child index 1,2,4; then filtered by child index 1,2,4
+# # the above is the same because filtering happens on the original index, not the sliced index
+
+# # but not
+# Q.children(1,2,4)[1,2,4].children[:2]
+# # this would cause an index error since slicing happens over the filtered results 
+
+# Query()[2]
+
+# G.events[1,2,3,4,5,6,9:60]
+
+#         1,
+#         2,
+#         6,
+#         7,
+#         8,
+#     ).children(
+#         special=True)[1]
+
+
+# # as an example:
+# # USING THESE EVENTS
+# 1,2,6,28, 45:60
+
+# b(
+#     Q["c1"].with(machines.Phrase)[
+#         Q[1],
+#         Q[2].with[1].attrs(tags=[">","."], duration=4),
+#         Q[5:23].with[:-1],
+#     ](myattr1="yes")(myattr2="yes")
+#     )
+# b.query(
+#     Q.children(
+#         myattr1="yes", 
+#         Q(machines.Cell)(index=1) 
+#         )(myattr2="yes")
+#     )
+
+
+
+# Q.c_[:2](machines.Phrase).n_(machines.LogicalTie)
+
+# q = Q(include_me=True)._[2:5](machines.Line)
+# # # returns 3rd, 4th, and fith lines underneath self, only if self has attr include_me=True (otherwise returns empty list)
+
+# q = Q._(fancy=True)._twigs._[0]
+# q = Q[:](fancy=True)._twigs._[0]
+# # applied to machine, returns the first logical tie of every event that's part of a phrase with attr fancy=True
+
+# q = Q._nodes[:-1](machines.Cell)
+# # returns all cells at any level, except the very last cell
+
+# q = Q[:2](machines.Phrase).nodes[:-1](machines.Cell)(long=True)
+
+# q = Q._[:2](machines.Phrase)._nodes[:-1](machines.Cell)(long=True)
+
+# q = Q.logical_ties(pitch_number__gt=14)
+
+# q = Q.smallest_cells(short=False).logical_ties[:2]
+
+# q = Q.events[:24]
+
+# class T:
+#     @property
+#     def _(self):
+#         print("yo")
+
+# t = T()
+# t._
+
+
+
+# q = Q.c_self.c_children
+
+# q = Q.I._[:2](machines.Phrase)(
+#     Q(1).inc
+#     )
+
+# q = Q[
+#         Q(machines.Phrase)(
+#             Q[1:3]
+#             )[1:3],
+#     ]
 
 
 # q = Q[1,2,3,4](machines.Line)(
@@ -410,8 +775,9 @@ q = Q[2:4, 5](machines.Line)
 #     tag="special_3", 
 #     )
 
+
 # q = Q().children[]
-print(q)
+# print(q)
 
 # class QBubble(bubbles.Bubble):
 
@@ -445,6 +811,14 @@ print(q)
 #         Q(machines.Cell)(index=1) 
 #         )(myattr2="yes")
 #     )
+
+
+# ===========================================================================
+# ===========================================================================
+# ===========================================================================
+# END USE THIS!
+# ===========================================================================
+# ===========================================================================
 
 
 # # "and", "children", "leaves", "nodes", or "with"

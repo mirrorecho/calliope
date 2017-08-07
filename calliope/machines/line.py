@@ -64,3 +64,7 @@ class Line(machines.EventMachine):
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)
         self.replace_multimeasure_rests(music)
+
+class LineBlock(machines.BlockMixin, Line):
+    child_types = (Line,)
+    pass
