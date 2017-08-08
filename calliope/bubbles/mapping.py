@@ -36,41 +36,51 @@ class BubbleMapping(object):
     def get_filter(self):
         return filter(self.filter_item, self.nodes)
 
-    def map_me(self, as_copy=False):
+    def map_subqueries(self, as_copy=False):
         # TO DO... how to handle various types of scope at various levels?
+        return_list = []
+        for c in self.mapping_node.children:
+            child_bubble_mapping = BubbleMapping(self.bubble, c, self.scope)
+            child_filter = child_bubble_mapping.get_filter()
+            for bubble_node in child_filter:
+                return_list.extend( n.map_bubble( bubble_node, self.scope, as_copy) )
+        return return_list
 
-        if not self.mapping_node.children:
-            # TO DO... add tagging
-            if as_copy:
-                return [copy.deepcopy(node) for node in self.get_filter()]
-            else:
-                return list( self.get_filter() )
+    def map_me(self, as_copy=False):
+        # TO DO... add tagging
+        if self.mapping_node.children:
+            return self.map_subqueries 
 
+        if as_copy:
+            return [ copy.deepcopy(node) for node in self.get_filter() ]
         else:
+            return list( self.get_filter() )
 
-            return_list = []
-                
-            for n in self.mapping_node.children:
-                for bubble_node in self.get_filter():
-                    return_list.extend( n.map_bubble( bubble_node, self.scope, as_copy) )
-                
-            return return_list
 
-        # if self.mapping_node.children:
-        #     return_list = []
-        #     for f_item in my_filter:
-        #         print("filtering... " + str(f_item))
-        #         for n in self.mapping_node.children:
-        #             return_list.extend(n.map_bubble(f_item, self.scope, as_copy))
-        #     return return_list
-        # else:
+
+
+        # if not self.mapping_node.children:
+        #     # TO DO... add tagging
         #     if as_copy:
-        #         return [copy.copy(node).tag(*self.tag_args, *self.tag_kwargs) for node in my_filter]
+        #         return [copy.deepcopy(node) for node in my_filter]
         #     else:
-        #         return list(my_filter)
+        #         return list( my_filter )
 
-# ================================================
-# ================================================
+        # else:
+
+        #     return_list = []
+
+        #     for child_mapping_node in self.mapping_node.children:
+        #         sub_bubble_mapping = BubbleMapping(self.bubble, child_mapping_node, scope)
+        #         sub_bubble_filter = sub_bubble_mapping.get_filter()
+        #         for bubble_node in sub_filter:
+        #             return_list.extend( child_mapping_node.map_bubble( bubble_node, self.scope, as_copy) )
+                
+        #     return return_list
+
+
+# =====================================================================================
+# =====================================================================================
 
 class MappingNode(abjad.datastructuretools.TreeContainer):
     """
@@ -84,14 +94,6 @@ class MappingNode(abjad.datastructuretools.TreeContainer):
 
     # def get_filter(self, bubble, scope="children"):
     #     return BubbleMapping(bubble, self, scope).get_filter()
-
-    # def get_indices(self, nodes):
-    #     return_indices = []
-    #     for q in self.query_args:
-    #         if type(q) == int:
-    #             return_indices.append(q)
-    #         if type(q) == slice:
-    #             return_indices.extend( [n.index for n in nodes[q] ] )
 
     def str_level(self, node, prefix=""):
         return_string = ""
@@ -111,12 +113,9 @@ class MappingNode(abjad.datastructuretools.TreeContainer):
         # TO DO... why doesn't the TreeContainer's __str__ method apply?
         return self.str_level(self)
 
-    def map_bubble(self, bubble, scope="children", as_copy=False):
-        bubble_mapping = BubbleMapping(bubble, self, scope)
-        return bubble_mapping.map_me(as_copy)
 
-# ================================================
-# ================================================
+# =====================================================================================
+# =====================================================================================
 
 class Mapping(object):
     """
@@ -160,36 +159,16 @@ class Mapping(object):
     def sl(self):
         return self
 
-    # def filter(self, *args, **kwargs):
-    #     self.getitem_context.query_args.extend(args)
-    #     self.getitem_context.query_kwargs.update(kwargs)
-    #     return self
+    def map_bubble(self, bubble, scope="children", as_copy=False):
 
+        bubble_mapping = BubbleMapping(bubble, self.map_root, scope)
+        return bubble_mapping.map_me(as_copy)
 
-
-# ================================================
-# ================================================
+# =====================================================================================
+# =====================================================================================
 
 class Filter(object):
     pass
 
-# ================================================
-# ================================================
 
-# class BubbleTest(bubbles.Bubble):
-
-# b = BubbleTest(
-#     bubbles.Line("c1 c1"),
-#     bubbles.Line("d1 d1"),
-#     bubbles.Line("e1 e1"),
-#     )
-
-# c = b.map_to(bubbles.Bubble, 
-#     Mapping()
-#         [0]()
-#         [2]()
-#         )
-
-
-# print(c.ly)
 

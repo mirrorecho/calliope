@@ -24,14 +24,14 @@ class MyShortScore(bubbles.Bubble):
 SCORE = MyShortScore()
 
 my_map = bubbles.Mapping() \
-    ["line1"][0, 2]() \
-    ["line3"]() \
+    ["line1"][0, 1]() \
+    ["line3"][:]() \
 
-MY_PHRASE = SCORE.map_to(machines.Phrase, my_map
+my_phrase = SCORE.map_to(machines.Phrase, my_map
     )
 
+print(my_phrase[0])
 
-print(MY_PHRASE.ly)
 
 # c = b.map_to(bubbles.Bubble, bubbles.Mapping()
 #     [0]()
