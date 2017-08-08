@@ -1,6 +1,15 @@
 import abjad
 from calliope import tools, bubbles, machines
 
+class BaseCell(machines.Cell):
+    high = machines.Event(pitch=40, beats=2)
+    mid = machines.Event(pitch=38, beats=2)
+    low = machines.Event(pitch=33, beats=1.25)
+
+class CellLibrary(bubbles.Bubble):
+
+
+
 class MyShortScore(bubbles.Bubble):
     is_simultaneous = True
 
