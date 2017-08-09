@@ -1,8 +1,10 @@
-# import abjad
+import abjad
+from calliope import tools
 
-# # class Tree(SetAttributeMixin, abjad.datastructuretools.TreeContainer):
+# TO DO... import SetAttributeMixin?
+class Tree(abjad.datastructuretools.TreeContainer):
+    child_types = ()
 
-# class Tree(abjad.datastructuretools.TreeContainer):
 #     child_types = ()
 
 #     # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful

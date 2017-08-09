@@ -1,12 +1,11 @@
 import inspect, collections
 import abjad
-from calliope import tools, bubbles
+from calliope import tools, structures, bubbles
 
 
-class Bubble(abjad.datastructuretools.TreeContainer):
+class Bubble(structures.Tree):
     container_type=abjad.Container
     context_name=None
-    child_types = ()
     respell=None # TO DO, best place for this?
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True

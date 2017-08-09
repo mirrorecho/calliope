@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import abjad
 
-
+# TO DO... ever used?
 class Series():
     """
     A wrapper around a pandas Series with a few goodies useful for musical structures 

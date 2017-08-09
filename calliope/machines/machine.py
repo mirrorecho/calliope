@@ -284,6 +284,10 @@ class EventMachine(Machine):
 
         return return_list
 
+    @property
+    def events(self):
+        return [e for e in self.nodes if isinstance(e, machines.Event) ]
+
     def add_bookend_rests(self, beats_before=0, beats_after=0):
         if beats_before > 0:
             first_event = self.logical_ties[0].parent
