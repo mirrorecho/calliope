@@ -1,5 +1,5 @@
 
-# TO DO.. rename this?
+# from calliope.machines.tagging import *
 from calliope.machines.machine import *
 from calliope.machines.logical_tie import *
 from calliope.machines.event import *

@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-import copy, abjad
+import math, copy, abjad
 from calliope import tools, structures, bubbles, machines
 
 # TO DO... re-add TagSet once this is properly implemented
@@ -23,13 +23,13 @@ class BlockMixin(bubbles.SimulLine):
         return max([c.ticks for c in self])
         
 
-class Machine(bubbles.Line):
+class Machine(structures.TagSet, bubbles.Line):
 
     # TO DO... create a way to automate metrical durations for workshopping/testing
-    metrical_durations = ( (1,1),(1,1) ) 
+    metrical_durations = None
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
-
+    # TO DO ... implement default meter here...
 
     # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
@@ -40,12 +40,15 @@ class Machine(bubbles.Line):
             setattr(return_bubble, name, value)
         return return_bubble
 
+    def get_metrical_durations(self):
+        return self.metrical_durations or ((4,4),) * math.ceil(self.beats / 4)
+
     def get_metrical_duration_ticks(self):
         """
         returns a number representing the total number of ticks in this line (relative to the object's rhythm_denominator)
         .... based on the defined metrical durations for this object
         """
-        return int(sum([d[0]/d[1] for d in self.metrical_durations]) * self.rhythm_denominator)
+        return int(sum([d[0]/d[1] for d in self.get_metrical_durations()]) * self.rhythm_denominator)
 
 
     def cleanup_data(self, **kwargs):
@@ -81,12 +84,14 @@ class Machine(bubbles.Line):
             # now, remove empty parents and grandparents
             remove_empty_ancestors(parent_item)
 
-    def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_count, **kwargs):
+    def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_index, **kwargs):
         if not data_logical_tie.rest:
+            # TO DO: consider... can rests be taged????
+
             event = data_logical_tie.parent
             pitch = data_logical_tie.pitch or event.pitch
             # TO DO... consider level at which respell should be defined...
-            if  isinstance(pitch, (list, tuple)):
+            if isinstance(pitch, (list, tuple)):
                 if event.respell=="flats":
                     named_pitches = [abjad.NamedPitch(p).respell_with_flats() for p in pitch]
                 elif event.respell=="sharps":
@@ -100,7 +105,7 @@ class Machine(bubbles.Line):
                     chord.written_duration = copy.deepcopy(note.written_duration)
                     m = abjad.mutate([note])
                     m.replace(chord)
-            elif isinstance(pitch, (int, str)):
+            elif isinstance(pitch, (int, str, abjad.Pitch)):
                 if event.respell=="flats":
                     named_pitch = abjad.NamedPitch(pitch).respell_with_flats()
                 elif event.respell=="sharps":
@@ -110,7 +115,42 @@ class Machine(bubbles.Line):
                 for note in music_logical_tie:
                     note.written_pitch = named_pitch
             else:
-                self.warn("can't set pitch because '%s' is not str, int, list, or tuple" % pitch,  data_logical_tie )
+                self.warn("can't set pitch because '%s' is not abjad.Pitch, str, int, list, or tuple" % pitch,  data_logical_tie )
+
+            for tag_name in data_logical_tie.get_all_tags():
+                spanners_to_close = set(self._open_spanners) & structures.TagSet.spanner_closures.get(tag_name, set() )
+                for p in spanners_to_close:
+                    spanner = data_logical_tie.get_attachment(p)
+                    start_index = self._open_spanners[p]
+                    stop_index = music_leaf_index + 1
+                    if isinstance(spanner, abjad.Slur):
+                        # slurs go to the end of the logical tie, not the beginning
+                        stop_index += len(music_logical_tie) - 1
+                    abjad.attach(spanner, music[start_index:stop_index])
+                    del self._open_spanners[p]
+
+            # NOTE... here it's important to through attachments a second time... or we might delete the attachment we just added!! (and get an 
+            # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
+            for tag_name in data_logical_tie.get_all_tags():            
+                if tag_name in structures.TagSet.start_spanners_inventory:
+                    self._open_spanners[tag_name]=music_leaf_index
+                else:
+                    attachment = data_logical_tie.get_attachment(tag_name)
+                    if attachment:
+                        if callable(attachment):
+                            # TO DO... this won't work with chords!
+                            # attachment(music_logical_tie)
+                            stop_index = music_leaf_index + len(music_logical_tie)
+                            attachment(music[music_leaf_index:stop_index])
+                        else:
+                            # stem tremolos should be attached to every leaf in logical tie...
+                            if isinstance(attachment, abjad.indicatortools.StemTremolo):
+                                stop_index = music_leaf_index + len(music_logical_tie)
+                                for leaf in music[music_leaf_index:stop_index]:
+                                    abjad.attach(attachment, leaf)
+                            else:
+                                abjad.attach(attachment, music[music_leaf_index])
+
 
     def get_talea(self):
         return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(append_rest=True), self.rhythm_denominator)
@@ -126,10 +166,11 @@ class Machine(bubbles.Line):
 
     def get_rhythm_music(self, **kwargs):
         # return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations.flattened()])
-        return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations])
+        return self.get_rhythm_maker()([abjad.Duration(d) for d in self.get_metrical_durations()])
 
     def process_rhythm_music(self, music, **kwargs):
         self.cleanup_data()
+        self._open_spanners = {} # important in case music() metchod gets called twice on the same object
         music_logical_ties = tools.by_logical_tie_group_rests(music)
         leaf_count=0
         for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties):
@@ -152,15 +193,26 @@ class Machine(bubbles.Line):
         return self.ticks / self.rhythm_default_multiplier
 
 class EventMachine(Machine):
-    def __init__(self, *args, **kwargs):
-        rhythm = kwargs.pop("rhythm", None)
-        pitches = kwargs.pop("pitches", None)
+    bookend_rests = ()
+    get_children = None
+    set_rhythm = None
 
+    def __init__(self, *args, **kwargs):
+        rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
+        pitches = kwargs.pop("pitches", None)
         super().__init__(*args, **kwargs)
+
+        if self.get_children:
+            self.extend( self.get_children() )
+
         if rhythm:
             self.rhythm = rhythm
+
         if pitches:
             self.pitches = pitches
+
+        if self.bookend_rests:
+            self.add_bookend_rests(*self.bookend_rests)
 
     @property
     def ticks(self):
@@ -237,6 +289,7 @@ class EventMachine(Machine):
             first_event = self.logical_ties[0].parent
             first_event.insert(0, machines.LogicalTie(rest=True, beats=beats_before))
         if beats_after > 0:
+            print(self.logical_ties)
             last_event = self.logical_ties[-1].parent
             last_event.append(machines.LogicalTie(rest=True, beats=beats_after))
 

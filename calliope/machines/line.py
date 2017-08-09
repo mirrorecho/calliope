@@ -18,7 +18,7 @@ class Line(machines.EventMachine):
             measure_length = abjad.Duration(self.time_signature)
         else:
             # if no time signature specified, then this gets the pair for the duration of the first measure:
-            measure_length = sum([abjad.Duration(i) for i in self.metrical_durations[0]])
+            measure_length = sum([abjad.Duration(i) for i in self.get_metrical_durations()[0]])
 
         leaves = abjad.select(music).by_leaf()
         rest_measures = 0

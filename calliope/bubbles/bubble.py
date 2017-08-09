@@ -45,7 +45,7 @@ class Bubble(abjad.datastructuretools.TreeContainer):
         if not self.child_types:
             self.child_types = (Bubble,)
         for name, value in kwargs.items():
-            print(name)
+            # print(name)
             setattr(self, name, value)
         self._init_make_callable("music")
         self._init_make_callable("sequence")
@@ -59,8 +59,8 @@ class Bubble(abjad.datastructuretools.TreeContainer):
             # needed for base TreeContainer implementation:
             abjad.datastructuretools.TreeContainer.__setitem__(self, arg, bubble)
         elif not isinstance(bubble, self.child_types):
-            print(self.child_types)
-            print(bubble)
+            # print(self.child_types)
+            # print(bubble)
             self.warn("attempted to add child but not an allowed child type - attribute/child not added", bubble)
         else:
             if type(arg) is int:
