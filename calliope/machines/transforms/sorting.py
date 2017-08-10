@@ -1,0 +1,25 @@
+import abjad
+from calliope import machines
+
+class Sorting(machines.Transform):
+    reverse = False
+
+    def key_method(self, item):
+        return item.index
+
+    def transform_nodes(self, machine):
+        machine[:] = sorted( machine, key = lambda e : self.key_method(e), reverse=self.reverse)
+
+
+class SortByPitch(Sorting):
+    def key_method(self, item):
+        pitch = item.pitch
+        if isinstance(item, (list, tuple)):
+            pitch = pitch[0]
+        return abjad.NumberedPitch(pitch).number   
+
+
+class SortByDuration(Sorting):
+    def key_method(self, item):
+        return item.ticks
+

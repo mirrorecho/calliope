@@ -1,18 +1,11 @@
 from calliope import bubbles, machines
 
 class Cell(machines.EventMachine):
-    child_types = ()
+    child_types = (machines.EventMachine, )
 
     def __init__(self, *args, **kwargs):
-        self.child_types = child_types = (machines.Cell, machines.Event)
+        self.child_types = child_types = (machines.Cell, machines.Event) # just to be safe
         super().__init__(*args, **kwargs)
-
-        # if "rhythm" in kwargs:
-        #     for i, r in enumerate(kwargs["rhythm"]):
-        #         if "pitches" in kwargs:
-        #             pitch = kwargs["pitches"][i % len(kwargs["pitches"]) ]
-        #         self["r%s" % i] = machines.Event(beats=r, pitch=pitch)
-
 
 class CellBlock(machines.BlockMixin, Cell):
     child_types = (Cell,)

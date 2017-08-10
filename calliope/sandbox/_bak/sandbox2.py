@@ -44,12 +44,12 @@ abjad.show(n2)
 
 # SCORE = MyShortScore()
 
-# my_map = bubbles.Mapping() \
-#     ["line1"][0, 1]() \
-#     ["line3"][:]() \
+my_map = \
 
-# my_phrase = SCORE.map_to(machines.Phrase, my_map
-#     )
+my_phrase = SCORE.map_to(machines.Phrase,  bubbles.Mapping()
+    ["line1"][0, 1]()
+    ["line3"][:]() 
+    )
 
 # print(my_phrase[0])
 

@@ -1,5 +1,5 @@
 import abjad
-from calliope import bubbles, structures
+from calliope import structures, bubbles
 
 class TagSet(object):
     tags = None # to be set to a set
@@ -164,6 +164,7 @@ class TagSet(object):
     #         end_spanner = "\!"
     #     self.children[0]
 
+    # TO DO... remove in favor of always using Transform objects?
     @classmethod
     def span_every(cls, spanner, items, every_count=2):
         # TO DO... something more elegant to associate spanners with end spanners

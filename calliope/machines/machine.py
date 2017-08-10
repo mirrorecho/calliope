@@ -31,6 +31,16 @@ class Machine(structures.TagSet, bubbles.Line):
     rhythm_denominator = 32
     # TO DO ... implement default meter here...
 
+    def __init__(self, *args, **kwargs):
+        self.transforms_tree = machines.Transform()
+        for transform_name in type(self).class_sequence( child_types=(machines.Transform,) ): 
+            transform_node = getattr(self, transform_name)
+            self.transforms_tree[transform_name] = transform_node
+        
+        self.transforms_tree._transform_setup(self)
+        super().__init__(*args, **kwargs)
+        self.transforms_tree._transform_nodes(self)
+
     # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
         return_bubble = copy.deepcopy(self)
@@ -286,7 +296,7 @@ class EventMachine(Machine):
 
     @property
     def events(self):
-        return [e for e in self.nodes if isinstance(e, machines.Event) ]
+        return self.by_type(machines.Event)
 
     def add_bookend_rests(self, beats_before=0, beats_after=0):
         if beats_before > 0:
