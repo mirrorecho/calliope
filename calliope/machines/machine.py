@@ -12,19 +12,7 @@ from calliope import tools, structures, bubbles, machines
 
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(structures.TagSet, structures.Tree, bubbles.LineTalea):
-
-class BlockMixin(bubbles.SimulLine):
-
-    def comp(self): #????????
-        pass
-
-    @property
-    def ticks(self):
-        return max([c.ticks for c in self])
-        
-
-class Machine(structures.TagSet, bubbles.Line):
-
+class BaseMachine(structures.TagSet):
     # TO DO... create a way to automate metrical durations for workshopping/testing
     metrical_durations = None
     rhythm_default_multiplier = 8
@@ -41,14 +29,23 @@ class Machine(structures.TagSet, bubbles.Line):
         super().__init__(*args, **kwargs)
         self.transforms_tree._transform_nodes(self)
 
-    # TO DO... screwy?
-    def __call__(self, name=None, **kwargs):
-        return_bubble = copy.deepcopy(self)
-        if name:
-            return_bubble.name = name
-        for name, value in kwargs.items():
-            setattr(return_bubble, name, value)
-        return return_bubble
+    @property
+    def events(self):
+        return self.by_type(machines.Event)
+
+
+class Block(BaseMachine, bubbles.SimulLine):
+
+    def comp(self): #????????
+        pass
+
+    @property
+    def ticks(self):
+        return max([c.ticks for c in self])
+
+
+class Machine(BaseMachine, bubbles.Line):
+
 
     def get_metrical_durations(self):
         return self.metrical_durations or ((4,4),) * math.ceil(self.beats / 4)
@@ -95,6 +92,7 @@ class Machine(structures.TagSet, bubbles.Line):
             remove_empty_ancestors(parent_item)
 
     def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_index, **kwargs):
+        data_logical_tie.info(data_logical_tie.parent.name)
         if not data_logical_tie.rest:
             # TO DO: consider... can rests be taged????
 
@@ -294,16 +292,23 @@ class EventMachine(Machine):
 
         return return_list
 
-    @property
-    def events(self):
-        return self.by_type(machines.Event)
+
+    def transpose(self, interval):
+        for thing in self.by_type(machines.Event, machines.LogicalTie):
+            # TO DO... handle tuples
+            if thing.pitch is not None:
+                if isinstance( thing.pitch, (list, tuple) ):
+                    for i, pitch in thing.pitch:
+                        thing.pitch[i] = abjad.NamedPitch(thing.pitch[i]).transpose(interval)
+                else:
+                    thing.pitch = abjad.NamedPitch(thing.pitch).transpose(interval)
 
     def add_bookend_rests(self, beats_before=0, beats_after=0):
         if beats_before > 0:
             first_event = self.logical_ties[0].parent
             first_event.insert(0, machines.LogicalTie(rest=True, beats=beats_before))
         if beats_after > 0:
-            print(self.logical_ties)
+            # print(self.logical_ties)
             last_event = self.logical_ties[-1].parent
             last_event.append(machines.LogicalTie(rest=True, beats=beats_after))
 

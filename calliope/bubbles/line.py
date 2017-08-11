@@ -49,8 +49,9 @@ class Line(bubbles.Bubble):
         if len(music) > 0:
             music_start = music[0]
 
-            if self.transpose:
-                abjad.mutate(music).transpose(self.transpose)
+            # TO DO... keep this...???
+            # if self.transpose:
+            #     abjad.mutate(music).transpose(self.transpose)
 
             if self.time_signature:
                 # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?

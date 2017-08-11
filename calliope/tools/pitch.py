@@ -197,7 +197,7 @@ def string_harmonics(music,
                 if harmonic is None:
                     print("ERROR: could not find natural harmonic for pitch " + pitchtools.NamedPitch(sound_pitch).pitch_class_octave_label  + "through partial #" + str(max_partial) + " on string " + string)
                 else:
-                    print(harmonic)
+                    # print(harmonic)
                     finger_hz = string_hz * harmonic / (harmonic - position)
                     finger_pitch = pitchtools.NumberedPitch.from_hertz(finger_hz).pitch_number
                     if finger_pitch == sound_pitch:
@@ -216,5 +216,5 @@ def string_harmonics(music,
                         music.insert(chord_index, chord)
                     else:
                         override(note).note_head.style = "harmonic"
-            print("made harmonic")
+            # print("made harmonic")
     # return music

@@ -1,31 +1,39 @@
 import abjad
 from calliope import tools, bubbles, machines
 
-class MyCluster(bubbles.Bubble):
+class ClusterNote(bubbles.Bubble):
+    leaf_string="c'4"
+    def __init__(self, leaf_string=None, *args, **kwargs):
+        if leaf_string:
+            self.leaf_string = leaf_string
+
+class ClusterBase(bubbles.Bubble):
     container_type = abjad.Cluster
-    color = "red"
+    is_simultaneous = False
+    sub_types = (ClusterNote, )
 
-    class StartCluster(bubbles.Bubble):
-        is_simultaneous = False
-        music_string = "c'1"
+    def child_music(self, child_bubble):
+        child_note = abjad.Note()
+        child_note.written_pitch = abjad.NamedPitch(child_bubble.pitch)
+        return child_note
 
-    class EndCluster(bubbles.Bubble):
-        is_simultaneous = False
-        music_string = "e''1"
+class Cluster1(ClusterBase):
+    start = ClusterNote(pitch="C1")
+    middle = ClusterNote(pitch="A7")
+    end = ClusterNote(pitch="B4")
 
-    def process_music(self, music, **kwargs):
-        abjad.override(music).note_head.color = self.color
+class Clusters(bubbles.Bubble):
+    cluster_types = ()
+    is_simultaneous = False
+    times =1
 
-class MyClusters(bubbles.Bubble):
-    times = 1
-
-    def music(self, **kwargs):
-        my_container = self.container_type()
-        my_container.extend( [ MyCluster().music() for i in range(self.times) ] )
-        return my_container
+    def __init__(self, *args, **kwargs):
+        super().__init__(**kwargs)
+        self.cluster_types = args
+        self.extend( [c()() for c in self.cluster_types] )
 
 class DemoBubble(bubbles.Bubble):
-    clusters_3 = MyClusters(times=3)
+    clusters_I = Clusters(Cluster1,)
 
 
 tools.illustrate_me( bubble=DemoBubble )

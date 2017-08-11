@@ -62,7 +62,7 @@ class BubbleGridMatch(bubbles.Bubble):
     def set_grid_bubbles(self, parent_bubble):
         # TO DO... there might be a better way to iterate through all children...
         for child_bubble in parent_bubble.children:
-            print(child_bubble)
+            # print(child_bubble)
             child_bubble.grid_bubble = child_bubble.grid_bubble or parent_bubble.grid_bubble
             self.set_grid_bubbles(child_bubble)
 

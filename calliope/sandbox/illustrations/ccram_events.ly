@@ -1,4 +1,4 @@
-% 2017-08-09 22:59
+% 2017-08-09 23:33
 
 \version "2.19.54"
 \language "english"
@@ -30,11 +30,11 @@
             \set Staff.shortInstrumentName = \markup { CellA1 }
             {
                 \accidentalStyle modern-cautionary
-                b'2 -\accent
-                cs''4 -\accent
-                d''8 -\accent [
-                g'8 -\accent ~ ]
-                g'4.
+                b'2 (
+                cs''4
+                d''8 [
+                g'8 ~ ]
+                g'4. )
                 r2
                 r8
             }

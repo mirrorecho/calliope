@@ -13,7 +13,7 @@ class Filter(machines.Transform):
         return True
 
     def transform_nodes(self, machine):
-        print( list(filter(lambda c : self.filter_method(c), machine.children)) )
+        # print( list(filter(lambda c : self.filter_method(c), machine.children)) )
         machine[:] = list(filter(lambda c : self.filter_method(c), machine))
  
     def filter_method(self, item):
@@ -24,7 +24,7 @@ class Filter(machines.Transform):
 
 class Remove(Filter):
     def filter_method(self, item):
-        print(super().filter_method(item))
+        # print(super().filter_method(item))
         return not super().filter_method(item)
 
 

@@ -1,4 +1,4 @@
-% 2017-08-09 22:40
+% 2017-08-10 11:32
 
 \version "2.19.54"
 \language "english"
@@ -11,37 +11,29 @@
 
 \score {
     \new Score <<
-        \context Staff = "Flute" {
-            \set Staff.instrumentName = \markup { Flute }
-            \set Staff.shortInstrumentName = \markup { Fl. }
-        }
-        \context Staff = "Clarinet" {
-            \set Staff.instrumentName = \markup { "Clarinet in Bb" }
-            \set Staff.shortInstrumentName = \markup { Cl. }
-        }
-        \context StaffGroup = "MyStaffGroup" <<
-            \context Staff = "Violin1" {
-                \set Staff.instrumentName = \markup { "Violin 1" }
-                \set Staff.shortInstrumentName = \markup { Vln. }
-                {
-                    \accidentalStyle modern-cautionary
-                    <<
-                    >>
-                    <<
-                    >>
-                }
+        \context Staff = "clusters_3" {
+            \set Staff.instrumentName = \markup { Clusters_3 }
+            \set Staff.shortInstrumentName = \markup { Clusters_3 }
+            {
+                \makeClusters <<
+                    {
+                    }
+                    {
+                    }
+                >>
+                \makeClusters <<
+                    {
+                    }
+                    {
+                    }
+                >>
+                \makeClusters <<
+                    {
+                    }
+                    {
+                    }
+                >>
             }
-            \context Staff = "Violin2" {
-                \set Staff.instrumentName = \markup { "Violin 2" }
-                \set Staff.shortInstrumentName = \markup { Vln. }
-                {
-                    \accidentalStyle modern-cautionary
-                    <<
-                    >>
-                    <<
-                    >>
-                }
-            }
-        >>
+        }
     >>
 }

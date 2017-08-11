@@ -39,6 +39,15 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
         self._init_append_children()
 
 
+    # TO DO... screwy?
+    def __call__(self, name=None, **kwargs):
+        return_node = copy.deepcopy(self)
+        if name:
+            return_node.name = name
+        for name, value in kwargs.items():
+            setattr(return_node, name, value)
+        return return_node
+
     def __setitem__(self, arg, node):
         if inspect.isclass(node):
             node = node()
@@ -55,7 +64,9 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
                 abjad.datastructuretools.TreeContainer.__setitem__(self, arg, node)
             else:
                 node.name = arg # just as a precaution
-                setattr(self, arg, node)
+                
+                # TO DO... assume we don't want to deal with this... but consider it
+                # setattr(self, arg, node)
                 new_child = True
 
                 for i, b in enumerate(self.children):

@@ -61,7 +61,6 @@ class Bubble(structures.Tree):
     def __mul__(self, num):
         return bubbles.BubbleSequence( sequenced_bubbles = [self for i in range(num)] )
 
-    @property
     def ly(self):
         music = self.blow()
         return(format(music))

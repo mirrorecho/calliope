@@ -1,5 +1,5 @@
 import abjad
-from calliope import machines
+from calliope import bubbles, machines
 
 # TO DO MAYBE... rethink this naming (i.e. could cause confusion/conflict with calliope.Line)?
 class Line(machines.EventMachine):
@@ -65,6 +65,8 @@ class Line(machines.EventMachine):
         super().process_rhythm_music(music, **kwargs)
         self.replace_multimeasure_rests(music)
 
-class LineBlock(machines.BlockMixin, Line):
+class LineBlock(machines.Block):
+    # TO DO... implement this better... 
     child_types = (Line,)
+    # is_simultaneous = True
     pass

@@ -15,7 +15,8 @@ class Event(machines.EventMachine):
         beats = beats or self.set_beats
         if beats:
             # TO DO MAYBE: None indicating rest is a little confusing here (since at the LogicalTie level None for pitch means to use the Event pitch)
-            rest = "pitch" in kwargs and kwargs["pitch"] == None
+            self.pitch = kwargs.get("pitch", None) or self.pitch
+            rest = self.pitch is None
 
             self[tie_name] = machines.LogicalTie(name=tie_name, beats=beats, rest=rest, *args, **kwargs)
 

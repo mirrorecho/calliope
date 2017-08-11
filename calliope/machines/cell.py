@@ -7,7 +7,14 @@ class Cell(machines.EventMachine):
         self.child_types = child_types = (machines.Cell, machines.Event) # just to be safe
         super().__init__(*args, **kwargs)
 
-class CellBlock(machines.BlockMixin, Cell):
+class TupletCell(Cell):
+    proportions = (1,1,1)
+
+
+class CellBlock(machines.Block, Cell):
+    """
+    NOT implemented yet...
+    """
     child_types = (Cell,)
     pass
 

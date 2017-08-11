@@ -5,6 +5,7 @@ from calliope.machines.transforms.transpose import *
 from calliope.machines.transforms.sorting import *
 from calliope.machines.transforms.tagging import *
 from calliope.machines.transforms.filtering import *
+from calliope.machines.transforms.make_chords import *
 
 from calliope.machines.machine import *
 from calliope.machines.logical_tie import *
