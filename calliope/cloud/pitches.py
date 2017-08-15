@@ -1,14 +1,19 @@
-from abjad import *
-
-from calliope.work import Bubble
-
 import os
+import inspect
 import random
 import copy
-import pickle
+import json
+
 import tkinter
 import time
 import threading
+
+import abjad
+
+# TO DO... don't import * !!!!!!!!!!!!!
+from abjad import *
+
+from calliope import bubbles
 
 def get_diatonic_spread(pitch_line):
     pass
@@ -170,23 +175,22 @@ class TallyCircleOfFifthsRange(TallyAppBase):
 
 
 
-
-
 class CloudPitches:
 
-    def __init__(self, pitch_lines=None, pitch_ranges=None, filename=None, project=None, autoload=False):
+    def __init__(self, pitch_lines=None, pitch_ranges=None, filename=None, autoload=False):
         self.is_loaded = False
 
-        if project is not None:
-            self.project = project
-        else:
-            self.project = Project()
+        calling_info = inspect.stack()[1]
+        calling_module_path = calling_info[1]
+        print("YAYAYA: ", calling_module_path)
 
         # QUESTION ... better to use abjad's pitchtools.PitchArray()?
         if filename is None:
             filename = "cloud_data.dat"
 
-        self.filepath = self.project.data_path + "/" + filename
+        # TO DO: store in local data folder...
+        # self.filepath = self.project.data_path + "/" + filename
+        self.filepath = filename
 
         self.dont_touch_pitches = None # [[]] # for future use
         
@@ -456,33 +460,31 @@ class CloudPitches:
         cloud_data["pitch_ranges"] = self.pitch_ranges
         cloud_data["dont_touch_pitches"] = self.dont_touch_pitches
 
-        with open(filepath, "wb") as p_file:
-            pickle.dump(cloud_data, p_file)
+        with open(filepath, "w") as j_file:
+            json.dump(cloud_data, j_file)
 
     def load(self, filepath=None):
-        if filepath==None:
-            filepath = self.filepath
+        filepath = filepath or self.filepath
 
-        with open(filepath, "rb") as p_file:
-            cloud_data = pickle.load(p_file)
+        with open(filepath, "r") as l_file:
+            cloud_data = json.load(l_file)
 
-        for pickle_attr in cloud_data:
-            setattr(self, pickle_attr, cloud_data[pickle_attr])
+        for json_attr in cloud_data:
+            setattr(self, json_attr, cloud_data[json_attr])
         self.init_data()
 
         print("Loaded cloud pitch data from " + filepath)
 
     def show(self):
-        bubble = Bubble(project=self.project, title="Cloud Pitch Lines: SCORE = " + str(self.tally_total), name="cloud-pitches-show")
-        for i, line in enumerate(self.pitch_lines):
-            bubble.add_part(name="line" + str(i), instrument=instrumenttools.Instrument(instrument_name="Line " + str(i), short_instrument_name=str(i)))
-            line_music = scoretools.make_notes(line, durationtools.Duration(1,4))
-            bubble.parts["line" + str(i)].extend(line_music)
-
-        # TO DO... remove bar lines (or barlines every note?)
-        # TO DO... show scores!
-
-        bubble.show_pdf()
+        bubble = calliope.Bubble(name="cloud-pitches-show")
+        leaf_maker = abjad.LeafMaker()
+        for i, pitch_line in enumerate(self.pitch_lines):
+            line = bubbles.Line(name="line%s" % i)
+            line.music_contents = leaf_maker(pitch_line, [(1,4)])
+            print(pitch_line)
+            print(line.music())
+            bubble.append(line)
+        bubble.show()
 
 
     def tally_loop(self, times=9, filepath=None):
@@ -494,7 +496,7 @@ class CloudPitches:
         def re_tally():
             T0 = time.clock()
             while not stop_event.isSet(): #as long as long as flag is not set 
-                cloud.get_rearranged() # WTF, why doesn't cloud = cloud.get_rearranged() work???
+                cloud.get_rearranged() 
                 print("Total tally:" + str(cloud.tally_total))
                 time.sleep(0.1)
 

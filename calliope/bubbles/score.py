@@ -1,14 +1,14 @@
 import inspect
 import abjad
-from calliope import bubbles
+import calliope
 
-class Score(bubbles.BubbleGridMatch):
+class Score(calliope.BubbleGridMatch):
      # NOTE: abjad.Score.__init__ does not take is_simultaneous as an argument,
     # so it needs to be set to be set to None here
     is_simultaneous = None
 
     container_type=abjad.Score
-    child_types=(bubbles.Staff, bubbles.StaffGroup)
+    child_types=(calliope.Staff, calliope.StaffGroup)
     # TO DO... the following are no longer used... kep them?
     hide_empty = False 
     title = ""
@@ -25,14 +25,14 @@ class AutoScore(Score):
         super().__init__(grid_bubble=grid_bubble, *args, **kwargs)
         if self.grid_bubble is not None:
             for bubble_name in self.grid_bubble.sequence():
-                bubble = bubbles.Staff(
-                    instrument=abjad.instrumenttools.Instrument(
+                bubble = calliope.Staff(
+                    instrument=abjad.Instrument(
                         instrument_name=bubble_name, 
                         short_instrument_name=bubble_name)
                     )
                 self[bubble_name] = bubble
 
-class ModuleBubble(bubbles.Bubble):
+class ModuleBubble(calliope.Bubble):
     module = None
     is_simultaneous = True
 
@@ -49,7 +49,7 @@ class ModuleBubble(bubbles.Bubble):
                     0,
                     m[0],
                 )
-                for m in inspect.getmembers(self.module, bubbles.Line.isbubble)
+                for m in inspect.getmembers(self.module, calliope.Line.isbubble)
             ])
         bubble_sequence = [b[2] for b in bubble_info]
 

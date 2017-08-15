@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import math, copy, abjad
+import calliope
 from calliope import tools, structures, bubbles, machines
 
 # TO DO... re-add TagSet once this is properly implemented
@@ -34,7 +35,7 @@ class BaseMachine(structures.TagSet):
         return self.by_type(machines.Event)
 
 
-class Block(BaseMachine, bubbles.SimulLine):
+class Block(BaseMachine, calliope.SimulLine):
 
     def comp(self): #????????
         pass
@@ -44,7 +45,7 @@ class Block(BaseMachine, bubbles.SimulLine):
         return max([c.ticks for c in self])
 
 
-class Machine(BaseMachine, bubbles.Line):
+class Machine(BaseMachine, calliope.Line):
 
 
     def get_metrical_durations(self):

@@ -18,7 +18,7 @@ class BaseLine0(bubbles.Line):
 
 # class Violin1(BaseLine0, bubbles.Arrange):
 class Violin1(BaseLine0):
-    music_string = """ d'2 e'2 """
+    music_contents = """ d'2 e'2 """
 
 class Violin2(BaseLine0):
     music = bubbles.Line(""" c1 """)

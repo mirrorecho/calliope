@@ -1,13 +1,13 @@
 import abjad
 from calliope import tools, bubbles, machines
 
-class ClusterNote(bubbles.Bubble):
+class ClusterNote(calliope.Bubble):
     leaf_string="c'4"
     def __init__(self, leaf_string=None, *args, **kwargs):
         if leaf_string:
             self.leaf_string = leaf_string
 
-class ClusterBase(bubbles.Bubble):
+class ClusterBase(calliope.Bubble):
     container_type = abjad.Cluster
     is_simultaneous = False
     sub_types = (ClusterNote, )
@@ -22,7 +22,7 @@ class Cluster1(ClusterBase):
     middle = ClusterNote(pitch="A7")
     end = ClusterNote(pitch="B4")
 
-class Clusters(bubbles.Bubble):
+class Clusters(calliope.Bubble):
     cluster_types = ()
     is_simultaneous = False
     times =1
@@ -32,7 +32,7 @@ class Clusters(bubbles.Bubble):
         self.cluster_types = args
         self.extend( [c()() for c in self.cluster_types] )
 
-class DemoBubble(bubbles.Bubble):
+class DemoBubble(calliope.Bubble):
     clusters_I = Clusters(Cluster1,)
 
 

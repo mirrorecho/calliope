@@ -18,11 +18,11 @@ abjad.show(n2)
 #     mid = machines.Event(pitch=38, beats=2)
 #     low = machines.Event(pitch=33, beats=1.25)
 
-# class CellLibrary(bubbles.Bubble):
+# class CellLibrary(calliope.Bubble):
 
 
 
-# class MyShortScore(bubbles.Bubble):
+# class MyShortScore(calliope.Bubble):
 #     is_simultaneous = True
 
 #     line1 = machines.Line(
@@ -54,7 +54,7 @@ my_phrase = SCORE.map_to(machines.Phrase,  bubbles.Mapping()
 # print(my_phrase[0])
 
 
-# # c = b.map_to(bubbles.Bubble, bubbles.Mapping()
+# # c = b.map_to(calliope.Bubble, bubbles.Mapping()
 # #     [0]()
 # #     [2]()
 # #     )

@@ -175,10 +175,10 @@ class MyScore(bubbles.Score):
             clef="bass"
 
 # class Violin1(bubbles.Line):
-#     music_string = "b4 b4"
+#     music_contents = "b4 b4"
 
 # class Viola(bubbles.Line):
-#     music_string = "a4 a4"
+#     music_contents = "a4 a4"
 
 # c1 = machines.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
 #     metrical_durations = [(4,4)] * 4,
@@ -481,7 +481,7 @@ class Clarinet1(machines.Line):
 #             if isinstance(arg, QBase):
 #                 arg.scope = None # scope has no meaning for sub-logical objects
 #                 arg.sub_scope = None
-#         #     elif inspect.issubclass(arg, bubbles.Bubble):
+#         #     elif inspect.issubclass(arg, calliope.Bubble):
 #         #         self.types.append(arg)
 #         #         args.remove(arg)
 #         #     elif callable(arg):
@@ -779,7 +779,7 @@ class Clarinet1(machines.Line):
 # q = Q().children[]
 # print(q)
 
-# class QBubble(bubbles.Bubble):
+# class QBubble(calliope.Bubble):
 
 #     def query(self, q):
 #         print(q.args)
@@ -858,12 +858,12 @@ class Clarinet1(machines.Line):
 # # print(format(lilypond_file))
 # from calliope import bubbles
 
-# class MyBubble(bubbles.Bubble):
+# class MyBubble(calliope.Bubble):
 #   yo = "BAH"
 
 
 # b1 = MyBubble()
-# b2 = bubbles.Bubble()
+# b2 = calliope.Bubble()
 # b1["ta"] = bubbles.Line("c1")
 
 # print(b1["yo"])

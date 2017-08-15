@@ -1,7 +1,7 @@
 import importlib, inspect
-from calliope import bubbles
+import calliope
 
-class BubbleSequence(bubbles.Bubble):
+class BubbleSequence(calliope.Bubble):
     sequenced_bubbles = ()
     is_simultaneous = False
 
@@ -14,7 +14,7 @@ class BubbleSequence(bubbles.Bubble):
             my_music.append(bubble.blow())
         return my_music
 
-class ModuleSequence(bubbles.Bubble):
+class ModuleSequence(calliope.Bubble):
     modules = ()
     is_simultaneous = True
     initial_module_bubble = None
@@ -23,7 +23,7 @@ class ModuleSequence(bubbles.Bubble):
         super().__init__(*args, **kwargs)
         if self.modules:
             initial_module = importlib.import_module(*self.modules[0])
-            self.initial_module_bubble = bubbles.ModuleBubble(module=initial_module)
+            self.initial_module_bubble = calliope.ModuleBubble(module=initial_module)
         for bubble_name in self.sequence(**kwargs):
             sequenced_bubbles = [ getattr(b, bubble_name, None) for b in self.module_bubbles() ]
             sequenced_bubbles = [ b for b in sequenced_bubbles if b is not None ]

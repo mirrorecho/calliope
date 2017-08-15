@@ -9,7 +9,7 @@ c2 = machines.Cell(
 
 p1 = machines.Phrase(c1, c2, name="phrase1")
 
-tools.illustrate_me(bubble=bubbles.Bubble(p1) )
+tools.illustrate_me(bubble=calliope.Bubble(p1) )
 
 
 # class InventoryBasedCell(machines.Cell):

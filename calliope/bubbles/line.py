@@ -1,13 +1,13 @@
 import abjad
-from calliope import bubbles
+import calliope
 
 
-class Line(bubbles.Bubble):
+class Line(calliope.Bubble):
     """
     Bubble factory for an abjad Container with a single line of music
     """
     is_simultaneous = False
-    music_string = None
+    music_contents = None
     tempo_text = None
     tempo_units_per_minute=None
     tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
@@ -23,27 +23,18 @@ class Line(bubbles.Bubble):
 
     def __init__(self, *args, **kwargs):
         """
-        overriding __init__ simply to be able to use music_string as a positional argument
+        overriding __init__ simply to be able to use music_contents as a positional argument
         """
         if len(args) > 0 and type(args[0]) is str:
-            self.music_string = args[0]
+            self.music_contents = args[0]
             args = args[1:]
         super().__init__(*args, **kwargs)
 
     # def __add__(self, other):
-    #     return bubbles.LineSequence( bubbles=(self, other) )
+    #     return calliope.LineSequence( bubbles=(self, other) )
 
     # def __mul__(self, num):
-    #     return bubbles.LineSequence( bubbles = [self for i in range(num)] )
-
-    def music(self, **kwargs):
-        if self.music_string:
-            my_music = self.container_type( self.music_string )
-            # self.container_type = type(my_music) # TO DO: necessary?
-            self.is_simultaneous = my_music.is_simultaneous # TO DO: necessary?
-            return my_music
-        else:
-            return super().music(**kwargs)
+    #     return calliope.LineSequence( bubbles = [self for i in range(num)] )
 
     def process_music(self, music, **kwargs):
         if len(music) > 0:

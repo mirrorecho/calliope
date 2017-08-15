@@ -7,15 +7,15 @@ from calliope import bubbles, tools, machines
 # - move indexed data into calliope
 
 # class Violins(bubbles.InstrumentStaffGroup):
-#     violin1 = bubbles.BubbleStaff(
+#     violin1 = calliope.BubbleStaff(
 #         "Violin1",
 #         instrument=abjad.instrumenttools.Violin(instrument_name="Violin 1", short_instrument_name="vln.1"))
-#     violin2 = bubbles.BubbleStaff(
+#     violin2 = calliope.BubbleStaff(
 #         "Violin2",
 #         instrument=abjad.instrumenttools.Violin(instrument_name="Violin 2", short_instrument_name="vln.2"))
 #     sequence = ("violin1", "violin2")
 
-# class MyStaves(bubbles.BubbleScoreTemplate):
+# class MyStaves(calliope.BubbleScoreTemplate):
 #     violins = Violins()
 #     viola = BubbleStaff(
 #         "Viola",

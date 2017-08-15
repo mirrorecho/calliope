@@ -1,10 +1,10 @@
 import inspect
 import abjad
-from calliope import bubbles
+import calliope
 
 # TO DO... rethink the organization of these classes
-
-class Wrap(bubbles.Bubble):
+# TO DO... this has no purpose
+class Wrap(calliope.Bubble):
     """
     creates a new container/bubble around the inner bubble
     """
@@ -49,7 +49,7 @@ class RhythmicStaff(Staff):
     context_name="RhythmicStaff"
     clef="percussion"
 
-class BubbleGridMatch(bubbles.Bubble):
+class BubbleGridMatch(calliope.Bubble):
     grid_bubble=None
 
     def __init__(self, grid_bubble=None, *args, **kwargs):

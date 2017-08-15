@@ -333,7 +333,7 @@
 
 # class Line(Bubble):
 #     is_simultaneous = False
-#     music_string = None
+#     music_contents = None
 #     tempo_text = None
 #     tempo_units_per_minute=None
 #     tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
@@ -347,12 +347,12 @@
 #     transpose = None
     
 
-#     def __init__(self, music_string=None, **kwargs):
+#     def __init__(self, music_contents=None, **kwargs):
 #         """
-#         overriding __init__ simply to be able to use music_string as a positional argument
+#         overriding __init__ simply to be able to use music_contents as a positional argument
 #         """
-#         if music_string:
-#             self.music_string = music_string
+#         if music_contents:
+#             self.music_contents = music_contents
 #         super().__init__(**kwargs)
 
 #     def __add__(self, other):
@@ -362,8 +362,8 @@
 #         return LineSequence( bubbles = [self for i in range(num)] )
 
 #     def music(self, **kwargs):
-#         if self.music_string:
-#             my_music = self.container_type( self.music_string )
+#         if self.music_contents:
+#             my_music = self.container_type( self.music_contents )
 #             # self.container_type = type(my_music) # TO DO: necessary?
 #             self.is_simultaneous = my_music.is_simultaneous # TO DO: necessary?
 #             return my_music
@@ -436,7 +436,7 @@
 
 #     def __init__(self, ly_material=None, **kwargs):
 #         self.ly_material = ly_material or self.ly_material
-#         super().__init__(music_string=self.get_ly_material(), **kwargs)
+#         super().__init__(music_contents=self.get_ly_material(), **kwargs)
 
 #     def get_ly_material(self):
 #         search_list = self.ly_material.split(".")
