@@ -11,9 +11,9 @@ import threading
 import abjad
 
 # TO DO... don't import * !!!!!!!!!!!!!
-from abjad import *
+# from abjad import *
 
-from calliope import bubbles
+import calliope
 
 def get_diatonic_spread(pitch_line):
     pass
@@ -177,20 +177,15 @@ class TallyCircleOfFifthsRange(TallyAppBase):
 
 class CloudPitches:
 
-    def __init__(self, pitch_lines=None, pitch_ranges=None, filename=None, autoload=False):
+    def __init__(self, pitch_lines=None, pitch_ranges=None, filepath=None, autoload=False):
         self.is_loaded = False
 
-        calling_info = inspect.stack()[1]
-        calling_module_path = calling_info[1]
-        print("YAYAYA: ", calling_module_path)
-
-        # QUESTION ... better to use abjad's pitchtools.PitchArray()?
-        if filename is None:
-            filename = "cloud_data.dat"
+        # calling_info = inspect.stack()[1]
+        # calling_module_path = calling_info[1]
 
         # TO DO: store in local data folder...
         # self.filepath = self.project.data_path + "/" + filename
-        self.filepath = filename
+        self.filepath = filepath
 
         self.dont_touch_pitches = None # [[]] # for future use
         
@@ -453,8 +448,7 @@ class CloudPitches:
 
 
     def save(self, filepath=None):
-        if filepath==None:
-            filepath = self.filepath
+        filepath = filepath or self.filepath
         cloud_data = {}
         cloud_data["pitch_lines"] = self.pitch_lines
         cloud_data["pitch_ranges"] = self.pitch_ranges
@@ -475,11 +469,12 @@ class CloudPitches:
 
         print("Loaded cloud pitch data from " + filepath)
 
+    # TO DO: fix this....
     def show(self):
         bubble = calliope.Bubble(name="cloud-pitches-show")
         leaf_maker = abjad.LeafMaker()
         for i, pitch_line in enumerate(self.pitch_lines):
-            line = bubbles.Line(name="line%s" % i)
+            line = calliope.Line(name="line%s" % i)
             line.music_contents = leaf_maker(pitch_line, [(1,4)])
             print(pitch_line)
             print(line.music())

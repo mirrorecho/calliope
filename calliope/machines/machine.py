@@ -1,19 +1,18 @@
 # -*- encoding: utf-8 -*-
 import math, copy, abjad
 import calliope
-from calliope import tools, structures, bubbles, machines
 
 # TO DO... re-add TagSet once this is properly implemented
 # TO DO... how/whether to use this????
-# class LeafData(structures.TagSet, structures.Tree):
-# class LeafData(structures.Tree):
+# class LeafData(calliope.TagSet, calliope.Tree):
+# class LeafData(calliope.Tree):
 #     original_duration = 0
 #     ticks = 0
 #     rest = False
 
 # TO DO... re-add TagSet once this is properly implemented
-# class MachineBubbleBase(structures.TagSet, structures.Tree, bubbles.LineTalea):
-class BaseMachine(structures.TagSet):
+# class MachineBubbleBase(calliope.TagSet, calliope.Tree, bubbles.LineTalea):
+class BaseMachine(calliope.TagSet):
     # TO DO... create a way to automate metrical durations for workshopping/testing
     metrical_durations = None
     rhythm_default_multiplier = 8
@@ -21,21 +20,32 @@ class BaseMachine(structures.TagSet):
     # TO DO ... implement default meter here...
 
     def __init__(self, *args, **kwargs):
-        self.transforms_tree = machines.Transform()
-        for transform_name in type(self).class_sequence( child_types=(machines.Transform,) ): 
+        self.transforms_tree = calliope.Transform()
+        for transform_name in type(self).class_sequence( child_types=(calliope.Transform,) ): 
             transform_node = getattr(self, transform_name)
             self.transforms_tree[transform_name] = transform_node
         
         self.transforms_tree._transform_setup(self)
         super().__init__(*args, **kwargs)
+
+        # NOTE: since Machine overrides the process_music method,
+        # these are implemented here as tags for consinstency with base Fragment method
+        if self.time_signature:
+            self.tag("\\numericTimeSignature")
+            self.tag("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]))
+        if self.clef:
+            self.tag(self.clef)
+        if self.bar_line:
+            self.tag(self.bar_line)
+
         self.transforms_tree._transform_nodes(self)
 
     @property
     def events(self):
-        return self.by_type(machines.Event)
+        return self.by_type(calliope.Event)
 
 
-class Block(BaseMachine, calliope.SimulLine):
+class Block(BaseMachine, calliope.SimulFragment):
 
     def comp(self): #????????
         pass
@@ -45,8 +55,7 @@ class Block(BaseMachine, calliope.SimulLine):
         return max([c.ticks for c in self])
 
 
-class Machine(BaseMachine, calliope.Line):
-
+class Machine(BaseMachine, calliope.Fragment):
 
     def get_metrical_durations(self):
         return self.metrical_durations or ((4,4),) * math.ceil(self.beats / 4)
@@ -57,7 +66,6 @@ class Machine(BaseMachine, calliope.Line):
         .... based on the defined metrical durations for this object
         """
         return int(sum([d[0]/d[1] for d in self.get_metrical_durations()]) * self.rhythm_denominator)
-
 
     def cleanup_data(self, **kwargs):
 
@@ -72,7 +80,7 @@ class Machine(BaseMachine, calliope.Line):
 
         for leaf in self.leaves:
             parent_item = leaf.parent
-            if not isinstance(leaf, machines.LogicalTie):
+            if not isinstance(leaf, calliope.LogicalTie):
                 # just in case there are already empty events / segments showing up as leaves ... remove them
                 parent_item.remove(leaf)
             else:
@@ -99,11 +107,13 @@ class Machine(BaseMachine, calliope.Line):
 
             event = data_logical_tie.parent
             pitch = data_logical_tie.pitch or event.pitch
-            # TO DO... consider level at which respell should be defined...
+            respell = data_logical_tie.get_respell()
+            
+            # TO DO: code below is clunky... refacto
             if isinstance(pitch, (list, tuple)):
-                if event.respell=="flats":
+                if respell=="flats":
                     named_pitches = [abjad.NamedPitch(p).respell_with_flats() for p in pitch]
-                elif event.respell=="sharps":
+                elif respell=="sharps":
                     named_pitches = [abjad.NamedPitch(p).respell_with_sharps() for p in pitch]
                 else:
                     named_pitches = [abjad.NamedPitch(p) for p in pitch]
@@ -115,9 +125,9 @@ class Machine(BaseMachine, calliope.Line):
                     m = abjad.mutate([note])
                     m.replace(chord)
             elif isinstance(pitch, (int, str, abjad.Pitch)):
-                if event.respell=="flats":
+                if respell=="flats":
                     named_pitch = abjad.NamedPitch(pitch).respell_with_flats()
-                elif event.respell=="sharps":
+                elif respell=="sharps":
                     named_pitch = abjad.NamedPitch(pitch).respell_with_sharps()
                 else:
                     named_pitch = abjad.NamedPitch(pitch)
@@ -127,7 +137,7 @@ class Machine(BaseMachine, calliope.Line):
                 self.warn("can't set pitch because '%s' is not abjad.Pitch, str, int, list, or tuple" % pitch,  data_logical_tie )
 
             for tag_name in data_logical_tie.get_all_tags():
-                spanners_to_close = set(self._open_spanners) & structures.TagSet.spanner_closures.get(tag_name, set() )
+                spanners_to_close = set(self._open_spanners) & calliope.TagSet.spanner_closures.get(tag_name, set() )
                 for p in spanners_to_close:
                     spanner = data_logical_tie.get_attachment(p)
                     start_index = self._open_spanners[p]
@@ -141,7 +151,7 @@ class Machine(BaseMachine, calliope.Line):
             # NOTE... here it's important to through attachments a second time... or we might delete the attachment we just added!! (and get an 
             # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
             for tag_name in data_logical_tie.get_all_tags():            
-                if tag_name in structures.TagSet.start_spanners_inventory:
+                if tag_name in calliope.TagSet.start_spanners_inventory:
                     self._open_spanners[tag_name]=music_leaf_index
                 else:
                     attachment = data_logical_tie.get_attachment(tag_name)
@@ -180,13 +190,18 @@ class Machine(BaseMachine, calliope.Line):
     def process_rhythm_music(self, music, **kwargs):
         self.cleanup_data()
         self._open_spanners = {} # important in case music() metchod gets called twice on the same object
-        music_logical_ties = tools.by_logical_tie_group_rests(music)
+        music_logical_ties = calliope.by_logical_tie_group_rests(music)
         leaf_count=0
         for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties):
             # print( "TL: %s" % leaf_count  )
             # print(music_logical_tie)
             self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_count, **kwargs)
             leaf_count += len(music_logical_tie)
+
+    def process_music(self, music, **kwargs):
+        # NOTE: intentionally NOT calling super().process_music here
+        # because Fragment's process_music method would conflict...
+        pass
 
     def music(self, **kwargs):
         my_music = self.container_type( self.get_rhythm_music(**kwargs) )
@@ -244,7 +259,7 @@ class EventMachine(Machine):
     def append_rhythm(self, beats):
         # note, this is overriden on Event so that events will create a rhythm out of 
         # logical ties as opposed to events of events in an infinite loop
-        self.append( machines.Event(rhythm=(beats,) ))
+        self.append( calliope.Event(rhythm=(beats,) ))
 
     @rhythm.setter
     def rhythm(self, values):
@@ -295,7 +310,7 @@ class EventMachine(Machine):
 
 
     def transpose(self, interval):
-        for thing in self.by_type(machines.Event, machines.LogicalTie):
+        for thing in self.by_type(calliope.Event, calliope.LogicalTie):
             # TO DO... handle tuples
             if thing.pitch is not None:
                 if isinstance( thing.pitch, (list, tuple) ):
@@ -307,11 +322,11 @@ class EventMachine(Machine):
     def add_bookend_rests(self, beats_before=0, beats_after=0):
         if beats_before > 0:
             first_event = self.logical_ties[0].parent
-            first_event.insert(0, machines.LogicalTie(rest=True, beats=beats_before))
+            first_event.insert(0, calliope.LogicalTie(rest=True, beats=beats_before))
         if beats_after > 0:
             # print(self.logical_ties)
             last_event = self.logical_ties[-1].parent
-            last_event.append(machines.LogicalTie(rest=True, beats=beats_after))
+            last_event.append(calliope.LogicalTie(rest=True, beats=beats_after))
 
     def remove_bookend_rests(self):
         if self.logical_ties:

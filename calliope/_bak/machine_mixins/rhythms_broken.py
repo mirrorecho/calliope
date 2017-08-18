@@ -20,7 +20,7 @@ class RhythmsBroken(object):
             # if a rest is being added, then it's added as a new logical tie:
             if break_signed_ticks < 0:
                 insert_index = len(event.children) if event.parent.rhythm_reverse else 0 #insert rest after if segment reversed, else before
-                event.insert(insert_index, machines.LogicalTieData(ticks=abs(break_signed_ticks), rest=True )) # TO Do.. should we call set_logical_tie on this new logical tie data?
+                event.insert(insert_index, calliope.LogicalTieData(ticks=abs(break_signed_ticks), rest=True )) # TO Do.. should we call set_logical_tie on this new logical tie data?
             else:
                 # otherwise, the existing note is extended:
                 if event.parent.rhythm_reverse:

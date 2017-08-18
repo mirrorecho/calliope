@@ -27,7 +27,7 @@ from calliope import bubbles, tools, machines
 
 # -------------------------------
 # TO DO... CONSIDER... illustration possible here?
-# tools.illustrate_me()
+# calliope.illustrate_me()
 
 
 class MyScore(bubbles.Score):

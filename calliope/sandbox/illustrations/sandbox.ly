@@ -1,4 +1,4 @@
-% 2017-06-25 17:56
+% 2017-08-17 23:36
 
 \version "2.19.54"
 \language "english"
@@ -11,39 +11,52 @@
 
 \score {
     \new Score <<
-        \context Staff = "c1" {
-            \set Staff.instrumentName = \markup { C1 }
-            \set Staff.shortInstrumentName = \markup { C1 }
+        \context Staff = "Flute" {
+            \set Staff.instrumentName = \markup { Flute }
+            \set Staff.shortInstrumentName = \markup { Fl. }
             {
-                {
-                    \accidentalStyle modern-cautionary
-                    bf4
-                    a'2
-                    r4
-                    r8
-                    a'8
-                    r2.
-                    r1
-                    r1
-                }
+                d'4
+                d'4
+                d'4
+                d'4
+            }
+            {
+                d''4
+                d''4
+                d''4
+                d''4
             }
         }
-        \context Staff = "c2" {
-            \set Staff.instrumentName = \markup { C2 }
-            \set Staff.shortInstrumentName = \markup { C2 }
-            {
+        \context Staff = "Clarinet" {
+            \set Staff.instrumentName = \markup { "Clarinet in Bb" }
+            \set Staff.shortInstrumentName = \markup { Cl. }
+        }
+        \context StaffGroup = "StringsStaffGroup" <<
+            \context Staff = "Violin" {
+                \set Staff.instrumentName = \markup { Violin }
+                \set Staff.shortInstrumentName = \markup { Vln. }
                 {
-                    \accidentalStyle modern-cautionary
-                    r4
-                    c2
-                    c'4 ~
-                    c'8 [
-                    a'8 ]
-                    r2.
-                    r1
-                    r1
+                    c'4
+                    c'4
+                    c'4
+                    c'4
+                }
+                {
+                    c''4
+                    c'''4
+                    c''4
+                    c''4
                 }
             }
-        }
+            \context Staff = "Cello" {
+                \set Staff.instrumentName = \markup { Cello }
+                \set Staff.shortInstrumentName = \markup { Vc. }
+                {
+                    \clef "bass"
+                    c1
+                    d1
+                }
+            }
+        >>
     >>
 }

@@ -2,7 +2,7 @@ import inspect
 import abjad
 import calliope
 
-class Score(calliope.BubbleGridMatch):
+class Score(calliope.CopyChildrenBubble):
      # NOTE: abjad.Score.__init__ does not take is_simultaneous as an argument,
     # so it needs to be set to be set to None here
     is_simultaneous = None
@@ -19,43 +19,14 @@ class Score(calliope.BubbleGridMatch):
 
 
 class AutoScore(Score):
-
-    # TO DO... add in stylesheet here
-    def __init__(self, grid_bubble=None, *args, **kwargs):
-        super().__init__(grid_bubble=grid_bubble, *args, **kwargs)
-        if self.grid_bubble is not None:
-            for bubble_name in self.grid_bubble.sequence():
-                bubble = calliope.Staff(
+    def set_children(self, parent_bubble, copy_children_from):
+        if parent_bubble is self: # tests whether we're at the top-level or recursively calling set_children
+            for bubble in copy_children_from:
+                self[bubble.name] = calliope.Staff(
                     instrument=abjad.Instrument(
-                        instrument_name=bubble_name, 
-                        short_instrument_name=bubble_name)
+                        instrument_name=bubble.name, 
+                        short_instrument_name=bubble.name)
                     )
-                self[bubble_name] = bubble
-
-class ModuleBubble(calliope.Bubble):
-    module = None
-    is_simultaneous = True
-
-    def _init_append_children(self):
-        bubble_info = sorted([
-                (
-                    inspect.getsourcefile(m[1]), 
-                    inspect.getsourcelines(m[1])[1], 
-                    m[0]
-                ) if inspect.isclass(m[1])
-                else 
-                (
-                    "z",
-                    0,
-                    m[0],
-                )
-                for m in inspect.getmembers(self.module, calliope.Line.isbubble)
-            ])
-        bubble_sequence = [b[2] for b in bubble_info]
-
-        for bubble_name in bubble_sequence:
-            # TO DO: WARNING: this won't work for class-based bubbles... implement for classes?
-            bubble = self.module.__dict__[bubble_name]
-            self[bubble_name] = bubble
+        super().set_children(parent_bubble, copy_children_from)
 
 

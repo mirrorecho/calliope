@@ -24,7 +24,7 @@ class RhythmsPulsed:
                     if self.verify(logical_tie.ticks % pulse_ticks == 0, 
                             "can't pulse because logical tie duration can't be evenly divided by pulse duration", logical_tie):
                         for i in range( int(logical_tie.ticks / pulse_ticks) - 1):
-                            logical_tie.parent.insert(logical_tie.my_index, machines.LogicalTieData(ticks=pulse_ticks) )
+                            logical_tie.parent.insert(logical_tie.my_index, calliope.LogicalTieData(ticks=pulse_ticks) )
                         logical_tie.ticks = pulse_ticks
         # logical_tie.ticks = int(logical_tie.ticks * self.rhythm_multipliers[segment_index])
 

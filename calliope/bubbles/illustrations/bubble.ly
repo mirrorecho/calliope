@@ -1,4 +1,4 @@
-% 2017-08-11 17:25
+% 2017-08-17 22:40
 
 \version "2.19.54"
 \language "english"
@@ -11,75 +11,51 @@
 
 \score {
     \new Score <<
-        \context Staff = "my_line1_0" {
-            \set Staff.instrumentName = \markup { My_line1_0 }
-            \set Staff.shortInstrumentName = \markup { My_line1_0 }
+        \context Staff = "Flute" {
+            \set Staff.instrumentName = \markup { Flute }
+            \set Staff.shortInstrumentName = \markup { Fl. }
             {
-                {
-                    \accidentalStyle modern-cautionary
-                    d'4
-                    f'8 [
-                    e'8 ]
-                    g'4
-                    af'4
-                }
+                d'4
+                d'4
+                d'4
+                d'4
+            }
+            {
+                d''4
+                d''4
+                d''4
+                d''4
             }
         }
-        \context Staff = "my_line1_1" {
-            \set Staff.instrumentName = \markup { My_line1_1 }
-            \set Staff.shortInstrumentName = \markup { My_line1_1 }
-            {
+        \context Staff = "Clarinet" {
+            \set Staff.instrumentName = \markup { "Clarinet in Bb" }
+            \set Staff.shortInstrumentName = \markup { Cl. }
+        }
+        \context StaffGroup = "StringsStaffGroup" <<
+            \context Staff = "Violin" {
+                \set Staff.instrumentName = \markup { Violin }
+                \set Staff.shortInstrumentName = \markup { Vln. }
                 {
-                    \accidentalStyle modern-cautionary
-                    e'4
-                    g'8 [
-                    fs'8 ]
-                    a'4
-                    bf'4
+                    c'4
+                    c'4
+                    c'4
+                    c'4
+                }
+                {
+                    c''4
+                    c'''4
+                    c''4
+                    c''4
                 }
             }
-        }
-        \context Staff = "my_line1_2" {
-            \set Staff.instrumentName = \markup { My_line1_2 }
-            \set Staff.shortInstrumentName = \markup { My_line1_2 }
-            {
+            \context Staff = "Cello" {
+                \set Staff.instrumentName = \markup { Cello }
+                \set Staff.shortInstrumentName = \markup { Vc. }
                 {
-                    \accidentalStyle modern-cautionary
-                    f'4
-                    c''8 [
-                    g'8 ]
-                    d''4
-                    cf''4
+                    \clef "bass"
+                    c1
                 }
             }
-        }
-        \context Staff = "my_line1_3" {
-            \set Staff.instrumentName = \markup { My_line1_3 }
-            \set Staff.shortInstrumentName = \markup { My_line1_3 }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    a'4
-                    d''8 [
-                    b'8 ]
-                    e''4
-                    ef''4
-                }
-            }
-        }
-        \context Staff = "my_line1_4" {
-            \set Staff.instrumentName = \markup { My_line1_4 }
-            \set Staff.shortInstrumentName = \markup { My_line1_4 }
-            {
-                {
-                    \accidentalStyle modern-cautionary
-                    d''4
-                    f''8 [
-                    e''8 ]
-                    g''4
-                    af''4
-                }
-            }
-        }
+        >>
     >>
 }

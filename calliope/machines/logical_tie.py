@@ -1,6 +1,6 @@
-from calliope import machines
+import calliope
 
-class LogicalTie(machines.Machine):
+class LogicalTie(calliope.Machine):
     # original_duration = 0 # TO DO: USE THIS?
     ticks = 0
     pitch = None # if None, defaults to Event's pitch
@@ -11,7 +11,7 @@ class LogicalTie(machines.Machine):
     #     self.pitch = pitch
     #     self.rest = rest
 
-    def get_signed_ticks_list(self):
+    def get_signed_ticks_list(self, **kwargs):
         return [self.ticks if not self.rest else 0 - self.ticks]
 
     @property

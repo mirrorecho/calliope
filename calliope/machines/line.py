@@ -1,9 +1,8 @@
 import abjad
-from calliope import bubbles, machines
+import calliope
 
-# TO DO MAYBE... rethink this naming (i.e. could cause confusion/conflict with calliope.Line)?
-class Line(machines.EventMachine):
-    child_types = (machines.Phrase, machines.Cell, machines.Event,)
+class Line(calliope.SegmentMixin, calliope.EventMachine):
+    child_types = (calliope.Phrase, calliope.Cell, calliope.Event,)
 
     # TO DO: would be awesome to implement these!
     # auto_split_rests = True
@@ -65,7 +64,7 @@ class Line(machines.EventMachine):
         super().process_rhythm_music(music, **kwargs)
         self.replace_multimeasure_rests(music)
 
-class LineBlock(machines.Block):
+class LineBlock(calliope.Block):
     # TO DO... implement this better... 
     child_types = (Line,)
     # is_simultaneous = True

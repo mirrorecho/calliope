@@ -12,6 +12,11 @@ class TagSet(object):
     slurs_inventory = set(("(", "((")) # note... double parens could be used to indicate larger phrasing slur
     hairpins_inventory = set( ("\<","\>") ) # note... may not be needed
 
+    clefs_inventory = set( ("treble", "alto", "bass", "treble^8", "bass_8", "tenor", "bass^15", "percussion") )
+    
+    # TO DO: add more bar lines?
+    bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ) )
+
     start_spanners_inventory = set(("~","8va")) | slurs_inventory | hairpins_inventory
     stop_spanners_inventory = set( (")", "))", "\!", "~!","8va!"), )
     stem_tremolos_inventory = set( (":8",":16",":32") )
@@ -58,12 +63,15 @@ class TagSet(object):
             return abjad.spannertools.Tie()
         elif tag_name == "8va":
             return abjad.spannertools.OctavationSpanner(start=1)
+        elif tag_name in self.bar_lines_inventory:
+            return abjad.BarLine(tag_name)
+        elif tag_name in self.clefs_inventory:
+            return abjad.Clef(tag_name)
         elif tag_name in self.colors_inventory:
-            # return lambda x : abjad.agenttools.LabelAgent(x).color_leaves(tag_name)
-            pass
+            return lambda x : abjad.agenttools.LabelAgent(x).color_leaves(tag_name)
         elif not tag_name in self.stop_spanners_inventory:
             if tag_name[0] == "\\":
-                return abjad.indicatortools.LilyPondCommand(tag_name[1:])
+                return abjad.LilyPondCommand(tag_name[1:])
             else:
                 return abjad.Markup(tag_name, direction=Up)
 
@@ -76,33 +84,19 @@ class TagSet(object):
             if arg[:5] == "data:":
                 my_set.add(str(getattr(self, arg[5:])))
             else:
-                # ovewrite existing dynamics and hairpins:
+                # overwrite existing dynamics, hairpins, clefs, and bars:
                 if arg in self.dynamics_inventory:
                     my_set -= self.dynamics_inventory
+                elif arg in self.clefs_inventory:
+                    my_set -= self.clefs_inventory
+                elif arg in self.bar_lines_inventory:
+                    my_set -= self.bar_lines_inventory
                 elif arg in self.hairpins_inventory:
                     my_set -= self.hairpins_inventory
                 my_set.add(arg)        
 
     def tag(self, *args):
         self.set_tag(self.tags, *args)
-        return self
-
-    # TO DO... too confusing? REMOVE?
-    def tag_children(self, *args):
-        for arg in args:
-            if isinstance(arg, stuctures.Series):
-                for i, child in enumerate(self.children):
-                    child_set = set(arg[i])
-                    # ovewrite existing dynamics and hairpins:
-                    if child_set & self.dynamics_inventory:
-                        child.tags -= self.dynamics_inventory
-                    if child_set & self.hairpins_inventory:
-                        child.tags -= self.hairpins_inventory
-                    child.tags |= child_set
-            else:
-                for child in self.children:
-                    child.tag(arg)
-        return self
 
     def untag(self, *args):
         for arg in args:
@@ -110,15 +104,14 @@ class TagSet(object):
                 self.tags.remove(arg)
         return self
 
-	# TO DO... too confusing? REMOVE?
+    # TO CONSIDER: are these children methods even worth it?
+    def tag_children(self, *args):
+        for child in self.children:
+            child.tag(*args)
+
     def untag_children(self, *args):
-        for arg in args:
-            if isinstance(arg, stuctures.Series):
-                for i, child in enumerate(self.children):
-                    child.tags -= set(arg[i])
-            else:
-                for child in self.children:
-                    child.tags.remove(arg)
+        for child in self.children:
+            child.untag(*args)
         return self
 
     def combine_tags(self, new_set, old_set):
@@ -128,11 +121,6 @@ class TagSet(object):
         for n in new_set:
             self.set_tag(combined_set, n)
         return combined_set
-
-    # TO DO add if useful...
-    # def tag_children(self, *args):
-    #     for arg in args:
-    #         self.tags.add(arg)
 
     @property
     def use_ancestor_attachments(self): 

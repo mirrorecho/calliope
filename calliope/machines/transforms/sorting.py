@@ -1,7 +1,7 @@
 import abjad
-from calliope import machines
+import calliope
 
-class Sorting(machines.Transform):
+class Sorting(calliope.Transform):
     reverse = False
 
     def key_method(self, item):

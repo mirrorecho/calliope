@@ -13,10 +13,10 @@ abjad.show(n2)
 # import abjad
 # from calliope import tools, bubbles, machines
 
-# class BaseCell(machines.Cell):
-#     high = machines.Event(pitch=40, beats=2)
-#     mid = machines.Event(pitch=38, beats=2)
-#     low = machines.Event(pitch=33, beats=1.25)
+# class BaseCell(calliope.Cell):
+#     high = calliope.Event(pitch=40, beats=2)
+#     mid = calliope.Event(pitch=38, beats=2)
+#     low = calliope.Event(pitch=33, beats=1.25)
 
 # class CellLibrary(calliope.Bubble):
 
@@ -25,28 +25,28 @@ abjad.show(n2)
 # class MyShortScore(calliope.Bubble):
 #     is_simultaneous = True
 
-#     line1 = machines.Line(
-#         machines.Event(pitch=0, beats=1),
-#         machines.Event(pitch=0, beats=1),
+#     line1 = calliope.Line(
+#         calliope.Event(pitch=0, beats=1),
+#         calliope.Event(pitch=0, beats=1),
 #         )
-#     line2 = machines.Line(
-#         machines.Event(pitch=2, beats=1),
-#         machines.Event(pitch=2, beats=1),
+#     line2 = calliope.Line(
+#         calliope.Event(pitch=2, beats=1),
+#         calliope.Event(pitch=2, beats=1),
 #         )
-#     line3 = machines.Line(
-#         machines.Event(pitch=4, beats=1),
-#         machines.Event(pitch=4, beats=1),
+#     line3 = calliope.Line(
+#         calliope.Event(pitch=4, beats=1),
+#         calliope.Event(pitch=4, beats=1),
 #         )
-#     line4 = machines.Line(
-#         machines.Event(pitch=5, beats=1),
-#         machines.Event(pitch=5, beats=1),
+#     line4 = calliope.Line(
+#         calliope.Event(pitch=5, beats=1),
+#         calliope.Event(pitch=5, beats=1),
 #         )
 
 # SCORE = MyShortScore()
 
 my_map = \
 
-my_phrase = SCORE.map_to(machines.Phrase,  bubbles.Mapping()
+my_phrase = SCORE.map_to(calliope.Phrase,  bubbles.Mapping()
     ["line1"][0, 1]()
     ["line3"][:]() 
     )

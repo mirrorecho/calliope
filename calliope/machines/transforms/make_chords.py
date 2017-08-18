@@ -1,7 +1,7 @@
 import abjad
-from calliope import structures, machines
+import calliope
 
-class MakeChords(machines.Transform):
+class MakeChords(calliope.Transform):
     indices = ()
 
     def transform_nodes(self, machine):

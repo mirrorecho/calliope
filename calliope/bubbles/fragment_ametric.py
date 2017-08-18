@@ -1,6 +1,7 @@
 import calliope
 
-class Ametric(calliope.Line):
+# TO DO... THIS IS NOT PROPERLY IMPLEMENTED... NEED TO REVISIT
+class Ametric(calliope.Fragment):
     show_x_meter = False
     show_time_span = False
     start_text = None # e.g. "Freely"

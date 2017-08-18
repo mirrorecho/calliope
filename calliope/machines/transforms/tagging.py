@@ -1,7 +1,7 @@
 import abjad
-from calliope import structures, machines
+import calliope
 
-class Tagging(machines.Transform):
+class Tagging(calliope.Transform):
 
     def __init__(self, tag_dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,7 +14,7 @@ class Tagging(machines.Transform):
             else:
                 machine[key].tag(value)
             
-class Slur(machines.Transform):
+class Slur(calliope.Transform):
     def __init__(self, slur_start=0, slur_stop=-1, slur_start_string="(", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.slur_start = slur_start

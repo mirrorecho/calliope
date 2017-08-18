@@ -1,7 +1,7 @@
 import abjad
-from calliope import machines
+import calliope
 
-class Transpose(machines.Transform):
+class Transpose(calliope.Transform):
     interval = 0 
 
     def transform_nodes(self, machine):

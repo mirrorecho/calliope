@@ -1,8 +1,7 @@
 import abjad
 import calliope
-from calliope import tools, bubbles, machines
 
-class StackedTransform(machines.Transform):
+class StackedTransform(calliope.Transform):
     def transform_nodes(self, machine):
         new_lines = []
         for i in range(len(machine.intervals[0])):
@@ -17,11 +16,11 @@ class StackedTransform(machines.Transform):
 
 
 
-class LineStacked(machines.LineBlock):
+class LineStacked(calliope.LineBlock):
     intervals = ( (12,12), (7,12) )
-    swaps = (3)
-    # line_1 = machines.Line( machines.Event(beats=2, pitch="A4") )
-    stack_me = StackedTransform()
+    swaps = ()
+    # line_1 = calliope.Line( calliope.Event(beats=2, pitch="A4") )
+    stack_me = StackedTransform
 
     def get_pitch_lines(self):
         return [
@@ -31,7 +30,8 @@ class LineStacked(machines.LineBlock):
 
     def cloud_me(self):
         cloud_pitches = calliope.CloudPitches(
-                self.get_pitch_lines()
+                pitch_lines = self.get_pitch_lines(),
+                filepath = "%s.json" % self.get_output_path(sub_directory="data")
             )
         cloud_pitches.tally_apps = [
             calliope.TallyCircleOfFifthsRange(over_range_multiplier=-99), 
@@ -64,4 +64,4 @@ class LineStacked(machines.LineBlock):
 
 # ============================================================
 
-# tools.illustrate_me( bubble=t )
+# calliope.illustrate_me( bubble=t )

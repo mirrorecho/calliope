@@ -3,5 +3,5 @@ from calliope import tools, bubbles, machines
 
 
 
-tools.illustrate_me(bubble=PhraseI)
+calliope.illustrate_me(bubble=PhraseI)
 

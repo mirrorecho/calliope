@@ -1,7 +1,7 @@
 import abjad
-from calliope import machines
+import calliope
 
-class Filter(machines.Transform):
+class Filter(calliope.Transform):
     args = ()
     
     def __init__(self, *args, **kwargs):

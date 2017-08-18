@@ -1,12 +1,14 @@
 import inspect
 import copy
 import abjad
-from calliope import tools
+import calliope
+
+TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(abjad.TreeContainer))
 
 class TreeMixin(object):
     pass
 
-class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
+class Tree(TreeMixin, abjad.TreeContainer):
     child_types = ()
 
     # TO DO: use these...?
@@ -16,7 +18,6 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
 
     def _init_append_children(self):
         for node_name in type(self).class_sequence(): 
-            # TO DO: WARNING: this won't work for class-based nodes... implement for classes?
             node = getattr(self, node_name)
             self[node_name] = node
 
@@ -24,9 +25,10 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
     def __init__(self, *args, **kwargs):
 
         children = args
-        super().__init__(children)
-
         name = kwargs.pop("name", None)
+        
+        super().__init__(children, name)
+
         if name:
             self.name = name
 
@@ -39,7 +41,6 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
         self._init_append_children()
 
 
-    # TO DO... screwy?
     def __call__(self, name=None, **kwargs):
         return_node = copy.deepcopy(self)
         if name:
@@ -53,7 +54,7 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
             node = node()
         if type(arg) is slice:
             # needed for base TreeContainer implementation:
-            abjad.datastructuretools.TreeContainer.__setitem__(self, arg, node)
+            abjad.TreeContainer.__setitem__(self, arg, node)
         elif not isinstance(node, self.child_types):
             # print(self.child_types)
             # print(node)
@@ -61,7 +62,7 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
         else:
             if type(arg) is int:
                 # if setting based on integer index or slice, use abjad's tree container default behavior
-                abjad.datastructuretools.TreeContainer.__setitem__(self, arg, node)
+                abjad.TreeContainer.__setitem__(self, arg, node)
             else:
                 node.name = arg # just as a precaution
                 
@@ -71,36 +72,54 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
 
                 for i, b in enumerate(self.children):
                     if b.name == arg:
-                        abjad.datastructuretools.TreeContainer.__setitem__(self, i, node)
+                        abjad.TreeContainer.__setitem__(self, i, node)
                         new_child = False
                         break
                 if new_child:
-                    abjad.datastructuretools.TreeContainer.__setitem__(self,
+                    abjad.TreeContainer.__setitem__(self,
                         slice(len(self), len(self)),
                         [node]
                         )
 
-
     @classmethod
-    def class_sequence(cls, child_types=(), **kwargs):
+    def class_sequence(cls, child_types=() ):
         my_sequence = []
-
         # # This adds all tree classes to the sequence, in the defined order:
-        class_hierarchy = inspect.getmro(cls)[::-1]
-        child_types = child_types or cls.child_types or (Tree, )
-
-        for c in class_hierarchy:
-            if issubclass(c, TreeMixin):
-                for name, attr in c.__dict__.items():
-                    if inspect.isclass(attr) and issubclass(attr, child_types) and not name in my_sequence:
-                        my_sequence.append(name)
-                    elif isinstance(attr, child_types):
-                        my_sequence.append(name)
+        for c in inspect.getmro(cls)[::-1][TREE_CONTAINER_MRO_COUNT:]:
+            for name, attr in c.__dict__.items():
+                if cls.is_child_type(attr, child_types) and not name in my_sequence:
+                    my_sequence.append(name)
         return my_sequence
 
-    # TO DO: even necessary anymore?
-    def sequence(self, **kwargs):
-        return [b.name for b in self.children]
+    @classmethod
+    def from_module(cls, module, **kwargs):
+        module_members_info = sorted([
+                (
+                    inspect.getsourcefile(m[1]), 
+                    inspect.getsourcelines(m[1])[1], 
+                    m[0]
+                ) if inspect.isclass(m[1])
+                else 
+                (
+                    "z",
+                    0,
+                    m[0],
+                )
+                for m in inspect.getmembers(module, calliope.Tree.is_child_type)
+            ])
+        tree_node = cls(**kwargs)
+        for c in module_members_info:
+            child_name = c[2]
+            child_node = module.__dict__[child_name]
+            tree_node[child_name] = child_node
+        return tree_node
+
+    @classmethod
+    def is_child_type(cls, obj, child_types=() ):
+        child_types = child_types or cls.child_types or (Tree,)
+        if isinstance(obj, child_types) or ( inspect.isclass(obj) and issubclass(obj, child_types) ):
+            return True
+        return False
 
     def by_type(self, *args):
         return [e for e in self.nodes if isinstance(e, args) ]
@@ -145,29 +164,6 @@ class Tree(TreeMixin, abjad.datastructuretools.TreeContainer):
         if not condition:
             self.warn(msg or "(no message)", data)
         return condition
-
-
-
-#     # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful
-#     original_index = None 
-#     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(**kwargs)
-#         if not self.child_types:
-#             self.child_types = (self.__class__,)
-
-#     def index_children(self):
-#         for i, child in enumerate(self.children):
-#             child.original_index = i
-#             child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
-
-#     # TO DO... is this every used?
-#     def copy(self):
-#         new_self = deepcopy(self)
-#         # for child in self.children:
-#         #     new_self.append(child.copy())
-#         return new_self
 
 #     def __str__(self):
 #         my_return_string = self.__class__.__name__ + ":" + str(self.depthwise_index)

@@ -1,7 +1,7 @@
 import abjad
-from calliope import structures
+import calliope
 
-class Transform(structures.Tree):
+class Transform(calliope.Tree):
 
     def _transform_setup(self, bubble):
         self.transform_setup(bubble)

@@ -1,19 +1,19 @@
 import inspect, abjad
-from calliope import tools, structures, bubbles, machines
+import calliope
 
-c1 = machines.Cell(name="mycell", pitches=(-2,-4,-5), rhythm=(2,1,1))
-c2 = machines.Cell(
-	machines.Event(beats=2, pitch=3), 
-	machines.Event(beats=2, pitch=4), 
+c1 = calliope.Cell(name="mycell", pitches=(-2,-4,-5), rhythm=(2,1,1))
+c2 = calliope.Cell(
+	calliope.Event(beats=2, pitch=3), 
+	calliope.Event(beats=2, pitch=4), 
 	name="mycell2")
 
-p1 = machines.Phrase(c1, c2, name="phrase1")
+p1 = calliope.Phrase(c1, c2, name="phrase1")
 
-tools.illustrate_me(bubble=calliope.Bubble(p1) )
+calliope.illustrate_me(bubble=calliope.Bubble(p1) )
 
 
-# class InventoryBasedCell(machines.Cell):
-#     pitch_inventory = None # set to structures.SeriesCollection  in sub-classes
+# class InventoryBasedCell(calliope.Cell):
+#     pitch_inventory = None # set to calliope.SeriesCollection  in sub-classes
 #     rhythm_inventory = None # ditto
 
 #     def set_data(self, *args, **kwargs):
@@ -25,21 +25,21 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 #                 child_event.set_data(beats=beats, **kwargs)
 
 # class CopperCell(InventoryBasedCell):
-#     pitch_inventory = structures.SeriesCollection({
+#     pitch_inventory = calliope.SeriesCollection({
         # "hi": ( 2, 0,-1),
 #         "low": (-5,-3,-1),
 #         "mid": (-3, 0,-1),
 #         })
-#     rhythm_inventory = structures.SeriesCollection({
+#     rhythm_inventory = calliope.SeriesCollection({
 #         "medium": (2, 1, 1),
 #         "short": (1, 1, 1),
 #         "long": (4, 1, 1),
 #       })
 
-# class SimplePhrase(machines.Phrase):
+# class SimplePhrase(calliope.Phrase):
 #     cella = ManualCell()
 #     cellb = ManualCell()
-#     cellb.event1a = machines.Event(beats=1, rest=True)
+#     cellb.event1a = calliope.Event(beats=1, rest=True)
 
 # # print(c.sequence())
 # # print(c.__dict__)
@@ -47,25 +47,25 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 # s = SimplePhrase()
 # sc = bubbles.AutoScore(s)
 # print(sc.sequence())
-# # tools.illustrate_me( bubble=s )
+# # calliope.illustrate_me( bubble=s )
 
 
 
 
-# CELL_A = machines.Cell(rhythm=(1,1,2), pitches=(-3,-2,0))
+# CELL_A = calliope.Cell(rhythm=(1,1,2), pitches=(-3,-2,0))
 
 
 # import copy
 # from calliope import structures, machines
-# X = machines.XDefinition
+# X = calliope.XDefinition
 
 # class CopperPhrase(InventoryBasedPhrase):
-#     pitch_cell_inventory = structures.SeriesCollection({
+#     pitch_cell_inventory = calliope.SeriesCollection({
 #         "hi": ( 2, 0,-1),
 #         "low": (-5,-3,-1),
 #         "mid": (-3, 0,-1),
 #         })
-#     rhythm_cell_inventory = structures.SeriesCollection({
+#     rhythm_cell_inventory = calliope.SeriesCollection({
 #         "medium": (2, 1, 1),
 #         "short": (1, 1, 1),
 #         "long": (4, 1, 1),
@@ -91,7 +91,7 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 
 
 # class LineMixin(object): # basic attributes, such as starting time signature, rehearsal mark, etc.
-#     metrical_durations = structures.Series(default=((4,4),), limit=12)
+#     metrical_durations = calliope.Series(default=((4,4),), limit=12)
 #     # tempo_units_per_minute = 48 # TO DO... tempo indication makes everything SLOW... WHY?????
 #     # tempo_text = "Slow"
 #     tempo_command = '\\note #"4" #1 = 48'
@@ -109,26 +109,26 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 
 # CELL_C = Cell("bottom", pitches="mid", rhythm="medium")
 
-# class CellBlockA(machines.CellBlock):
+# class CellBlockA(calliope.CellBlock):
 #     name = "block_a"
 #     top = CellA()
 #     mid = CELL_B
 #     bottom = Cell(pitches="mid", rhythm="medium")
 
-# CELL_BLOCK_B = machines.CellBlock(
+# CELL_BLOCK_B = calliope.CellBlock(
 #     CELL_B, 
 #     CELL_C
 #     )
 
-# class PhraseBlockA(machines.PhraseBlock):
+# class PhraseBlockA(calliope.PhraseBlock):
 #     phrase1 = Phrase( CellBlockA(), CellA("top") )
 #     phrase2 = Phrase( CELL_C * 2 )
 
-# PHRASE_BLOCK_B = machines.PhraseBlock(
+# PHRASE_BLOCK_B = calliope.PhraseBlock(
 #     top = Phrase
 #     )
 
-# LINE_1 = machines.PitchedMachine(
+# LINE_1 = calliope.PitchedMachine(
 #     Phrase(
 #         (   CellA(),
 #             CellB(),
@@ -158,7 +158,7 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 #         ),
 #     )
 
-# class BaseLine(LineMixin, machines.PitchedMachine):
+# class BaseLine(LineMixin, calliope.PitchedMachine):
 #     phrase_a = PhraseA()
 #     phrase_b = PhraseB()
 #     phrase_b2 = PhraseB()
@@ -168,32 +168,32 @@ tools.illustrate_me(bubble=calliope.Bubble(p1) )
 #     rhythm_initial_silence = 1
 #     rhythm_times = 1
 
-#     slow_p1 = machines.ScaleRhythms(
+#     slow_p1 = calliope.ScaleRhythms(
 #         2, 
 #         phrase_a=1, 
 #         phrase_b=X(cell_a=4) 
 #         )
 
 
-# class PulsedEnding(machines.PulseRhythms):
+# class PulsedEnding(calliope.PulseRhythms):
 #     scope = X(phrase_d = X(0.5, cell_c=0.25))
 
 #     def set_logical_tie(self, logical_tie, **kwargs):
 
 
-# class LineRhythmsDeveloped1(machines.RhythmsMultiplied, CopperLine):
-#     slow_p1 = machines.ScaleRhythms(
+# class LineRhythmsDeveloped1(calliope.RhythmsMultiplied, CopperLine):
+#     slow_p1 = calliope.ScaleRhythms(
 #         2, 
 #         phrase_a=1, 
 #         phrase_b=X(cell_a=4) 
 #         )
-#     break_phrases =  machines.ExtendLongNotes(
+#     break_phrases =  calliope.ExtendLongNotes(
 #         phrase_a=X(cell_a=2)
 #         )
-#     pulse_ending = machines.PulseRhythms(
+#     pulse_ending = calliope.PulseRhythms(
 #         phrase_d=X(0.5, cell_c=0.25)
 #         )
-#     up_fifths = machines.DisplacePitches(
+#     up_fifths = calliope.DisplacePitches(
 #         phrase_b=X(cell_b=7)
 #         )
 

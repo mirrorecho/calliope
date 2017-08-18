@@ -7,7 +7,7 @@ import bubble_test_mark_0
 # - move indexed data into calliope
 
 
-# class BaseLineA(machines.DataLine):
+# class BaseLineA(calliope.DataLine):
 # class BaseLineA(bubble_test_mark_0.BaseLine0):
 class BaseLineA(bubble_test_mark_0.BaseLine0):
     # metrical_durations=ID1( {
@@ -31,4 +31,4 @@ class Violin1(BaseLineA):
 
 # -------------------------------
 
-tools.illustrate_me()
+calliope.illustrate_me()

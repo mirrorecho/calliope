@@ -102,7 +102,7 @@ class PitchesDisplaced(object):
         """
         if self.pitch_displacement:
             return self.pitch_displacement
-        return machines.PitchDisplacementData(**kwargs)
+        return calliope.PitchDisplacementData(**kwargs)
 
     def set_event(self, event, **kwargs):
         super().set_event(event, **kwargs)

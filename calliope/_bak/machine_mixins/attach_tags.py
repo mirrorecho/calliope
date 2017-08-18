@@ -29,7 +29,7 @@ class AttachTags(object):
     # TO DO... rethink how this is implemented once bubbles are module based (better something for output settings.... )
     def show_data(self, show_data_type=None, show_data_attr=None):
         if show_data_type or show_data_attr:
-            show_data_type = show_data_type or machines.EventData
+            show_data_type = show_data_type or calliope.EventData
             show_data_attr = show_data_attr or "depthwise_index"
             # TO DO: there must be a way to make this more elegant:
             for node in [node for node in self.data.nodes if isinstance(node, show_data_type)]:
@@ -53,7 +53,7 @@ class AttachTags(object):
 
         # loop through attachments to close open spanners
         for attachment_name in data_logical_tie.get_all_attachment_names():
-            spanners_to_close = set(self._open_spanners) & structures.TagSet.spanner_closures.get(attachment_name, set() )
+            spanners_to_close = set(self._open_spanners) & calliope.TagSet.spanner_closures.get(attachment_name, set() )
             for p in spanners_to_close:
                 spanner = data_logical_tie.get_attachment(p)
                 start_index = self._open_spanners[p]
@@ -67,7 +67,7 @@ class AttachTags(object):
         # NOTE... here it's important to through attachments a second time... or we might delete the attachment we just added!! (and get an 
         # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
         for attachment_name in data_logical_tie.get_all_attachment_names():            
-            if attachment_name in structures.TagSet.start_spanners_inventory:
+            if attachment_name in calliope.TagSet.start_spanners_inventory:
                 self._open_spanners[attachment_name]=music_leaf_index
             else:
                 attachment = data_logical_tie.get_attachment(attachment_name)

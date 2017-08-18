@@ -36,7 +36,7 @@ class DemoBubble(calliope.Bubble):
     clusters_I = Clusters(Cluster1,)
 
 
-tools.illustrate_me( bubble=DemoBubble )
+calliope.illustrate_me( bubble=DemoBubble )
 
 
 # class ScoreDemo(bubbles.Score):
@@ -62,4 +62,4 @@ tools.illustrate_me( bubble=DemoBubble )
 
 # ==============================================
 
-# tools.illustrate_me(  )
+# calliope.illustrate_me(  )

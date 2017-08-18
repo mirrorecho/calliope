@@ -80,11 +80,11 @@ class Arrange(object):
             if e.from_line == from_line and e.original_depthwise_index == index:
                 return e
         self.warn("attempted to get event, but line %s event %s has not been arranged here - returning dummy event" % (from_line, index))
-        return machines.EventData()
+        return calliope.EventData()
 
     def set_segments(self, **kwargs):
         if self.fragments and self.lines:
-            new_data = machines.SegmentTree()
+            new_data = calliope.SegmentTree()
             previous_fragment = None
 
             # a little funny... this gets a new empty event (within a new segment)... will be used to story the initial
@@ -98,9 +98,9 @@ class Arrange(object):
             def get_event_fragment(index,fragment):
                 my_line_index = self.line if fragment.line is None else fragment.line
                 my_line = self.lines[my_line_index]
-                if not isinstance(my_line, machines.Rhythms):
-                    self.warn("line referenced by fragment does not inherit from machines.Rhythms... it needs to")
-                # if isinstance(my_event, machines.Harmony):
+                if not isinstance(my_line, calliope.Rhythms):
+                    self.warn("line referenced by fragment does not inherit from calliope.Rhythms... it needs to")
+                # if isinstance(my_event, calliope.Harmony):
                 my_event_index = fragment.from_index or index # TO DO... this is screwy (resetting index with from_index)
                 if isinstance(self.line_offset, tools.IndexedData):
                     my_line_offset = self.line_offset[my_line_index]
@@ -200,7 +200,7 @@ class Arrange(object):
 
                     # add additional note at beginning of event if offset is earlier AND keeping original attack
                     if attack_offset_ticks < 0 and fragment.keep_attack:
-                        new_event.insert(0, machines.LogicalTieData(ticks=abs(attack_offset_ticks) ) )
+                        new_event.insert(0, calliope.LogicalTieData(ticks=abs(attack_offset_ticks) ) )
                     # otherwise, adjust original duration by the attack offset, if duration not overriden
                     elif not fragment.duration:
                         new_event[0].ticks -= attack_offset_ticks

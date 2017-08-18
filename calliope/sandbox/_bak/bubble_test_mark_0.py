@@ -45,5 +45,5 @@ class MyScore1(bubbles.Score):
 
 # -------------------------------
 
-tools.illustrate_me(score_type=MyScore1 )
+calliope.illustrate_me(score_type=MyScore1 )
 

@@ -12,7 +12,7 @@ class HarmonyFromCells(object):
         event.original_pitch = sorted(unsorted_pitches)
 
         # TO DO EVENTUALLY... how to make this unaware of PitchesDisplaced?
-        if isinstance(self, machines.PitchesDisplaced):
+        if isinstance(self, calliope.PitchesDisplaced):
             pitch_displacement = self.get_pitch_displacement(**kwargs)
 
             # set pitches_before to the sum count of pitches in segments for previous events... we need this to calculate displacement

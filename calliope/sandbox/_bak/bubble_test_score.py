@@ -19,4 +19,4 @@ print(m.sequence())
 
 # -------------------------------
 
-tools.illustrate_me(MySequencedMusic)
+calliope.illustrate_me(MySequencedMusic)

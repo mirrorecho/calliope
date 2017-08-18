@@ -180,18 +180,18 @@ class MyScore(bubbles.Score):
 # class Viola(bubbles.Line):
 #     music_contents = "a4 a4"
 
-# c1 = machines.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
+# c1 = calliope.Cell(rhythm=(1, 2, 1.5, 0.5), pitches=("bf", "A4", None, "A4"), 
 #     metrical_durations = [(4,4)] * 4,
 #     name="c1")
 
-# cb = machines.CellBlock(
+# cb = calliope.CellBlock(
 #     c1,
 #     c1(pitches=(None,"c","c'"), name="c2"),
 #     metrical_durations = [(4,4)] * 4,
 #     )
 
 
-class T(machines.Event):
+class T(calliope.Event):
 
     def tag(self, *args):
         my_ret = Map()
@@ -319,7 +319,7 @@ t(
 class Clarinet1(ArrangeF):
 yoyo(
     Map.children() # children, leaves, twigs? (lines/phrases/cells/smallest_cells/events/logical_ties/
-        [AndOr(machines.Event)(4), 2, 4:5, 9:10]
+        [AndOr(calliope.Event)(4), 2, 4:5, 9:10]
         [6][2:46](
             Map()
                 [3](".")
@@ -338,7 +338,7 @@ yoyo(
         [16]()
 )
 
-class Clarinet1(machines.Line):
+class Clarinet1(calliope.Line):
     # metrical_durations = MEDIUM_METRICAL_DURATIONS + {
     # 11: ((1,4),(1,4),(2,4),),
     # 19: ((1,4),(1,4),(1,4),(1,4)),
@@ -707,7 +707,7 @@ class Clarinet1(machines.Line):
 # 1,2,6,28, 45:60
 
 # b(
-#     Q["c1"].with(machines.Phrase)[
+#     Q["c1"].with(calliope.Phrase)[
 #         Q[1],
 #         Q[2].with[1].attrs(tags=[">","."], duration=4),
 #         Q[5:23].with[:-1],
@@ -716,27 +716,27 @@ class Clarinet1(machines.Line):
 # b.query(
 #     Q.children(
 #         myattr1="yes", 
-#         Q(machines.Cell)(index=1) 
+#         Q(calliope.Cell)(index=1) 
 #         )(myattr2="yes")
 #     )
 
 
 
-# Q.c_[:2](machines.Phrase).n_(machines.LogicalTie)
+# Q.c_[:2](calliope.Phrase).n_(calliope.LogicalTie)
 
-# q = Q(include_me=True)._[2:5](machines.Line)
+# q = Q(include_me=True)._[2:5](calliope.Line)
 # # # returns 3rd, 4th, and fith lines underneath self, only if self has attr include_me=True (otherwise returns empty list)
 
 # q = Q._(fancy=True)._twigs._[0]
 # q = Q[:](fancy=True)._twigs._[0]
 # # applied to machine, returns the first logical tie of every event that's part of a phrase with attr fancy=True
 
-# q = Q._nodes[:-1](machines.Cell)
+# q = Q._nodes[:-1](calliope.Cell)
 # # returns all cells at any level, except the very last cell
 
-# q = Q[:2](machines.Phrase).nodes[:-1](machines.Cell)(long=True)
+# q = Q[:2](calliope.Phrase).nodes[:-1](calliope.Cell)(long=True)
 
-# q = Q._[:2](machines.Phrase)._nodes[:-1](machines.Cell)(long=True)
+# q = Q._[:2](calliope.Phrase)._nodes[:-1](calliope.Cell)(long=True)
 
 # q = Q.logical_ties(pitch_number__gt=14)
 
@@ -756,18 +756,18 @@ class Clarinet1(machines.Line):
 
 # q = Q.c_self.c_children
 
-# q = Q.I._[:2](machines.Phrase)(
+# q = Q.I._[:2](calliope.Phrase)(
 #     Q(1).inc
 #     )
 
 # q = Q[
-#         Q(machines.Phrase)(
+#         Q(calliope.Phrase)(
 #             Q[1:3]
 #             )[1:3],
 #     ]
 
 
-# q = Q[1,2,3,4](machines.Line)(
+# q = Q[1,2,3,4](calliope.Line)(
 #     1, 
 #     2, 
 #     3, 
@@ -799,7 +799,7 @@ class Clarinet1(machines.Line):
 
 # b = QBubble()
 # b(
-#     Q["c1"].with(machines.Phrase)[
+#     Q["c1"].with(calliope.Phrase)[
 #         Q[1],
 #         Q[2].with[1].attrs(tags=[">","."], duration=4),
 #         Q[5:23].with[:-1],
@@ -808,7 +808,7 @@ class Clarinet1(machines.Line):
 # b.query(
 #     Q.children(
 #         myattr1="yes", 
-#         Q(machines.Cell)(index=1) 
+#         Q(calliope.Cell)(index=1) 
 #         )(myattr2="yes")
 #     )
 
@@ -833,22 +833,22 @@ class Clarinet1(machines.Line):
 
 
 
-# BASE_MUSIC = machines.Score(
-#     machines.Line(
-#         machines.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
+# BASE_MUSIC = calliope.Score(
+#     calliope.Line(
+#         calliope.Cell(rhythm=(1,1,1), pitches=("a'", "a'", None)),
 #         name="line1"
 #         ),
-#     machines.Line(
-#         machines.Cell(rhythms)
+#     calliope.Line(
+#         calliope.Cell(rhythms)
 #         name="line2"
 #         )
-#     machines.Line(
-#         machines.Cell(rhythms)
+#     calliope.Line(
+#         calliope.Cell(rhythms)
 #         name="line3"
 #         )
 #     )
 
-# tools.illustrate_me()
+# calliope.illustrate_me()
 
 
 # import inspect
