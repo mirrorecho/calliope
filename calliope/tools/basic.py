@@ -3,13 +3,6 @@ import inspect, os
 import abjad
 import calliope
 
-# TO DO: used? remove?
-class SetAttributeMixin(object):
-    def __init__(self, **kwargs):
-        super().__init__()
-        for name, value in kwargs.items():
-            setattr(self, name, value)
-
 def illustrate_me(
             bubble = None,
             score_type = None,

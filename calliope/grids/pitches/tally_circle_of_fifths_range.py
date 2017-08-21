@@ -5,7 +5,7 @@ class TallyCircleOfFifthsRange(calliope.TallyBase):
         self.fifth_range_max = fifth_range_max
         self.over_range_multiplier = over_range_multiplier
                 
-    def tally_line(self, grid, row_index):
+    def tally_row(self, grid, row_index):
         #QUESTION... what about
 
         line = grid.pitch_lines[row_index]
@@ -51,4 +51,4 @@ class TallyCircleOfFifthsRange(calliope.TallyBase):
                 # print(fifth_min_distance)
                 if fifth_min_distance > ((self.fifth_range_max - 1) / 2):
                     badness = fifth_min_distance - ((self.fifth_range_max - 1) / 2)
-                    grid.add_tally(row_index, i, badness * self.over_range_multiplier)
+                    grid.add_tally(i, row_index, badness * self.over_range_multiplier)

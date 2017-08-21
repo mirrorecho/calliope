@@ -4,15 +4,16 @@ class TallyRepeatedJumps(calliope.TallyBase):
     def __init__(self, 
             min_jump=3, over_
             incremental_multiplier=-2, 
-            back_again_multiplier=0.5, 
-            row_weights=None, 
-            column_weights=None):
-        self.min_jump=3
+            back_again_multiplier=0.5,  
+            column_weights=None,
+            row_weights=None,
+            ):
+        self.min_jump=3``
         self.back_again_multiplier = back_again_multiplier # this let's us say that jumps back to the same pitch not as bad
         self.over_incremental_multiplier = over_incremental_multiplier
-        super().__init__(row_weights=row_weights, column_weights=column_weights)
+        super().__init__(column_weights=column_weights, row_weights=row_weights)
     
-    def tally_pitch(self, grid, row_index, column_index):
+    def tally_item(self, grid, column_index, row_index):
         if column_index > 0 and column_index < grid.num_columns-1:
             jump_1 = abs(grid.pitch_lines[row_index][column_index] - grid.pitch_lines[row_index][column_index-1])
             jump_2 = abs(grid.pitch_lines[row_index][column_index] - grid.pitch_lines[row_index][column_index+1])
@@ -20,4 +21,4 @@ class TallyRepeatedJumps(calliope.TallyBase):
                 rating_multiplier = self.over_incremental_multiplier
                 if grid.pitch_lines[row_index][column_index-1] == grid.pitch_lines[row_index][column_index+1]:
                     rating_multiplier = rating_multiplier * self.back_again_multiplier
-                grid.add_tally(row_index, column_index, (jump_1+jump_2)*self.over_incremental_multiplier)
+                grid.add_tally(column_index, row_index, (jump_1+jump_2)*self.over_incremental_multiplier)

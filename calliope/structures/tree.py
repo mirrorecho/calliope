@@ -5,7 +5,7 @@ import calliope
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(abjad.TreeContainer))
 
-class TreeMixin(object):
+class TreeMixin(calliope.CalliopeBase):
     pass
 
 class Tree(TreeMixin, abjad.TreeContainer):
@@ -44,7 +44,7 @@ class Tree(TreeMixin, abjad.TreeContainer):
     def __call__(self, name=None, **kwargs):
         return_node = copy.deepcopy(self)
         if name:
-            return_node.name = name
+            return_node.name = name # TO DO: ????
         for name, value in kwargs.items():
             setattr(return_node, name, value)
         return return_node
@@ -148,22 +148,6 @@ class Tree(TreeMixin, abjad.TreeContainer):
             child.original_index = i
             child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
 
-    def warn(self, msg, data=None, **kwargs):
-        print("WARNING - %s: %s" % (self.__class__.__name__, msg)  )
-        if data is not None:
-            print(data)
-        print("------------------------------")
-
-    def info(self, msg, data=None, **kwargs):
-        print("INFO - %s: %s" % (self.__class__.__name__, msg)  )
-        if data is not None:
-            print(data)
-        print("------------------------------")
-
-    def verify(self, condition, msg=None, data=None, **kwargs):
-        if not condition:
-            self.warn(msg or "(no message)", data)
-        return condition
 
 #     def __str__(self):
 #         my_return_string = self.__class__.__name__ + ":" + str(self.depthwise_index)
