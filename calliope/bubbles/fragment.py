@@ -92,7 +92,7 @@ class SegmentMixin(object):
     accidental_style = "modern-cautionary" # TO DO... necessary?
 
     def process_music(self, music, **kwargs):
-        super().process_music(music, **kwargs)
+        Fragment.process_music(self, music, **kwargs)
         if len(music) > 0:
             music_start = music[0]
             

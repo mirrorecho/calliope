@@ -1,30 +1,23 @@
 import calliope
 
 class TallyCircleOfFifthsRange(calliope.TallyBase):
-    def __init__(self, fifth_range_max=7, over_range_multiplier=-44):
-        self.fifth_range_max = fifth_range_max
-        self.over_range_multiplier = over_range_multiplier
+    fifth_range_max=7
+    over_range_multiplier=-44
                 
     def tally_row(self, grid, row_index):
-        #QUESTION... what about
-
-        line = grid.pitch_lines[row_index]
+        # TO DO EVENTUALLY... probalby a much more elegant way to do this with pandas...
 
         # just to keep things concise, n = the number of columns
-        n = grid.num_columns
+        n = len(grid.data.columns)
         
         # gets the index of each pitch on the circle of 5ths (with C as 0, G as 1, etc.)
-        fifths_away = [(line[c] * 7) % 12 for c in range(n)]
+        fifths_away = [(grid.data.iloc[row_index, c] * 7) % 12 for c in range(n)]
 
-        # sorts the circle of fifths indeces used (so we have a picture of what that distribution is like)
-        fifths_away_sorted = copy.deepcopy(fifths_away)
-        fifths_away_sorted.sort()
-
+        fifths_away_sorted = sorted(fifths_away)
         fifths_away_sorted_gaps = [
                     (fifths_away_sorted[0] - fifths_away_sorted[n-1]) % 12 if i==0 
                     else fifths_away_sorted[i] - fifths_away_sorted[i-1]  for i in range(n)
                     ]
-
         largest_gap = max(fifths_away_sorted_gaps)
         # print("-----------------------------------------------")
 

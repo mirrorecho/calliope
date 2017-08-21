@@ -6,13 +6,15 @@ import calliope
 
 class PitchGrid(calliope.GridBase):
     row_to_bubble_type = calliope.Cell
+    pitch_ranges = ()
+    auto_move_into_ranges = False
 
     def __init__(self, pitch_ranges=None, **kwargs):
         super().__init__(**kwargs)
 
         # self.dont_touch_pitches = None # [[]] # for future use
         self.pitch_ranges = pitch_ranges # TO DO... extrapolate last entry for total # of lines/columns
-        self.auto_move_into_ranges = self.pitch_ranges is not None:
+        self.auto_move_into_ranges = self.pitch_ranges is not None
         # self.octave_transpositions_allowed = True # TO DO: never used... implement?
         self.save_attrs.extend(["pitch_ranges"])
 
@@ -33,6 +35,7 @@ class PitchGrid(calliope.GridBase):
 
         if self.auto_move_into_ranges:
             #passable way to move pitches into matching octave
+            # TO DO... ??????!!!!! WTF IS ALL THIS...?
             for l in range(self.num_lines):
                 for c in range(self.num_columns):
                     if c == 0:
@@ -57,6 +60,7 @@ class PitchGrid(calliope.GridBase):
     def item_to_bubble(self, item):
         return calliope.Event(pitch=item, beats=1)
 
+    @classmethod
     def item_from_bubble(self, bubble):
         if hasattr(bubble, "pitch"):
             return bubble.pitch

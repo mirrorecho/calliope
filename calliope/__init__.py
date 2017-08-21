@@ -1,4 +1,5 @@
 # tools
+from calliope.structures.base import CalliopeBaseMixin
 from calliope.tools.basic import illustrate_me
 from calliope.tools.rhythm import by_logical_tie_group_rests
 from calliope.tools.pitch import respell
@@ -34,6 +35,11 @@ from calliope.machines.transforms.sorting import SortByPitch, SortByDuration
 from calliope.machines.transforms.tagging import Tagging, Slur
 from calliope.machines.transforms.transpose import Transpose, Displace, DisplaceFifths
 
-# clouds
-from calliope.cloud.pitches import (TallyAppBase, TallyRepeatedJumps, TallyMelodicIntervals,
-    TallyParallelIntervals, TallyCircleOfFifthsRange, CloudPitches)
+# grids
+from calliope.grids.grid_base import GridBase
+from calliope.grids.tally_base import TallyBase
+from calliope.grids.pitches.pitch_grid import PitchGrid
+from calliope.grids.pitches.tally_circle_of_fifths_range import TallyCircleOfFifthsRange
+from calliope.grids.pitches.tally_melodic_intervals import TallyMelodicIntervals
+from calliope.grids.pitches.tally_parallel_intervals import TallyParallelIntervals
+from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps

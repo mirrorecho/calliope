@@ -28,27 +28,27 @@ class LineStacked(calliope.LineBlock):
             for line in self
         ]
 
-    def cloud_me(self):
-        cloud_pitches = calliope.CloudPitches(
-                pitch_lines = self.get_pitch_lines(),
-                filepath = "%s.json" % self.get_output_path(sub_directory="data")
-            )
-        cloud_pitches.tally_apps = [
-            calliope.TallyCircleOfFifthsRange(over_range_multiplier=-99), 
-            # TallyParallelIntervals(interval_ratings=[(0,-20), (7,-11)]), 
-            calliope.TallyMelodicIntervals(
-                    interval_ratings=[(0, -80), (1,12), (2,22), (3,9), (4,9), (5,6), (6,-6), (7,-4), (10,-8), (11,-20), (12,-4)], 
-                    over_incremental_multiplier=(12,-60),
-                    up_rating=-12,
-                    down_rating=20,
-                    ),
-            calliope.TallyRepeatedJumps(),
-        ]
-        # print("TALLLY!!!")
-        cloud = cloud_pitches.tally_loop()
-        for line, pitch_line in zip( self, cloud.pitch_lines ):
-            for i, event in enumerate(line.events):
-                event.pitch = pitch_line[i]
+    # def cloud_me(self):
+    #     cloud_pitches = calliope.CloudPitches(
+    #             pitch_lines = self.get_pitch_lines(),
+    #             filepath = "%s.json" % self.get_output_path(sub_directory="data")
+    #         )
+    #     cloud_pitches.tally_apps = [
+    #         calliope.TallyCircleOfFifthsRange(over_range_multiplier=-99), 
+    #         # TallyParallelIntervals(interval_ratings=[(0,-20), (7,-11)]), 
+    #         calliope.TallyMelodicIntervals(
+    #                 interval_ratings=[(0, -80), (1,12), (2,22), (3,9), (4,9), (5,6), (6,-6), (7,-4), (10,-8), (11,-20), (12,-4)], 
+    #                 over_incremental_multiplier=(12,-60),
+    #                 up_rating=-12,
+    #                 down_rating=20,
+    #                 ),
+    #         calliope.TallyRepeatedJumps(),
+    #     ]
+    #     # print("TALLLY!!!")
+    #     cloud = cloud_pitches.tally_loop()
+    #     for line, pitch_line in zip( self, cloud.pitch_lines ):
+    #         for i, event in enumerate(line.events):
+    #             event.pitch = pitch_line[i]
 
     def swap_events(self, swaps=()):
         swaps = swaps or self.swaps

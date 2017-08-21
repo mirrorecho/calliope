@@ -1,14 +1,16 @@
 # TO DO: used? remove?
-class CalliopeBase(object):
+class CalliopeBaseMixin(object):
 
-    def __init__(self, **kwargs):
-        super().__init__()
+
+    # NOTE: __init__ should NOT be called here, because other base classes will need to to __init_called for them instead
+    
+    def setup(self, *args, **kwargs):
         for name, value in kwargs.items():
             setattr(self, name, value)
 
     def _feedback(self, msg_prefix, msg="(no message)", msg_data=None, **kwargs):
         print("%s - %s/%s: %s" % (msg_prefix, self.__class__.__name__, self.name, msg)  )
-        if data is not None:    
+        if msg_data is not None:    
             print(msg_data)
         for name, value in kwargs.items():
             print(name + ": " + str(value) )

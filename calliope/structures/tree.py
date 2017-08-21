@@ -5,7 +5,7 @@ import calliope
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(abjad.TreeContainer))
 
-class TreeMixin(calliope.CalliopeBase):
+class TreeMixin(calliope.CalliopeBaseMixin):
     pass
 
 class Tree(TreeMixin, abjad.TreeContainer):
@@ -16,29 +16,17 @@ class Tree(TreeMixin, abjad.TreeContainer):
     original_index = None 
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
-    def _init_append_children(self):
-        for node_name in type(self).class_sequence(): 
-            node = getattr(self, node_name)
-            self[node_name] = node
-
 
     def __init__(self, *args, **kwargs):
-
-        children = args
-        name = kwargs.pop("name", None)
-        
-        super().__init__(children, name)
-
-        if name:
-            self.name = name
+        super().__init__(args)
+        self.setup(**kwargs)
 
         if not self.child_types:
             self.child_types = (Tree,)
 
-        for name, value in kwargs.items():
-            setattr(self, name, value)
-
-        self._init_append_children()
+        for node_name in type(self).class_sequence(): 
+            node = getattr(self, node_name)
+            self[node_name] = node
 
 
     def __call__(self, name=None, **kwargs):

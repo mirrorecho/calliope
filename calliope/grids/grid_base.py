@@ -3,41 +3,45 @@ import pandas as pd
 import abjad
 import calliope
 
-class GridBase(object):
+class GridBase(calliope.CalliopeBaseMixin):
     to_bubble_type = calliope.Bubble
     row_to_bubble_type = calliope.Fragment
     output_path = ""
+    tally_total = 0
 
-    def __init__(self, 
-            data=None, 
-            output_path=None, 
-            autoload=False,
-            ):
-        self.data = data or pd.DataFrame()
-        self.tallies = None
-        self.tally_total = 0 # TO DO: consider: simply sum up every time?
+    data = None # to be set to instance of a DataFrame
+    tallies = None # to be set to instance of a DataFrame
+    auto_load = True
+    name = None
 
+    def __init__(self, *args, **kwargs):
+        self.setup(**kwargs)
         self.save_attrs = ["data"]
+        self.tally_apps = []
 
-        self.output_path = output_path # or ...? what if filepath is None... make up a default?
-        # calling_info = inspect.stack()[1]
-        # calling_module_path = calling_info[1]
-
-        self.to_bubble_type = to_bubble_type
-        self.row_to_bubble_type = row_to_bubble_type
-
-        if autoload:
+        if self.auto_load:
             self.load()
 
         self.init_data()
-
-        self.tally_apps = []
 
     # TO DO.. necessary? remove?
     def init_data(self, data=None):
         if data:
             self.data = data
+        if self.data is None:
+            self.data = pd.DataFrame()
+        self.data.name = self.name
         self.reset_tally()
+
+    @classmethod
+    def from_bubble(cls, bubble, **kwargs):
+        bubble_records = [ [cls.item_from_bubble(r) for r in c] for c in bubble]
+        return cls(data=pd.DataFrame.from_records(bubble_records), **kwargs)
+
+    @classmethod
+    def item_from_bubble(self, bubble):
+        return bubble
+
 
     def to_bubble(self, bubble_type=None, row_bubble_type=None):
         bubble_type = bubble_type or self.to_bubble_type
@@ -50,8 +54,6 @@ class GridBase(object):
     def item_to_bubble(self, item):
         return item
 
-    def item_from_bubble(self, bubble):
-        return bubble
 
     def copy_me(self):
         my_copy = copy.copy(self)
@@ -206,12 +208,12 @@ class GridBase(object):
         for save_attr in self.save_attrs:
             attr = getattr(self, save_attr, None)
             if attr:
-                file_path = (output_path or self.output_path) + "_" save_attr + ".json"
+                file_path = (output_path or self.output_path) + "_" + save_attr + ".json"
                 attr.to_json(file_path, orient="records", lines=True)
 
     def load(self, output_path=None):
         for save_attr in self.save_attrs:
-            file_path = (output_path or self.output_path) + "_" save_attr + ".json"
+            file_path = (output_path or self.output_path) + "_" + save_attr + ".json"
             try:
                 setattr(self, save_attr, pd.read_json(file_path, orient="records", lines=True))
             except:
