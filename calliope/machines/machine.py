@@ -101,7 +101,7 @@ class Machine(BaseMachine, calliope.Fragment):
             remove_empty_ancestors(parent_item)
 
     def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_index, **kwargs):
-        data_logical_tie.info(data_logical_tie.parent.name)
+        # data_logical_tie.info(data_logical_tie.parent.name)
         if not data_logical_tie.rest:
             # TO DO: consider... can rests be taged????
 

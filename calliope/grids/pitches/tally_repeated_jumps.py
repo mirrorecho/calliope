@@ -7,12 +7,12 @@ class TallyRepeatedJumps(calliope.TallyBase):
     column_weights=None
     row_weights=None
     
-    def tally_item(self, grid, column_index, row_index):
-        if column_index > 0 and column_index < len(grid.data.columns)-1:
-            jump_before = abs(grid.data.iloc[row_index, column_index] - grid.data.iloc[row_index, column_index - 1]])
-            jump_after = abs(grid.data.iloc[row_index, column_index] - grid.data.iloc[row_index, column_index + 1]])
+    def tally_item(self, grid, r, c):
+        if 0 < c < len(grid.data.columns)-1:
+            jump_before = abs(grid.data.iat[r, c] - grid.data.iat[r, c - 1])
+            jump_after = abs(grid.data.iat[r, c] - grid.data.iat[r, c + 1])
             if jump_before >= self.min_jump and jump_after >= self.min_jump:
                 rating_multiplier = self.over_incremental_multiplier
-                if grid.data.iloc[row_index, column_index - 1] == grid.data.iloc[row_index, column_index + 1]:
+                if grid.data.iat[r, c - 1] == grid.data.iat[r, c + 1]:
                     rating_multiplier = rating_multiplier * self.back_again_multiplier
-                grid.add_tally(column_index, row_index, (jump_before+jump_after)*self.over_incremental_multiplier)
+                grid.add_tally(r, c, (jump_before+jump_after)*self.over_incremental_multiplier)

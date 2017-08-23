@@ -11,15 +11,15 @@ class TallyMelodicIntervals(calliope.TallyBase):
     up_rating=0
 
 
-    def tally_item(self, grid, column_index, row_index):
+    def tally_item(self, grid, r, c):
         # only makes sense starting from 2nd column:
-        if column_index > 0:
-            melodic_interval = grid.data.iloc[row_index, column_index] - grid.data.iloc[row_index, column_index - 1]
+        if c > 0:
+            melodic_interval = grid.data.iat[r, c] - grid.data.iat[r, c - 1]
             
             if self.up_rating and melodic_interval > 0:
-                grid.add_tally(column_index, row_index, self.up_rating)
+                grid.add_tally(r, c, self.up_rating)
             if self.down_rating and melodic_interval < 0:
-                grid.add_tally(column_index, row_index, self.down_rating)
+                grid.add_tally(r, c, self.down_rating)
 
             if self.bidirectional:
                 melodic_interval = abs(melodic_interval)
@@ -29,11 +29,11 @@ class TallyMelodicIntervals(calliope.TallyBase):
 
             for i,rating in self.interval_ratings:
                 if melodic_interval == i:
-                    grid.add_tally(column_index, row_index, rating)
-                    grid.add_tally(column_index - 1, row_index, rating)
+                    grid.add_tally(r, c, rating)
+                    grid.add_tally(r, c - 1, rating)
 
             # can be used to dock for big jumps
             if self.over_incremental_multiplier:
                 if abs(melodic_interval) > self.over_incremental_multiplier[0]:
                     over_rating = (abs(melodic_interval) - self.over_incremental_multiplier[0]) * self.over_incremental_multiplier[1]
-                    grid.add_tally(column_index, row_index, over_rating)
+                    grid.add_tally(r, c, over_rating)

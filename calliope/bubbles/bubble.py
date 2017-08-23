@@ -91,7 +91,7 @@ class Bubble(calliope.Tree):
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
         
         bubble_to_illustrate = self if not score_type else score_type(self)
-        print(bubble_to_illustrate.ly())
+        # print(bubble_to_illustrate.ly())
 
         my_persistance_agent = abjad.persist( bubble_to_illustrate.get_lilypond_file() )
         path = self.get_output_path(**kwargs)

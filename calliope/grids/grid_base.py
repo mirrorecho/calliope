@@ -36,6 +36,7 @@ class GridBase(calliope.CalliopeBaseMixin):
     @classmethod
     def from_bubble(cls, bubble, **kwargs):
         bubble_records = [ [cls.item_from_bubble(r) for r in c] for c in bubble]
+        kwargs["output_path"] = bubble.get_output_path(sub_directory="data")
         return cls(data=pd.DataFrame.from_records(bubble_records), **kwargs)
 
     @classmethod
@@ -44,12 +45,14 @@ class GridBase(calliope.CalliopeBaseMixin):
 
 
     def to_bubble(self, bubble_type=None, row_bubble_type=None):
-        bubble_type = bubble_type or self.to_bubble_type
-        row_bubble_type = row_bubble_type or self.row_to_bubble_type
-        bubble = bubble_type()
-        for r in self.data.index:
-            row_bubble = row_bubble_type()
-            row_bubble[:] = [self.item_to_bubble(self.data[c][r]) for c in self.data.columns]
+        return (bubble_type or self.to_bubble_type)(
+            *self.data.apply(lambda row: self.row_to_bubble(row, row_bubble_type), axis=1)
+            )
+
+    def row_to_bubble(self, row, row_bubble_type=None):
+        return (row_bubble_type or self.row_to_bubble_type)(
+            *row.apply(self.item_to_bubble)
+            )
 
     def item_to_bubble(self, item):
         return item
@@ -64,8 +67,8 @@ class GridBase(calliope.CalliopeBaseMixin):
         """sets tallies dataframe to all zeroes, with same shape as data dataframe"""
         self.tallies = pd.DataFrame(np.zeros(self.data.shape))
 
-    def add_tally(self, column_index, row_index, value):
-        self.tallies[column_index][row_index] += value
+    def add_tally(self, r, c, value):
+        self.tallies.iat[r, c] += value
         self.tally_total += value 
 
     def add_tally_app(self, tally_app):
@@ -73,60 +76,58 @@ class GridBase(calliope.CalliopeBaseMixin):
 
     def tally_me(self):
         self.reset_tally()
-        for column_index in self.data.columns:
-            # column tallies for all apps
+        # TO DO: eventually... this could probably be made much cleaner with pandas apply methods
+
+        for r in self.range_rows:   
+            #column tallies for all apps
             for app in self.tally_apps:
-                app.tally_column(self, column_index)
-            
-            for row_index in self.data.index:    
-                
-                if column_index == 0:
-                    #column tallies for all apps
+                app.tally_row(self, r)
+
+            for c in self.range_cols:
+                # column tallies for all apps
+                if c == 0:
                     for app in self.tally_apps:
-                        app.tally_row(self, row_index)
-                
+                        app.tally_column(self, c)
+               
                 for app in self.tally_apps:
                     #note/melodic interval tallies for all apps
-                    app.tally_item(self, column_index, row_index)
+                    app.tally_item(self, r, c)
 
-                for across_row_index in range(row_index):
+                for across_r in range(r):
                     for app in self.tally_apps:
                         #cross-line tallies (e.g. voice leading) for all lines before this one
-                        app.tally_item_across_lines(self, column_index, row_index, across_row_index) 
+                        app.tally_item_across_rows(self, r, c, across_r) 
 
-                for across_column_index in range(column_index):
+                for across_c in range(c):
                     for app in self.tally_apps:
                         #cross-column tallies (e.g. overall voice direction)... QUESTION - will this even be useful?
-                        app.tally_item_across_columns(self, column_index, row_index, across_column_index) 
+                        app.tally_item_across_columns(self, r, c, across_c) 
 
     def column_indices_by_tally(self):
         return self.tallies.sum().sort_values().index
 
-    def column_swap2_weighted(self, column_index):
-        indices_sorted = self.tallies[column_index].sort_values().index
-        swap1 = None
-        swap2 = None
-        # TO DO... document this
-        for i in range(len(self.data)):
-            if swap1 is not None and random.randrange(0,5) < 3:
-                swap2 = indices_sorted.iat[i]
-                self.data[column_index][swap1], self.data[column_index][swap2] = self.data[column_index][swap2], self.data[column_index][swap1]
+    def column_swap2_weighted(self, c):
+        indices_sorted = self.tallies[c].sort_values().index
+        r_swap1, r_swap2 = None, None
+        for r in self.range_rows:
+            if r_swap1 and random.randrange(0,5) < 3:
+                r_swap2 = indices_sorted.iat[r]
+                self.data.iat[r_swap1, c], self.data.iat[r_swap2, c] = self.data.iat[r_swap2, c], self.data.iat[r_swap1, c]
                 break
             if random.randrange(0,2) == 0:
-                swap1 = indices_sorted.iat[i]
+                r_swap1 = indices_sorted.iat[r]
 
-    def column_swap2(self, column_index):
-        swap1 = random.randrange(len(self.data))
-        swap2 = swap1
-        while swap2 != swap1:
-            swap2 = random.randrange(len(self.data))
-        self.data[column_index][swap1], self.data[column_index][swap2] = self.data[column_index][swap2], self.data[column_index][swap1]
+    def column_swap2(self, c):
+        r_swap1, r_swap2 = None, None
+        while r_swap1 == r_swap2:
+            r_swap1, r_swap2 = random.choice(self.range_rows), random.choice(self.range_rows)
+        self.data.iat[r_swap1, c], self.data.iat[r_swap2, c] = self.data.iat[r_swap2, c], self.data.iat[r_swap1, c]
 
-    def randomize_column(self, column_index):
-        np.random.shuffle(self.data[column_index])
+    def randomize_column(self, c):
+        np.random.shuffle(self.data[c])
 
     def randomize_all_columns(self):
-        for c in self.data.columns:
+        for c in self.range_cols:
             self.randomize_column(c)
 
     # one thought could be to swap 2 in columns before/after worst or 2nd worst column...
@@ -219,8 +220,6 @@ class GridBase(calliope.CalliopeBaseMixin):
             except:
                 print("ERROR READING JSON FILE: " + file_path)
 
-        filepath = filepath or self.filepath
-
 
 
     def tally_loop(self, times=9, filepath=None):
@@ -294,6 +293,14 @@ class GridBase(calliope.CalliopeBaseMixin):
             cloud = CloudPitches.tally_loop(cloud)
 
         return cloud
+
+    @property
+    def range_rows(self):
+        return range(self.data.shape[0])
+
+    @property
+    def range_cols(self):
+        return range(self.data.shape[1])
 
     @property
     def is_loaded(self):
