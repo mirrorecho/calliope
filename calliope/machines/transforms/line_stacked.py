@@ -6,7 +6,7 @@ class StackedTransform(calliope.Transform):
         new_lines = []
         for i in range(len(machine.intervals[0])):
             for line in machine:
-                print(line)
+                # print(line)
                 stack_line = line(name=line.name + "_%s" % i )
                 for e, event in enumerate(stack_line.events):
                     # TO DO... assumes that there are no chords... also may want

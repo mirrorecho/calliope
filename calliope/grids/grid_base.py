@@ -1,5 +1,12 @@
+import random
+import copy
+import tkinter
+import time
+import threading
+
 import numpy as np
 import pandas as pd
+
 import abjad
 import calliope
 
@@ -26,7 +33,7 @@ class GridBase(calliope.CalliopeBaseMixin):
 
     # TO DO.. necessary? remove?
     def init_data(self, data=None):
-        if data:
+        if data is not None:
             self.data = data
         if self.data is None:
             self.data = pd.DataFrame()
@@ -35,9 +42,13 @@ class GridBase(calliope.CalliopeBaseMixin):
 
     @classmethod
     def from_bubble(cls, bubble, **kwargs):
-        bubble_records = [ [cls.item_from_bubble(r) for r in c] for c in bubble]
+        bubble_records = [ cls.row_list_from_bubble(b) for b in bubble]
         kwargs["output_path"] = bubble.get_output_path(sub_directory="data")
         return cls(data=pd.DataFrame.from_records(bubble_records), **kwargs)
+
+    @classmethod
+    def row_list_from_bubble(self, bubble):
+        return [cls.item_from_bubble(b) for b in bubble]
 
     @classmethod
     def item_from_bubble(self, bubble):
@@ -66,13 +77,14 @@ class GridBase(calliope.CalliopeBaseMixin):
     def reset_tally(self):
         """sets tallies dataframe to all zeroes, with same shape as data dataframe"""
         self.tallies = pd.DataFrame(np.zeros(self.data.shape))
+        self.tally_total = 0
 
     def add_tally(self, r, c, value):
         self.tallies.iat[r, c] += value
         self.tally_total += value 
 
-    def add_tally_app(self, tally_app):
-        self.tally_apps.append(tally_app)
+    def add_tally_apps(self, *args):
+        self.tally_apps.extend(args)
 
     def tally_me(self):
         self.reset_tally()
@@ -111,11 +123,11 @@ class GridBase(calliope.CalliopeBaseMixin):
         r_swap1, r_swap2 = None, None
         for r in self.range_rows:
             if r_swap1 and random.randrange(0,5) < 3:
-                r_swap2 = indices_sorted.iat[r]
+                r_swap2 = indices_sorted[r]
                 self.data.iat[r_swap1, c], self.data.iat[r_swap2, c] = self.data.iat[r_swap2, c], self.data.iat[r_swap1, c]
                 break
             if random.randrange(0,2) == 0:
-                r_swap1 = indices_sorted.iat[r]
+                r_swap1 = indices_sorted[r]
 
     def column_swap2(self, c):
         r_swap1, r_swap2 = None, None
@@ -133,12 +145,12 @@ class GridBase(calliope.CalliopeBaseMixin):
     # one thought could be to swap 2 in columns before/after worst or 2nd worst column...
     def rearrange_try(self, depth):
         try_type_number = random.randrange(0+depth,8+depth)
-        # these are roughly ordered from most eratic/dramatic to most direct... at a lower depth, the
+        # these are roughly ordered from most eratic/dramatic to simplest... at a lower depth, the
         # more eratic/dramatic ones will be attempted...
         sorted_column_indices = self.column_indices_by_tally()
         if try_type_number == 0:
             # completely randomize some random column and swap 2 in worst and 2nd worst columns (not weighed)
-            self.randomize_column(random.randrange(self.num_columns))
+            self.randomize_column(random.randrange(self.data.shape[1]))
             self.column_swap2(sorted_column_indices[0])
             self.column_swap2(sorted_column_indices[1])
         elif try_type_number == 1:
@@ -191,6 +203,7 @@ class GridBase(calliope.CalliopeBaseMixin):
         my_copy = self.copy_me()
         my_copy.rearrange_try(depth_counter)
         my_copy.tally_me()
+        # print(best_copy.tally_total, my_copy.tally_total)
         if my_copy.tally_total > best_copy.tally_total:
             best_copy = my_copy
         if depth_counter < depth:
@@ -201,6 +214,7 @@ class GridBase(calliope.CalliopeBaseMixin):
     def rearrange_me(self):
         best_copy = self.get_rearranged()
         if best_copy is not self:
+            # print("YO BETTER")
             self.data = best_copy.data
             self.tallies = best_copy.tallies # TO DO: even necessary?
             self.tally_total = best_copy.tally_total
@@ -208,8 +222,9 @@ class GridBase(calliope.CalliopeBaseMixin):
     def save(self, output_path=None):
         for save_attr in self.save_attrs:
             attr = getattr(self, save_attr, None)
-            if attr:
+            if attr is not None:
                 file_path = (output_path or self.output_path) + "_" + save_attr + ".json"
+                self.info("saved " + file_path)
                 attr.to_json(file_path, orient="records", lines=True)
 
     def load(self, output_path=None):
@@ -218,39 +233,37 @@ class GridBase(calliope.CalliopeBaseMixin):
             try:
                 setattr(self, save_attr, pd.read_json(file_path, orient="records", lines=True))
             except:
-                print("ERROR READING JSON FILE: " + file_path)
+                self.warn("cannot read json file " + file_path)
 
 
 
-    def tally_loop(self, times=9, filepath=None):
+    def tally_loop(self, times=9, output_path=None):
 
         # see http://stackoverflow.com/questions/11758555/python-do-something-until-keypress-or-timeout
         # for more on how this threading works...
-        cloud = self
+        # cloud = self
+        # cloud_type = type(self)
 
         def re_tally():
             T0 = time.clock()
             while not stop_event.isSet(): #as long as long as flag is not set 
-                cloud.get_rearranged() 
-                self.pitch_lines = best_try.pitch_lines
-                self.tallies = best_try.tallies
-                self.tally_total = best_try.tally_total
-                print("Total tally:" + str(cloud.tally_total))
+                self.rearrange_me() 
+                # self.pitch_lines = best_try.pitch_lines
+                # self.tallies = best_try.tallies
+                # self.tally_total = best_try.tally_total
+                self.info("total tally:" + str(self.tally_total))
                 time.sleep(0.1)
 
         def _stop_tally():
-            print("Stopping tally after this try...")
+            self.info("stopping tally after this try...")
             stop_event.set()
             thread.join() #wait for the thread to finish
             root.quit()
             root.destroy()
 
-        if filepath is None:
-            filepath = self.filepath
+        k=input("Enter 't' start re-tallying, 'l' to load, 'r' to re-randomize, 's' to save, 'p' to  pdf, 'q' to quit: ")
 
-        k=input("Enter 't' start re-tallying, 'l' to load, 'r' to re-randomize, 's' to save, 'p' to show pdf, 'q' to quit: ")
-
-        if k== "t":
+        if k == "t":
             
             root = tkinter.Tk()
             quit_button = tkinter.Button(master=root, text='Stop re-tallying', command=_stop_tally) #the quit button
@@ -259,40 +272,36 @@ class GridBase(calliope.CalliopeBaseMixin):
             stop_event = threading.Event()
             thread.start()
             root.mainloop()
-            
-            cloud = CloudPitches.tally_loop(cloud)
+            self.tally_loop(times, output_path)
 
         elif k == "l":
-            cloud.load(filepath)
-            print("Loaded " + filepath)
-            cloud.get_tallies()
-            print("Total tally:" + str(cloud.tally_total))
-            cloud = CloudPitches.tally_loop(cloud)
+            self.load(output_path)
+            # print("Loaded " + output_path)
+            self.tally_me()
+            self.info("total tally:" + str(self.tally_total))
+            self.tally_loop(times, output_path)
 
         elif k == "r":
-            cloud.randomize_all_columns()
-            cloud.get_tallies()
-            print("Randomized all columns... new tally is: " + str(cloud.tally_total))
-            cloud = CloudPitches.tally_loop(cloud)
+            self.randomize_all_columns()
+            self.tally_me()
+            self.info("randomized all columns... new tally is: " + str(self.tally_total))
+            self.tally_loop(times, output_path)
 
         elif k == "p":
-            cloud.to_bubble().illustrate_me()
-            cloud = CloudPitches.tally_loop(cloud)
+            self.to_bubble().illustrate_me()
+            self.tally_loop(times, output_path)
 
         elif k == "s":
-            cloud.save(filepath)
-            print("Saved to " + filepath + "!")
-            cloud = CloudPitches.tally_loop(cloud)
+            self.save(output_path)
+            self.tally_loop(times, output_path)
 
         elif k == "q":
             # do nothing to quit
             pass
 
         else:
-            print("(invalid entry)")
-            cloud = CloudPitches.tally_loop(cloud)
-
-        return cloud
+            self.warn("(invalid entry)")
+            self.tally_loop(times, output_path)
 
     @property
     def range_rows(self):

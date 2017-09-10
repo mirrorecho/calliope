@@ -11,11 +11,10 @@ class TupletCell(Cell):
     proportions = (1,1,1)
 
 
-class CellBlock(calliope.Block, Cell):
-    """
-    NOT implemented yet...
-    """
+class CellBlock(calliope.Block):
+    # TO DO... implement this better... 
     child_types = (Cell,)
+    # is_simultaneous = True
     pass
 
 

@@ -5,10 +5,10 @@ import abjad
 import calliope
 
 class PitchGrid(calliope.GridBase):
-    to_bubble_type = calliope.Cell
+    to_bubble_type = calliope.CellBlock
     row_to_bubble_type = calliope.Cell
-    pitch_ranges = ()
-    auto_move_into_ranges = False
+    pitch_ranges = None
+    # auto_move_into_ranges = False # TO DO... use this?
 
     def __init__(self, pitch_ranges=None, **kwargs):
         super().__init__(**kwargs)
@@ -24,15 +24,21 @@ class PitchGrid(calliope.GridBase):
 
 
     def move_into_ranges(self):
-        if self.pitch_ranges:
+        if self.pitch_ranges is not None:
+            num_rows, num_cols = self.pitch_ranges.shape
             for r in self.range_rows:
                 for c in self.range_cols:
 
-                    pitch_range = self.pitch_ranges.iat[r % len(self.pitch_ranges), c % len(self.pitch_ranges.columns)]
+                    pitch_range = abjad.PitchRange.from_pitches(
+                        *self.pitch_ranges.iat[r % num_rows, c % num_cols]
+                        )
+
                     # TO DO: consider... always move to new random choice? Or only move if pitch not already in range?
-                    self.data.iat[r, c] = random.choice(pitch_range.voice_pitch_class(self.data.iat[r, c])).number
+                    my_pitch = random.choice(pitch_range.voice_pitch_class(self.data.iat[r, c])).number
+                    # print(my_pitch)
+                    self.data.iat[r, c] = my_pitch
         else:
-            print("Tried moving pitches into ranges, but pitch_ranges is None")
+            self.warn("Tried moving pitches into ranges, but pitch_ranges is None")
  
 
     def rearrange_try(self, depth):
@@ -42,35 +48,40 @@ class PitchGrid(calliope.GridBase):
 
             # ???????? passable way to move pitches into matching octave
             # TO DO... ??????!!!!! WTF IS ALL THIS...?
-            # for l in range(self.num_lines):
-            #     for c in range(self.num_columns):
+            # for l in self.range_rows:
+            #     for c in self.range_cols:
             #         if c == 0:
-            #             if (self.pitch_lines[l][c+1] - self.pitch_lines[l][c]) < -6 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] -= 12
-            #             elif (self.pitch_lines[l][c+1] - self.pitch_lines[l][c]) > 6 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] += 12
+            #             if (self.data.iat[l, c+1] - self.data.iat[l, c]) < -6 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] -= 12
+            #             elif (self.data.iat[l, c+1] - self.data.iat[l, c]) > 6 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] += 12
             #         elif c == self.num_columns-1:
-            #             if (self.pitch_lines[l][c-1] - self.pitch_lines[l][c]) < -6 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] -= 12
-            #             elif (self.pitch_lines[l][c-1] - self.pitch_lines[l][c]) > 6 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] += 12
+            #             if (self.data.iat[l, c-1] - self.data.iat[l, c]) < -6 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] -= 12
+            #             elif (self.data.iat[l, c-1] - self.data.iat[l, c]) > 6 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] += 12
             #         else:
-            #             if (self.pitch_lines[l][c+1] + self.pitch_lines[l][c-1]) - (self.pitch_lines[l][c] * 2) < -12 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] -= 12
-            #             elif (self.pitch_lines[l][c+1] + self.pitch_lines[l][c-1]) - (self.pitch_lines[l][c] * 2) > 12 and random.randrange(2) == 1:
-            #                 self.pitch_lines[l][c] += 12
+            #             if (self.data.iat[l, c+1] + self.data.iat[l, c-1]) - (self.data.iat[l, c] * 2) < -12 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] -= 12
+            #             elif (self.data.iat[l, c+1] + self.data.iat[l, c-1]) - (self.data.iat[l, c] * 2) > 12 and random.randrange(2) == 1:
+            #                 self.data.iat[l, c] += 12
 
-        if self.pitch_ranges:
+        if self.pitch_ranges is not None:
             self.move_into_ranges()
+            # print(self.data)
 
 
     def item_to_bubble(self, item):
         return calliope.Event(pitch=item, beats=1)
 
     @classmethod
-    def item_from_bubble(self, bubble):
+    def row_list_from_bubble(cls, bubble):
+        return [cls.item_from_bubble(b) for b in bubble.events]
+
+    @classmethod
+    def item_from_bubble(cls, bubble):
         if hasattr(bubble, "pitch"):
-            return bubble.pitch
+            return abjad.NumberedPitch(bubble.pitch).number
         else:
             print("WARNING: bubble item has no pitch attribute for pitch grid")
             return 0
