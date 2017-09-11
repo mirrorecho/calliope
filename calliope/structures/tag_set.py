@@ -50,9 +50,9 @@ class TagSet(object):
         elif tag_name in self.slurs_inventory:
             return abjad.Slur()
         elif tag_name == "\<":
-            return abjad.Crescendo()
+            return abjad.Hairpin("<")
         elif tag_name == "\>":
-            return abjad.Decrescendo()
+            return abjad.Hairpin(">")
         elif tag_name in self.stem_tremolos_inventory:
             tremolo_flags = int(tag_name[1:])
             return abjad.indicatortools.StemTremolo(tremolo_flags)

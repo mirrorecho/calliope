@@ -20,7 +20,9 @@ class LogicalTie(calliope.Machine):
 
     @beats.setter
     def beats(self, value):
-        self.ticks = int(value * self.rhythm_default_multiplier)
+        if value < 0:
+            self.rest = True
+        self.ticks = abs(int(value * self.rhythm_default_multiplier))
 
     @property
     def use_ancestor_attachments(self):

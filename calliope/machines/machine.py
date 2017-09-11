@@ -224,6 +224,7 @@ class EventMachine(Machine):
     def __init__(self, *args, **kwargs):
         rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
         pitches = kwargs.pop("pitches", None)
+        pitches_skip_rests = kwargs.pop("pitches_skip_rests", False)
         super().__init__(*args, **kwargs)
 
         if self.get_children:
@@ -233,6 +234,11 @@ class EventMachine(Machine):
             self.rhythm = rhythm
 
         if pitches:
+            if pitches_skip_rests:
+                pitches = list(pitches)
+                for i,l in enumerate(self.logical_ties):
+                    if l.rest and i <= len(pitches):
+                        pitches.insert(i, None)
             self.pitches = pitches
 
         if self.bookend_rests:
@@ -278,9 +284,8 @@ class EventMachine(Machine):
     def pitches(self, values):
         my_length = len(self.logical_ties)
         for i, v in enumerate(values[:my_length]):
-            if i < my_length:
-                self.logical_ties[i].pitch = v
-                self.logical_ties[i].rest = v is None
+            self.logical_ties[i].pitch = v
+            self.logical_ties[i].rest = v is None
 
     @property
     def first_non_rest(self):
@@ -328,6 +333,7 @@ class EventMachine(Machine):
             last_event = self.logical_ties[-1].parent
             last_event.append(calliope.LogicalTie(rest=True, beats=beats_after))
 
+    # TO DO: consider making this cyclic???
     def remove_bookend_rests(self):
         if self.logical_ties:
             if self.logical_ties[0].rest:

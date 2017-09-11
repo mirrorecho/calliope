@@ -9,7 +9,7 @@ class CalliopeBaseMixin(object):
             setattr(self, name, value)
 
     def _feedback(self, msg_prefix, msg="(no message)", msg_data=None, **kwargs):
-        print("%s - %s/%s: %s" % (msg_prefix, self.__class__.__name__, self.name, msg)  )
+        print("%s - %s/%s: %s" % (msg_prefix, self.__class__.__name__, getattr(self, "name", "no name"), msg)  )
         if msg_data is not None:    
             print(msg_data)
         for name, value in kwargs.items():
