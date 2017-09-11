@@ -17,8 +17,9 @@ class TagSet(object):
     # TO DO: add more bar lines?
     bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ) )
 
-    start_spanners_inventory = set(("~","8va")) | slurs_inventory | hairpins_inventory
-    stop_spanners_inventory = set( (")", "))", "\!", "~!","8va!"), )
+    # NOTE "{" is made up shorthand for HorizontalBracket
+    start_spanners_inventory = set(("~","8va", "{", "[")) | slurs_inventory | hairpins_inventory
+    stop_spanners_inventory = set( (")", "))", "\!", "~!","8va!", "}", "]"), )
     stem_tremolos_inventory = set( (":8",":16",":32") )
     tremolos_inventory = set( ("tremolo:1", "tremolo:2", "tremolo:3",) )
     colors_inventory = set(("red",         "green",
@@ -34,6 +35,8 @@ class TagSet(object):
         ")":    set(("(",)),
         "))":   set(("((",)),
         "~!":   set(("~",)), # (made up shorthand for end tie)
+        "}":    set(("{",)),
+        "]":    set(("[",)),
     }
     for item in dynamics_inventory | hairpins_inventory | set( ("\!",) ):
         spanner_closures[item] = hairpins_inventory
@@ -53,6 +56,8 @@ class TagSet(object):
             return abjad.Hairpin("<")
         elif tag_name == "\>":
             return abjad.Hairpin(">")
+        elif tag_name == "[":
+            return abjad.ComplexBeam(beam_rests=True)
         elif tag_name in self.stem_tremolos_inventory:
             tremolo_flags = int(tag_name[1:])
             return abjad.indicatortools.StemTremolo(tremolo_flags)
@@ -63,6 +68,9 @@ class TagSet(object):
             return abjad.spannertools.Tie()
         elif tag_name == "8va":
             return abjad.spannertools.OctavationSpanner(start=1)
+        elif tag_name == "{":
+            return abjad.HorizontalBracketSpanner(markup="YO") # TO DO - CONSIDER... add markup?
+            # return abjad.Slur()
         elif tag_name in self.bar_lines_inventory:
             return abjad.BarLine(tag_name)
         elif tag_name in self.clefs_inventory:

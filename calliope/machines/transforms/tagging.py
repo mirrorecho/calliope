@@ -34,3 +34,11 @@ class Slur(calliope.Transform):
         machine[self.slur_stop].tag(self.slur_stop_string)
 
 
+
+class BracketCells(calliope.Transform):
+
+    def transform_nodes(self, machine):
+        for cell in machine.by_type(calliope.Cell):
+            if len(cell) > 1:
+                cell[0].tag("{")
+                cell[-1].tag("}")

@@ -13,6 +13,10 @@ class Staff(calliope.Bubble):
     clef = None
 
     def process_music(self, music, **kwargs):
+        
+        # needed for horizontal brackets:
+        music.consists_commands.append('Horizontal_bracket_engraver')
+
         if self.instrument:
             abjad.attach(self.instrument, music)
         if self.clef:
@@ -60,6 +64,7 @@ class CopyChildrenBubble(calliope.Bubble):
         
         # TO DO: consider... is __init__ the best place for this?
         # maybe it should be called from music() instead?
+        # self.info()
         self.set_children(self, copy_children_from)
 
     def set_children(self, parent_bubble, copy_children_from):
@@ -72,6 +77,7 @@ class CopyChildrenBubble(calliope.Bubble):
                     self.set_children(child_bubble, copy_children_from)
                 else:
                     try:
+                        # self.info(child_bubble)
                         child_bubble.append(  copy_children_from[child_bubble.name] )
                     except:
                         self.warn("""tried appending child music, but %s has no child named '%s'""" 

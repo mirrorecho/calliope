@@ -13,11 +13,17 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
         """
         TO DO EVENTUALLY... probably some more elegant way to do this, but for now this works
         """
-        if self.time_signature:
-            measure_length = abjad.Duration(self.time_signature)
-        else:
-            # if no time signature specified, then this gets the pair for the duration of the first measure:
-            measure_length = sum([abjad.Duration(i) for i in self.get_metrical_durations()[0]])
+
+        # WARNING... THIS ONLY WORKS FOR 4/4!!!!!!!
+        measure_length = abjad.Duration( (4,4) )
+
+        # if self.time_signature:
+        #     measure_length = abjad.Duration(self.time_signature)
+        # else:
+        #     # if no time signature specified, then this gets the pair for the duration of the first measure:
+        #     measure_length = sum([abjad.Duration(i) for i in self.get_metrical_durations()[0]])
+
+        # print(self.get_metrical_durations()[0])
 
         leaves = abjad.select(music).by_leaf()
         rest_measures = 0
@@ -39,6 +45,7 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
                 measure_has_only_rests = False
 
             if measure_duration_tally==measure_length:
+                # print("YOYO")
                 # if we're at the end of the line or this measure has notes, then maybe we need to add multimeasure rest beforehand
                 # and then go and set rests_length back to 0
                 if measure_has_only_rests:
@@ -62,6 +69,7 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
 
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)
+        self.info("PROCESSING RESTS")
         self.replace_multimeasure_rests(music)
 
 class LineBlock(calliope.Block):

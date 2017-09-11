@@ -35,7 +35,7 @@ short_score = calliope.MatchSequence(
 # short_score_inverted = short_score.get_inverted()
 # print(short_score_inverted.ly())
 
-calliope.illustrate_me(score_type=SimpleScore, bubble=short_score)
+# calliope.illustrate_me(score_type=SimpleScore, bubble=short_score())
 
 
 

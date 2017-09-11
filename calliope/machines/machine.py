@@ -57,8 +57,9 @@ class Block(BaseMachine, calliope.SimulFragment):
 
 class Machine(BaseMachine, calliope.Fragment):
 
+    # TO DO... AUTO MAKE THIS NOT HAVE TO BE 4/4... also, nested for measures/beaming??
     def get_metrical_durations(self):
-        return self.metrical_durations or ((4,4),) * math.ceil(self.beats / 4)
+        return self.metrical_durations or ( (4,4), ) * math.ceil(self.beats / 4)
 
     def get_metrical_duration_ticks(self):
         """
@@ -178,6 +179,10 @@ class Machine(BaseMachine, calliope.Fragment):
         return abjad.rhythmmakertools.TaleaRhythmMaker(
             talea=self.get_talea(),
             read_talea_once_only=True,
+            beam_specifier=abjad.rhythmmakertools.BeamSpecifier(
+                beam_each_division=True,
+                beam_rests=True,
+                ),
             # read_talea_once_only = False, # for testing only...
             # division_masks=division_masks, # for testing only...
             # extra_counts_per_division=extra_counts_per_division, # for testing only...
