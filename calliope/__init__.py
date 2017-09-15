@@ -34,6 +34,7 @@ from calliope.machines.transforms.make_chords import MakeChords
 from calliope.machines.transforms.sorting import SortByPitch, SortByDuration 
 from calliope.machines.transforms.tagging import Tagging, Slur, BracketCells
 from calliope.machines.transforms.transpose import Transpose, Displace, DisplaceFifths
+from calliope.machines.transforms.smart_range import SmartRange
 
 # grids
 from calliope.grids.grid_base import GridBase
