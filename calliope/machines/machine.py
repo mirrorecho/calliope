@@ -107,7 +107,9 @@ class Machine(BaseMachine, calliope.Fragment):
             # TO DO: consider... can rests be taged????
 
             event = data_logical_tie.parent
-            pitch = data_logical_tie.pitch or event.pitch
+            pitch = data_logical_tie.pitch
+            if pitch is None: # note, have to test specifically for None, since 0 has measning here!
+                pitch = event.pitch
             respell = data_logical_tie.get_respell()
             
             # TO DO: code below is clunky... refacto
@@ -252,6 +254,10 @@ class EventMachine(Machine):
     @property
     def ticks(self):
         return sum([l.ticks for l in self.logical_ties])
+
+    @property
+    def rest(self):
+        return all([l.rest for l in self.logical_ties])
 
     @property
     def ticks_before(self):

@@ -3,7 +3,7 @@ import copy
 import tkinter
 import time
 import threading
-
+import types
 import numpy as np
 import pandas as pd
 
@@ -13,38 +13,60 @@ import calliope
 class GridBase(calliope.CalliopeBaseMixin):
     to_bubble_type = calliope.Bubble
     row_to_bubble_type = calliope.Fragment
-    output_path = ""
+    output_directory = None
+    save_attrs = ("data", "start_data")
+    version = 1
+
     tally_total = 0
 
     data = None # to be set to instance of a DataFrame
+    start_data = None
+
     tallies = None # to be set to instance of a DataFrame
     auto_load = True
     name = None
 
     def __init__(self, *args, **kwargs):
+        if "get_start_data" in kwargs:
+            self.get_start_data = types.MethodType( kwargs.pop("get_start_data"), self )
+
         self.setup(**kwargs)
-        self.save_attrs = ["data"]
-        self.tally_apps = []
+        self.tally_apps = list(args)
 
         if self.auto_load:
             self.load()
 
         self.init_data()
 
+    def get_start_data(self):
+        return pd.DataFrame()
+
     # TO DO.. necessary? remove?
-    def init_data(self, data=None):
-        if data is not None:
+    def init_data(self, start_data=None, data=None, reset=False):
+        if start_data is None:
+            start_data = self.get_start_data()
+            start_data.name = self.name        
+        if reset or self.start_data is None or self.data is None:
+            self.start_data = start_data
+            if data is None:
+                data = start_data.copy()   
             self.data = data
-        if self.data is None:
-            self.data = pd.DataFrame()
-        self.data.name = self.name
+        elif not self.start_data.equals(start_data):
+            self.warn(
+                "loaded start data does not match new start data... consider resetting the data"
+                )
+            self.info("loaded start data", self.start_data)
+            self.info("new start data", start_data)
+
         self.reset_tally()
 
     @classmethod
-    def from_bubble(cls, bubble, **kwargs):
-        bubble_records = [ cls.row_list_from_bubble(b) for b in bubble]
-        kwargs["output_path"] = bubble.get_output_path(sub_directory="data")
-        return cls(data=pd.DataFrame.from_records(bubble_records), **kwargs)
+    def from_bubble(cls, bubble, *args, **kwargs):
+        bubble_records = [cls.row_list_from_bubble(b) for b in bubble]
+        kwargs["output_directory"] = bubble.get_module_info()[0]
+        kwargs["get_start_data"] = lambda s: pd.DataFrame.from_records(bubble_records)
+        kwargs["name"] = "from_%s" % (bubble.name or bubble.__class__.__name__)
+        return cls(*args, **kwargs)
 
     @classmethod
     def row_list_from_bubble(self, bubble):
@@ -54,10 +76,18 @@ class GridBase(calliope.CalliopeBaseMixin):
     def item_from_bubble(self, bubble):
         return bubble
 
+    def illustrate_me(self):
+        self.to_bubble().illustrate_me(directory=self.output_directory)
+
+    def illustrate_start(self):
+        show_copy = self.copy_me(reset=True)
+        show_copy.name += "_start"
+        show_copy.illustrate_me()
 
     def to_bubble(self, bubble_type=None, row_bubble_type=None):
         return (bubble_type or self.to_bubble_type)(
-            *self.data.apply(lambda row: self.row_to_bubble(row, row_bubble_type), axis=1)
+            *self.data.apply(lambda row: self.row_to_bubble(row, row_bubble_type), axis=1),
+            name = "%s_%s" % (self.name, self.__class__.__name__)
             )
 
     def row_to_bubble(self, row, row_bubble_type=None):
@@ -68,10 +98,33 @@ class GridBase(calliope.CalliopeBaseMixin):
     def item_to_bubble(self, item):
         return item
 
+    def get_output_file_path(self, save_attr):
+        return self.get_output_path(
+            directory=self.output_directory, 
+            sub_directory = "data",
+            filename_suffix = "%s.%s" % (save_attr, self.version) 
+            ) + ".json"
 
-    def copy_me(self):
+    def save(self, **kwargs):
+        for save_attr in self.save_attrs:
+            attr = getattr(self, save_attr, None)
+            if attr is not None:
+                file_path = self.get_output_file_path(save_attr)
+                self.info("saved " + file_path)
+                attr.to_json(file_path, orient="records", lines=True)
+
+    def load(self, **kwargs):
+        for save_attr in self.save_attrs:
+            file_path = self.get_output_file_path(save_attr)
+            try:
+                setattr(self, save_attr, pd.read_json(file_path, orient="records", lines=True))
+            except:
+                self.warn("cannot read json file " + file_path)
+
+    def copy_me(self, reset=False):
         my_copy = copy.copy(self)
-        my_copy.init_data(data=self.data.copy())
+        data = self.start_data.copy() if reset else self.data.copy()
+        my_copy.init_data(start_data=self.start_data, data=data, reset=True)
         return my_copy
 
     def reset_tally(self):
@@ -219,30 +272,13 @@ class GridBase(calliope.CalliopeBaseMixin):
             self.tallies = best_copy.tallies # TO DO: even necessary?
             self.tally_total = best_copy.tally_total
 
-    def save(self, output_path=None):
-        for save_attr in self.save_attrs:
-            attr = getattr(self, save_attr, None)
-            if attr is not None:
-                file_path = (output_path or self.output_path) + "_" + save_attr + ".json"
-                self.info("saved " + file_path)
-                attr.to_json(file_path, orient="records", lines=True)
-
-    def load(self, output_path=None):
-        for save_attr in self.save_attrs:
-            file_path = (output_path or self.output_path) + "_" + save_attr + ".json"
-            try:
-                setattr(self, save_attr, pd.read_json(file_path, orient="records", lines=True))
-            except:
-                self.warn("cannot read json file " + file_path)
-
-
-
-    def tally_loop(self, times=9, output_path=None):
+    def tally_loop(self, times=9):
 
         # see http://stackoverflow.com/questions/11758555/python-do-something-until-keypress-or-timeout
         # for more on how this threading works...
         # cloud = self
         # cloud_type = type(self)
+        self.tally_me()
 
         def re_tally():
             T0 = time.clock()
@@ -261,7 +297,19 @@ class GridBase(calliope.CalliopeBaseMixin):
             root.quit()
             root.destroy()
 
-        k=input("Enter 't' start re-tallying, 'l' to load, 'r' to re-randomize, 's' to save, 'p' to  pdf, 'q' to quit: ")
+        k=input("""
+    ENTER:
+        't' start re-tallying, 
+        'v' to change version,
+        'l' to (re)load from file, 
+        'd' to reset data (getting start data again),
+        'r' to re-randomize, 
+        's' to save, 
+        'p' to show pdf, 
+        'o' to show pdf of original start data, 
+        '/' to show data output path, 
+        'q' to quit
+    """)
 
         if k == "t":
             
@@ -272,28 +320,46 @@ class GridBase(calliope.CalliopeBaseMixin):
             stop_event = threading.Event()
             thread.start()
             root.mainloop()
-            self.tally_loop(times, output_path)
+            self.tally_loop(times)
+
+        elif k == "v":
+            kv = input("Enter version #:")
+            self.version = int(kv)
+            self.into("set version to %s" % kv)
+            self.tally_loop(times)
 
         elif k == "l":
-            self.load(output_path)
-            # print("Loaded " + output_path)
+            self.load()
+            # print("Loaded ")
             self.tally_me()
             self.info("total tally:" + str(self.tally_total))
-            self.tally_loop(times, output_path)
+            self.tally_loop(times)
+
+        elif k == "d":
+            self.init_data(reset=True)
+            self.tally_loop(times)
 
         elif k == "r":
             self.randomize_all_columns()
             self.tally_me()
             self.info("randomized all columns... new tally is: " + str(self.tally_total))
-            self.tally_loop(times, output_path)
-
-        elif k == "p":
-            self.to_bubble().illustrate_me()
-            self.tally_loop(times, output_path)
+            self.tally_loop(times)
 
         elif k == "s":
-            self.save(output_path)
-            self.tally_loop(times, output_path)
+            self.save()
+            self.tally_loop(times)
+
+        elif k == "p":
+            self.illustrate_me()
+            self.tally_loop(times)
+
+        elif k == "o":
+            self.illustrate_start()
+            self.tally_loop(times)
+
+        elif k == r"/":
+            self.info(self.get_output_file_path("[data_attr]"))
+            self.tally_loop(times)
 
         elif k == "q":
             # do nothing to quit
@@ -301,7 +367,7 @@ class GridBase(calliope.CalliopeBaseMixin):
 
         else:
             self.warn("(invalid entry)")
-            self.tally_loop(times, output_path)
+            self.tally_loop(times)
 
     @property
     def range_rows(self):

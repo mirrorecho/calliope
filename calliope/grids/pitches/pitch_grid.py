@@ -10,19 +10,6 @@ class PitchGrid(calliope.GridBase):
     pitch_ranges = None
     # auto_move_into_ranges = False # TO DO... use this?
 
-    def __init__(self, pitch_ranges=None, **kwargs):
-        super().__init__(**kwargs)
-
-        # self.dont_touch_pitches = None # [[]] # for future use
-        self.pitch_ranges = pitch_ranges # TO DO... extrapolate last entry for total # of lines/columns
-        
-        # TO DO: re-enable auto ranges....?
-        # self.auto_move_into_ranges = self.pitch_ranges is not None
-
-        # self.octave_transpositions_allowed = True # TO DO: never used... implement?
-        self.save_attrs.extend(["pitch_ranges"])
-
-
     def move_into_ranges(self):
         if self.pitch_ranges is not None:
             num_rows, num_cols = self.pitch_ranges.shape
@@ -76,7 +63,7 @@ class PitchGrid(calliope.GridBase):
 
     @classmethod
     def row_list_from_bubble(cls, bubble):
-        return [cls.item_from_bubble(b) for b in bubble.events]
+        return [cls.item_from_bubble(b) for b in bubble.logical_ties if not b.rest]
 
     @classmethod
     def item_from_bubble(cls, bubble):

@@ -8,7 +8,7 @@ class StackedTransform(calliope.Transform):
             for line in machine:
                 # print(line)
                 stack_line = line(name=line.name + "_%s" % i )
-                for e, event in enumerate(stack_line.events):
+                for e, event in enumerate([event for event in stack_line.events if not event.rest]):
                     # TO DO... assumes that there are no chords... also may want
                     # a more generalized transpose on event / logical tie
                     event.transpose(machine.intervals[e % len(machine.intervals)][i])
