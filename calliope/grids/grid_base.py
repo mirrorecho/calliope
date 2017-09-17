@@ -110,14 +110,15 @@ class GridBase(calliope.CalliopeBaseMixin):
             attr = getattr(self, save_attr, None)
             if attr is not None:
                 file_path = self.get_output_file_path(save_attr)
+                # TO DO: consider using python's json to format the json file to be readable
+                attr.to_json(file_path, orient="split")
                 self.info("saved " + file_path)
-                attr.to_json(file_path, orient="records", lines=True)
 
     def load(self, **kwargs):
         for save_attr in self.save_attrs:
             file_path = self.get_output_file_path(save_attr)
             try:
-                setattr(self, save_attr, pd.read_json(file_path, orient="records", lines=True))
+                setattr(self, save_attr, pd.read_json(file_path, orient="split"))
             except:
                 self.warn("cannot read json file " + file_path)
 

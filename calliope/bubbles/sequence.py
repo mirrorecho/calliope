@@ -21,6 +21,9 @@ import calliope
 #                             % (sequence_bubble.name, initial_sub_item.name))
 #                 my_container.append(sub_container)
 #             return my_container
+class MatchSequence(calliope.Bubble):
+    is_simultaneous = False
+
 
 # NOTE: this implementation is slick... but all the copies might hurt performance?
 # ... try it out and see... 
