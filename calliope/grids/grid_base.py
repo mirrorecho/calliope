@@ -305,6 +305,9 @@ class GridBase(calliope.CalliopeBaseMixin):
         'l' to (re)load from file, 
         'd' to reset data (getting start data again),
         'r' to re-randomize, 
+        'r' to re-randomize, 
+        'co' to change octave of a single value
+        'cs' to manually swap 2
         's' to save, 
         'p' to show pdf, 
         'o' to show pdf of original start data, 
@@ -326,14 +329,14 @@ class GridBase(calliope.CalliopeBaseMixin):
         elif k == "v":
             kv = input("Enter version #:")
             self.version = int(kv)
-            self.into("set version to %s" % kv)
+            self.info("set version to %s" % kv)
             self.tally_loop(times)
 
         elif k == "l":
             self.load()
             # print("Loaded ")
             self.tally_me()
-            self.info("total tally:" + str(self.tally_total))
+            self.info("total tally:" + str(self.tally_tosttal))
             self.tally_loop(times)
 
         elif k == "d":
@@ -352,6 +355,58 @@ class GridBase(calliope.CalliopeBaseMixin):
 
         elif k == "p":
             self.illustrate_me()
+            self.tally_loop(times)
+
+        # TO DO AND WARNING... this ONLY applies to pitch grids
+        # NEED to be able to create actions specific to certain kinds of grids 
+        elif k == "co":
+            kr_row = input("Enter row index:")
+            kr_column = input("Enter column index:")
+            kr_octave = input("Enter octave change:")
+            try:
+                kr_row = int(kr_row)
+                kr_column = int(kr_column)
+                kr_octave = int(kr_octave)
+                current_pitch = self.data.iat[kr_row, kr_column]
+                new_pitch = current_pitch + (12 * kr_octave)
+                self.info("entered: row %s, column %s, octave change %s, current pitch is %s, new pitch will be %s" 
+                    % (kr_row, kr_column, kr_octave, current_pitch, new_pitch))
+                kco_continue = input("Enter 'c' to continue or 'x' to exit:")
+                if kco_continue == "c":
+                    self.data.iat[kr_row, kr_column] = new_pitch
+                    self.tally_me()
+                    self.info("changed octave: new tally is: %s" % self.tally_total)
+                elif kco_continue == "x":
+                    pass
+                else:
+                    self.warn("(invalid entry)")
+            except:
+                self.warn("(invalid entry)")
+            self.tally_loop(times)
+
+        # TO DO AND WARNING... this ONLY applies to pitch grids
+        # NEED to be able to create actions specific to certain kinds of grids 
+        elif k == "cs":
+            kr_row1 = input("Enter row index 1:")
+            kr_row2 = input("Enter row index 2:")
+            kr_column = input("Enter column index:")
+            try:
+                kr_row1 = int(kr_row1)
+                kr_row2 = int(kr_row2)
+                kr_column = int(kr_column)
+                self.info("entered: row1 %s, row2 %s, column %s:"
+                    % (kr_row1, kr_row2, kr_column) )
+                kco_continue = input("Enter 'c' to continue or 'x' to exit:")
+                if kco_continue == "c":
+                    self.data.iat[kr_row1, kr_column], self.data.iat[kr_row2, kr_column] = self.data.iat[kr_row2, kr_column], self.data.iat[kr_row1, kr_column]
+                    self.tally_me()
+                    self.info("swapped: new tally is: %s" % self.tally_total)
+                elif kco_continue == "x":
+                    pass
+                else:
+                    self.warn("(invalid entry)")
+            except:
+                self.warn("(invalid entry)")
             self.tally_loop(times)
 
         elif k == "o":

@@ -3,14 +3,15 @@ import calliope
 
 class PitchesThroughGrid(calliope.Transform):
     tally_apps = ()
-    version = 1
+    version = None
     pitch_ranges = None
 
     def transform_nodes(self, machine):
+        version = self.version or getattr(machine, "grid_version", 1)
         setattr(machine, "pitch_grid", calliope.PitchGrid.from_bubble(
                     machine, 
                     *self.tally_apps, 
-                    verion = self.version,
+                    verion = version,
                     pitch_ranges = self.pitch_ranges,
                     )
                 )
