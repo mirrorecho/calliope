@@ -16,9 +16,9 @@ class PitchesThroughGrid(calliope.Transform):
                     )
                 )
         for line_index, l in enumerate(machine):
-            for note_index, note in enumerate([t for t in l.logical_ties if not t.rest]):
+            for event_index, event in enumerate([e for e in l.non_rest_events]):
                 # NOTE: grid will have numpy.int64 for each pitch, but machine expects int
                 # ... change to use duck typing?
-                note.pitch = int(machine.pitch_grid.data.iat[line_index, note_index])
+                event.pitch = int(machine.pitch_grid.data.iat[line_index, event_index])
 
 

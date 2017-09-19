@@ -18,6 +18,10 @@ class LogicalTie(calliope.Machine):
     def beats(self):
         return super().beats
 
+    @property
+    def signed_beats(self):
+        return super().beats if not self.rest else 0 - super().beats 
+
     @beats.setter
     def beats(self, value):
         if value < 0:

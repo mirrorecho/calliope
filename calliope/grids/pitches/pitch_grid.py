@@ -63,7 +63,7 @@ class PitchGrid(calliope.GridBase):
 
     @classmethod
     def row_list_from_bubble(cls, bubble):
-        return [cls.item_from_bubble(b) for b in bubble.logical_ties if not b.rest]
+        return [cls.item_from_bubble(e) for e in bubble.non_rest_events]
 
     @classmethod
     def item_from_bubble(cls, bubble):

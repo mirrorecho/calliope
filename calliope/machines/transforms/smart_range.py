@@ -19,9 +19,8 @@ class SmartRange(calliope.Transform):
 
         my_range = abjad.PitchRange.from_pitches(*self.smart_range)
         
-        pitched_logical_ties = [l for l in machine.logical_ties if not l.rest]
-        pitched_logical_ties.insert(0, pitched_logical_ties[0])
+        non_rest_events = machine.non_rest_events
 
-        for previous_tie, tie in pairwise(pitched_logical_ties):
-            pitches_in_range = [p.number for p in my_range.voice_pitch_class(tie.pitch)]
-            tie.pitch = min(pitches_in_range, key=lambda x: abs(x-previous_tie.pitch) )
+        for previous_event, event in pairwise([non_rest_events[0]] + non_rest_events):
+            pitches_in_range = [p.number for p in my_range.voice_pitch_class(event.pitch)]
+            event.pitch = min(pitches_in_range, key=lambda x: abs(x-previous_event.pitch) )

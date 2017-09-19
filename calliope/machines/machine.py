@@ -44,6 +44,21 @@ class BaseMachine(calliope.TagSet):
     def events(self):
         return self.by_type(calliope.Event)
 
+    @property
+    def non_rest_events(self):
+        return [e for e in self.events if not e.rest]
+
+    @property
+    def cells(self):
+        return self.by_type(calliope.Cell)
+
+    @property
+    def phrases(self):
+        return self.by_type(calliope.Phrase)
+
+    @property
+    def logical_ties(self):
+        return self.leaves # TO CONSIDER: better to select leaves or select by type=LogicalTie???
 
 class Block(BaseMachine, calliope.SimulFragment):
 
@@ -216,10 +231,6 @@ class Machine(BaseMachine, calliope.Fragment):
         return my_music
 
     @property
-    def logical_ties(self):
-        return self.leaves
-
-    @property
     def beats(self):
         return self.ticks / self.rhythm_default_multiplier
 
@@ -227,6 +238,8 @@ class EventMachine(Machine):
     bookend_rests = ()
     get_children = None
     set_rhythm = None
+
+    # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
 
     def __init__(self, *args, **kwargs):
         rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
@@ -243,8 +256,8 @@ class EventMachine(Machine):
         if pitches:
             if pitches_skip_rests:
                 pitches = list(pitches)
-                for i,l in enumerate(self.logical_ties):
-                    if l.rest and i <= len(pitches):
+                for i,e in enumerate(self.events):
+                    if e.rest and i <= len(pitches):
                         pitches.insert(i, None)
             self.pitches = pitches
 
@@ -259,6 +272,11 @@ class EventMachine(Machine):
     def rest(self):
         return all([l.rest for l in self.logical_ties])
 
+    @rest.setter
+    def rest(self, is_rest):
+        for l in self.logical_ties:
+            l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
+
     @property
     def ticks_before(self):
         if self.children:
@@ -271,7 +289,7 @@ class EventMachine(Machine):
 
     @property
     def rhythm(self):
-        return [l.beats for l in self.logical_ties]
+        return [l.signed_beats for l in self.logical_ties]
 
     def append_rhythm(self, beats):
         # note, this is overriden on Event so that events will create a rhythm out of 
@@ -289,14 +307,18 @@ class EventMachine(Machine):
 
     @property
     def pitches(self):
-        return self.leaves
+        return (l.pitch for l in self.events)
+
+    @property
+    def logical_tie_pitches(self):
+        return (l.pitch for l in self.logical_ties)
 
     @pitches.setter
     def pitches(self, values):
-        my_length = len(self.logical_ties)
+        my_length = len(self.events)
         for i, v in enumerate(values[:my_length]):
-            self.logical_ties[i].pitch = v
-            self.logical_ties[i].rest = v is None
+            self.events[i].pitch = v
+            self.events[i].rest = v is None
 
     @property
     def first_non_rest(self):

@@ -43,6 +43,15 @@ class Bubble(calliope.Tree):
     def __mul__(self, num):
         return self.parent_type( **[self() for i in range(num)] )
 
+    def fuse(self, count):
+        # TO DO... this could be more elegant!!!
+        my_index = self.my_index
+        for c in range(count):
+            next_bubble = self.parent[my_index + c + 1]
+            self.extend(next_bubble.children)
+        # for c in range(count):
+        #     self.parent.remove(my_index + c + 1)
+
     def illustrate_me(self, 
             score_type = None,
             as_pdf = True, 
