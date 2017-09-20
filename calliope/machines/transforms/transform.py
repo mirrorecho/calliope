@@ -1,7 +1,11 @@
 import abjad
 import calliope
 
-class Transform(calliope.Tree):
+class BaseTransform(calliope.Tree):
+    pass # just for inheritance consistency
+
+class Transform(BaseTransform):
+    child_types = (BaseTransform, )
 
     def _transform_setup(self, bubble):
         self.transform_setup(bubble)

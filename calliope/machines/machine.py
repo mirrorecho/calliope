@@ -264,6 +264,11 @@ class EventMachine(Machine):
         if self.bookend_rests:
             self.add_bookend_rests(*self.bookend_rests)
 
+    def remove_empty(self):
+        for child in self:
+            if child.ticks == 0:
+                self.remove(child)
+
     @property
     def ticks(self):
         return sum([l.ticks for l in self.logical_ties])
