@@ -16,17 +16,19 @@ class Tree(TreeMixin, abjad.TreeContainer):
     original_index = None 
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
+    # can be overriden to set children based on other/special logic
+    def set_children_from_class(self, *args, **kwargs):
+        for node_name in type(self).class_sequence(): 
+            node = getattr(self, node_name)
+            self[node_name] = node
 
     def __init__(self, *args, **kwargs):
         super().__init__(args)
         self.setup(**kwargs)
+        self.set_children_from_class(*args, **kwargs)
 
         if not self.child_types:
             self.child_types = (Tree,)
-
-        for node_name in type(self).class_sequence(): 
-            node = getattr(self, node_name)
-            self[node_name] = node
 
 
     def __call__(self, name=None, **kwargs):
