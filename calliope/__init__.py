@@ -23,7 +23,7 @@ from calliope.machines.machine import BaseMachine, Block, Machine, EventMachine
 from calliope.machines.logical_tie import LogicalTie
 from calliope.machines.event import Event, RestEvent
 from calliope.machines.cell import Cell, CellBlock #, TupletCell 
-from calliope.machines.phrase import Phrase #, PhraseBlock
+from calliope.machines.phrase import Phrase, PhraseBlock
 from calliope.machines.line import Line, LineBlock
 
 # machine transforms

@@ -312,11 +312,11 @@ class EventMachine(Machine):
 
     @property
     def pitches(self):
-        return (l.pitch for l in self.events)
+        return [l.pitch for l in self.events]
 
     @property
     def logical_tie_pitches(self):
-        return (l.pitch for l in self.logical_ties)
+        return [l.pitch for l in self.logical_ties]
 
     @pitches.setter
     def pitches(self, values):
