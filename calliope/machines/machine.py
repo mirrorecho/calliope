@@ -143,10 +143,12 @@ class Machine(BaseMachine, calliope.Fragment):
                     m = abjad.mutate([note])
                     m.replace(chord)
             elif isinstance(pitch, (int, str, abjad.Pitch)):
+                # TO DO: these respell methods look to be private///
+                # invetigate further or change!!!!!
                 if respell=="flats":
-                    named_pitch = abjad.NamedPitch(pitch).respell_with_flats()
+                    named_pitch = abjad.NamedPitch(pitch)._respell_with_flats()
                 elif respell=="sharps":
-                    named_pitch = abjad.NamedPitch(pitch).respell_with_sharps()
+                    named_pitch = abjad.NamedPitch(pitch)._respell_with_sharps()
                 else:
                     named_pitch = abjad.NamedPitch(pitch)
                 for note in music_logical_tie:
