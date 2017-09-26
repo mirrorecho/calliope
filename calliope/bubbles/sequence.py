@@ -21,8 +21,8 @@ import calliope
 #                             % (sequence_bubble.name, initial_sub_item.name))
 #                 my_container.append(sub_container)
 #             return my_container
-class MatchSequence(calliope.Bubble):
-    is_simultaneous = False
+# class MatchSequence(calliope.Bubble):
+#     is_simultaneous = False
 
 
 # NOTE: this implementation is slick... but all the copies might hurt performance?
@@ -33,12 +33,24 @@ class MatchSequence(calliope.Bubble):
     def music(self, **kwargs):
         return self.get_inverted().music(**kwargs)
 
+    # def get_inverted(self):
+    #     return calliope.Bubble(
+    #         *[ calliope.Bubble( 
+    #             *[ b[c.name](name=b.name) for b in self],
+    #             name=c.name,
+    #             is_simultaneous = self.is_simultaneous
+    #             ) for c in self[0] ],
+    #         is_simultaneous = not self.is_simultaneous
+    #         )
+
+
     def get_inverted(self):
-        return calliope.Bubble(
-            *[ calliope.Bubble( 
-                *[ b[c.name](name=b.name) for b in self],
-                name=c.name,
-                is_simultaneous = self.is_simultaneous
-                ) for c in self[0] ],
-            is_simultaneous = not self.is_simultaneous
-            )
+        return_bubble = calliope.Bubble(is_simultaneous = not self.is_simultaneous)
+        for part in self[0]:
+            part_bubble = calliope.Bubble( name=part.name, is_simultaneous = self.is_simultaneous)
+            for mark in self:
+                part_bubble[mark.name] = mark[part.name](name=mark.name)
+                print(mark.name, part.name)
+            return_bubble[part.name] = part_bubble
+            # print(return_bubble[part.name])
+        return return_bubble

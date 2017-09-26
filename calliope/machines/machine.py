@@ -118,6 +118,14 @@ class Machine(BaseMachine, calliope.Fragment):
 
     def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_index, **kwargs):
         # data_logical_tie.info(data_logical_tie.parent.name)
+
+        # TO DO... THIS IS NOT THE BEST PLACE FOR THIS LOGIC... REFACTOR
+        def get_pitch_number(pitch_thingy):
+            if isinstance(pitch_thingy, int):
+                return pitch_thingy
+            else:
+                return abjad.NamedPitch(pitch_thingy).number
+
         if not data_logical_tie.rest:
             # TO DO: consider... can rests be taged????
 
@@ -127,14 +135,14 @@ class Machine(BaseMachine, calliope.Fragment):
                 pitch = event.pitch
             respell = data_logical_tie.get_respell()
             
-            # TO DO: code below is clunky... refacto
+            # TO DO: code below is clunky... refactor
             if isinstance(pitch, (list, tuple)):
                 if respell=="flats":
-                    named_pitches = [abjad.NamedPitch(p).respell_with_flats() for p in pitch]
+                    named_pitches = [abjad.NamedPitch(get_pitch_number(p))._respell_with_flats() for p in pitch]
                 elif respell=="sharps":
-                    named_pitches = [abjad.NamedPitch(p).respell_with_sharps() for p in pitch]
+                    named_pitches = [abjad.NamedPitch(get_pitch_number(p))._respell_with_sharps() for p in pitch]
                 else:
-                    named_pitches = [abjad.NamedPitch(p) for p in pitch]
+                    named_pitches = [abjad.NamedPitch(get_pitch_number(p)) for p in pitch]
                 # NOTE, decided to implement here (as opposed to in harmony machine), because want chords to be able to be implemented generally
                 for note in music_logical_tie:
                     chord = abjad.Chord()
@@ -145,12 +153,13 @@ class Machine(BaseMachine, calliope.Fragment):
             elif isinstance(pitch, (int, str, abjad.Pitch)):
                 # TO DO: these respell methods look to be private///
                 # invetigate further or change!!!!!
+                # ALSO TO DO... BUG WITH cf or bs OCTAVES! (workaround is to always convert to # first)
                 if respell=="flats":
-                    named_pitch = abjad.NamedPitch(pitch)._respell_with_flats()
+                    named_pitch = abjad.NamedPitch(get_pitch_number(pitch))._respell_with_flats()
                 elif respell=="sharps":
-                    named_pitch = abjad.NamedPitch(pitch)._respell_with_sharps()
+                    named_pitch = abjad.NamedPitch(get_pitch_number(pitch))._respell_with_sharps()
                 else:
-                    named_pitch = abjad.NamedPitch(pitch)
+                    named_pitch = abjad.NamedPitch(get_pitch_number(pitch))
                 for note in music_logical_tie:
                     note.written_pitch = named_pitch
             else:

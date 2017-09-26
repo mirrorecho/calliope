@@ -79,6 +79,7 @@ class Bubble(calliope.Tree):
             if open_pdf:
                 abjad.systemtools.IOManager.open_file(pdf_filename)
         if as_midi:
+            print("YO MIDI")
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
 

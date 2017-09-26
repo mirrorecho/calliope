@@ -25,4 +25,4 @@ def illustrate_me(
             bubble = bubble()
 
         score_type = score_type or calliope.AutoScore
-        bubble.illustrate_me(score_type=score_type, directory=calling_module_directory, filename=calling_module_name)
+        bubble.illustrate_me(score_type=score_type, directory=calling_module_directory, filename=calling_module_name, **kwargs)

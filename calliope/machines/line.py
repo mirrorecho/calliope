@@ -69,7 +69,7 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
 
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)
-        self.info("PROCESSING RESTS")
+        # self.info("PROCESSING RESTS")
         self.replace_multimeasure_rests(music)
 
 class LineBlock(calliope.Block):
