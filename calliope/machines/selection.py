@@ -12,10 +12,14 @@ class MachineSelectableMixin(object):
 
 
     def by_type_universe(self, tree_universe):
-        for tree_node in getattr(self, tree_universe):
-            yield tree_node
+        # return [t for t in getattr(self, tree_universe)]
+        # for tree_node in getattr(self, tree_universe):
+        #     yield tree_node
+        print("s")
+        return getattr(self, tree_universe)
 
     def by_type(self, *args, tree_universe="nodes"):
+        self.info( ("calling by type", args) )
         return Selection(
             select_from=self.by_type_universe(tree_universe), 
             type_args=args
@@ -41,8 +45,10 @@ class MachineSelectableMixin(object):
     def non_rest_events(self):
         return self.by_type(calliope.Event)
 
+    # TO ADD: logical_ties
 
-class Selection(calliope.CalliopeBaseMixin):
+
+class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     select_from = ()
     filter_kwargs = None
     type_args = None
@@ -53,11 +59,13 @@ class Selection(calliope.CalliopeBaseMixin):
         self.setup(**kwargs)
 
     def select_universe(self):
+        # TO DO: is this right???
         for item in self:
             for child in item:
                 yield child
 
     def by_type_universe(self, tree_universe):
+        PRINT("SYO")
         for item in self:
             for tree_node in getattr(item, tree_universe):
                 yield tree_node
@@ -75,17 +83,13 @@ class Selection(calliope.CalliopeBaseMixin):
                     return False
         return True
 
-    def get_selection(self):
-        # self.info("getting selection")
-        return [u for i,u in enumerate(self.select_from) if self.item_ok(i,u)]
+    # def get_selection(self):
+    #     # self.info("getting selection")
+    #     return [u for i,u in enumerate(self.select_from) if self.item_ok(i,u)]
 
     def __getitem__(self, arg):
         if isinstance(arg, int):
-            print(self.get_selection(), "YO ROUND1")
-            print(self.get_selection(), "YO ROUND2")
-            item = self.get_selection()[arg]
-            print(item, "HA")
-            return item
+            return next(x for i, x in enumerate(self) if i==arg)
         elif isinstance(arg, str):
             return next(x for x in self if x.name==arg)
         if isinstance(arg, slice):
@@ -117,12 +121,18 @@ class Selection(calliope.CalliopeBaseMixin):
         self.warn("copy_tree is not implemented yet!")
 
     def __iter__(self):
-        print("calling iter")
-        for x in self.get_selection():
-            yield x
+        self.info("calling iter")
+        # for x in self.get_selection():
+        #     yield x
+        for i,u in enumerate(self.select_from):
+            if self.item_ok(i,u):
+                # self.info( (i,"OK") )
+                yield u
+            # else:
+                # self.info( (i, "--") )
 
     def __len__(self):
-        return len(self.get_selection())
+        return sum(1 for x in self)
 
     def __call__(self, *args, **kwargs):
         self.filter_kwargs = {**(self.filter_kwargs or {}),  **kwargs}
@@ -158,9 +168,10 @@ class MultiSelection(Selection):
 class StarTest(MachineSelectableMixin, material_d.DStarI):
     pass
 
-s = StarTest()
+s = StarTest(name="STAR ME")
 
-c = s.cells[0]
+c = s.phrases[0]
+print(c.name)
 print(len(c))
 
 

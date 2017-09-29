@@ -38,6 +38,8 @@ e = Events(('a','b','c','d','e','f','g','h'))
 for b in e:
     print(b)
 
+for b in e:
+    print(b)
 
 
 # class SimpleScore(calliope.Score):
