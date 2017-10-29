@@ -3,7 +3,7 @@ import calliope
 
 
 # JUST FOR TESTING
-from closely.mark_d import material_d
+# from closely.mark_d import material_d
 
 class MachineSelectableMixin(object):
 
@@ -15,7 +15,6 @@ class MachineSelectableMixin(object):
         # return [t for t in getattr(self, tree_universe)]
         # for tree_node in getattr(self, tree_universe):
         #     yield tree_node
-        print("s")
         return getattr(self, tree_universe)
 
     def by_type(self, *args, tree_universe="nodes"):
@@ -42,11 +41,15 @@ class MachineSelectableMixin(object):
         return self.by_type(calliope.Event)
 
     @property
+    # TO DO... THIS NEEDS TO RETURN A SELECTION, NOT A LIST
     def non_rest_events(self):
-        return self.by_type(calliope.Event)
+        return [e for e in self.events if not e.rest]
 
-    # TO ADD: logical_ties
-
+    @property
+    # TO DO... THIS NEEDS TO RETURN A SELECTION
+    def logical_ties(self):
+        return self.leaves 
+    # TO CONSIDER: better to select leaves or select by type=LogicalTie???
 
 class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     select_from = ()
@@ -98,9 +101,11 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
             return MultiSelection(self, select_args=arg)
 
     def tag(self, *args):
-        map(lambda x: x.tag(*args), self)
+        for item in self:
+            item.tag(*args)
 
     def apply(self, func):
+        # TO DO... test... works OK?
         map(func, self)        
 
     def setattrs(self, **kwargs):
@@ -165,13 +170,12 @@ class MultiSelection(Selection):
 # class SubSelection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     
 
-class StarTest(MachineSelectableMixin, material_d.DStarI):
-    pass
+# class StarTest(MachineSelectableMixin, material_d.DStarI):
+#     pass
 
-s = StarTest(name="STAR ME")
-
-c = s.phrases[0]
-print(c.name)
-print(len(c))
+# s = StarTest(name="STAR ME")
+# s.phrases[0].cells.tag("ff")
+# s.phrases[0].non_rest_events.tag("-", ">")
+# calliope.illustrate_me(bubble=s)
 
 

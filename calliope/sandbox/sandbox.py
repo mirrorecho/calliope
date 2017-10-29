@@ -1,4 +1,4 @@
-# import abjad, calliope
+import abjad, calliope
 # # from calliope.sandbox import module_0, module_a
 
 
@@ -18,28 +18,15 @@
 #             return value
 
 
-class Events(list):
+class CellA(calliope.Cell):
+    event_i = calliope.Event(beats=1, pitch=2)
+    event_ii = calliope.Event(beats=1, pitch=4)
+    event_iii = calliope.Event(beats=0.5, pitch=5)
 
-    def __iter__(self):
-        print("CALLING ITER")
-        # return IterEvents(iter_on=self)
-        x = 0
-        while x < len(self):
-            print("while loop")
-            value = self[x]
-            x += 1 
-            yield value
-
-    def get_events(self):
-        return [y for y in self]
-
-e = Events(('a','b','c','d','e','f','g','h'))
-
-for b in e:
-    print(b)
-
-for b in e:
-    print(b)
+c = CellA()
+print( type( c.events[:2][0] )  )
+# c.events.tag(">")
+# c.illustrate_me()
 
 
 # class SimpleScore(calliope.Score):

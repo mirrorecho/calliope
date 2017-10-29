@@ -12,7 +12,7 @@ import calliope
 
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(calliope.TagSet, calliope.Tree, bubbles.LineTalea):
-class BaseMachine(calliope.TagSet):
+class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     # TO DO... create a way to automate metrical durations for workshopping/testing
     metrical_durations = None
     rhythm_default_multiplier = 8
@@ -40,25 +40,25 @@ class BaseMachine(calliope.TagSet):
 
         self.transforms_tree._transform_nodes(self)
 
-    @property
-    def events(self):
-        return self.by_type(calliope.Event)
+    # @property
+    # def events(self):
+    #     return self.by_type(calliope.Event)
 
-    @property
-    def non_rest_events(self):
-        return [e for e in self.events if not e.rest]
+    # @property
+    # def non_rest_events(self):
+    #     return [e for e in self.events if not e.rest]
 
-    @property
-    def cells(self):
-        return self.by_type(calliope.Cell)
+    # @property
+    # def cells(self):
+    #     return self.by_type(calliope.Cell)
 
-    @property
-    def phrases(self):
-        return self.by_type(calliope.Phrase)
+    # @property
+    # def phrases(self):
+    #     return self.by_type(calliope.Phrase)
 
-    @property
-    def logical_ties(self):
-        return self.leaves # TO CONSIDER: better to select leaves or select by type=LogicalTie???
+    # @property
+    # def logical_ties(self):
+    #     return self.leaves # TO CONSIDER: better to select leaves or select by type=LogicalTie???
 
 class Block(BaseMachine, calliope.SimulFragment):
 
