@@ -18,7 +18,7 @@ from calliope.bubbles.score import Score, AutoScore
 from calliope.bubbles.sequence import MatchSequence
 
 # machines selection
-from calliope.machines.selection import MachineSelectableMixin, Selection, MultiSelection
+from calliope.machines.selection import MachineSelectableMixin, Selection
 
 # machines
 from calliope.machines.machine import BaseMachine, Block, Machine, EventMachine

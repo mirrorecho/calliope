@@ -19,6 +19,25 @@ class Event(calliope.EventMachine):
 
             self[tie_name] = calliope.LogicalTie(name=tie_name, beats=beats, rest=rest, *args, **kwargs)
 
+    @property
+    def first_primary_tie(self):
+        return next(x for x in self if x.is_primary)
+
+    @property
+    def beats(self):
+        return super().beats
+
+    @property
+    # TO DO... needed?
+    def signed_beats(self):
+        return super().beats if not self.rest else 0 - super().beats 
+
+    @beats.setter
+    def beats(self, value):
+        if value < 0:
+            self.rest = True
+        self.first_primary_tie.ticks = abs(int(value * self.rhythm_default_multiplier))
+
     def append_rhythm(self, beats):
         my_tie = calliope.LogicalTie()
 

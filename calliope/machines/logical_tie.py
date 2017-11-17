@@ -5,6 +5,7 @@ class LogicalTie(calliope.Machine):
     ticks = 0
     pitch = None # if None, defaults to Event's pitch
     rest = False
+    is_primary = True # True if this logical tie is a primary one for it's parent event
 
     # def set_data(self, beats=None, pitch=None, rest=False, **kwargs):
     #     self.beats = beats

@@ -1,15 +1,11 @@
 import abjad
 import calliope
 
-
-# JUST FOR TESTING
-# from closely.mark_d import material_d
-
 class MachineSelectableMixin(object):
 
+    @property
     def select_universe(self):
         return self
-
 
     def by_type_universe(self, tree_universe):
         # return [t for t in getattr(self, tree_universe)]
@@ -18,7 +14,7 @@ class MachineSelectableMixin(object):
         return getattr(self, tree_universe)
 
     def by_type(self, *args, tree_universe="nodes"):
-        self.info( ("calling by type", args) )
+        # self.info( ("calling by type", args) )
         return Selection(
             select_from=self.by_type_universe(tree_universe), 
             type_args=args
@@ -41,26 +37,46 @@ class MachineSelectableMixin(object):
         return self.by_type(calliope.Event)
 
     @property
-    # TO DO... THIS NEEDS TO RETURN A SELECTION, NOT A LIST
     def non_rest_events(self):
-        return [e for e in self.events if not e.rest]
+        return self.by_type(calliope.Event).exclude(rest=True)
 
     @property
-    # TO DO... THIS NEEDS TO RETURN A SELECTION
+    # TO DO... consider... would this perform better by returning a selection leaves instead of 
+    # selecting by type?
     def logical_ties(self):
-        return self.leaves 
-    # TO CONSIDER: better to select leaves or select by type=LogicalTie???
+        return self.by_type(calliope.LogicalTie)
 
 class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     select_from = ()
+    select_args = None # iterable of names or indices of items
     filter_kwargs = None
-    type_args = None
+    range_args = None # iterable of ranges of indices
+    type_args = None # dictionary of attribute names/values to match
+
+    # _length = None # cached length
 
     def __init__(self, select_from, *args, **kwargs):
         super().__init__()
         self.select_from = select_from
         self.setup(**kwargs)
 
+    def cache(self):
+        # TO DO: implement cache?
+        self.warn("cache method not implemented yet")
+        pass
+
+    def exclude(self, *args, **kwargs):
+        select_args = []
+        for a in args:
+            if isinstance(a, int) and a < 0:
+                a = len(self) + a
+            select_args.append(a)
+        return ExcludeSelection(self, select_args=select_args, filter_kwargs=kwargs)
+
+    # def reset_selection(self):
+    #     self._length = None
+
+    @property
     def select_universe(self):
         # TO DO: is this right???
         for item in self:
@@ -68,41 +84,93 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
                 yield child
 
     def by_type_universe(self, tree_universe):
-        PRINT("SYO")
+        # TO DO... does this work OK????
+        print("SYO")
         for item in self:
             for tree_node in getattr(item, tree_universe):
                 yield tree_node
 
     def item_ok(self, index, item):
+        
         if self.type_args and not isinstance(item, self.type_args):
             return False
+
+        # self.info(type(item))
+        
+        if self.select_args or self.range_args:
+            arg_found = False
+            if self.select_args: 
+                if index in self.select_args or item.name in self.select_args:
+                    arg_found = True
+                    # item.info("FOUND")
+            if not arg_found and self.range_args:
+                # print(self.range_args[0])
+                # print("HAHAHAHA")
+                for r in self.range_args:
+                    if index in r:
+                        arg_found = True
+                        break
+            if not arg_found:
+                return False
+
         if self.filter_kwargs:
             for n, v in self.filter_kwargs.items():
                 try:
-                    if getattr(item, n) != v:
+                    if n[-4:] == "__in":
+                        return getattr(item, n[:-4]) in v
+                    if n[-4:] == "__lt":
+                        return getattr(item, n[:-4]) < v
+                    elif n[-4:] == "__gt":
+                        return getattr(item, n[:-4]) > v
+                    elif getattr(item, n) != v:
                         return False
                 except:
-                    self.warn("tried to filter by '%s', but this atribute doesn't exit" %s)
+                    self.warn("tried to filter by '%s', but this attribute doesn't exist" % n)
                     return False
         return True
 
-    # def get_selection(self):
-    #     # self.info("getting selection")
-    #     return [u for i,u in enumerate(self.select_from) if self.item_ok(i,u)]
-
     def __getitem__(self, arg):
+        
+        def get_range(my_slice):
+            range_start = my_slice.start
+            if range_start is None:
+                range_start = 0
+            elif range_start < 0:
+                range_start = len(self) + range_start
+            range_stop = my_slice.stop
+            if range_stop is None:
+                range_stop = len(self)
+            elif range_stop < 0:
+                range_stop = len(self) + range_stop
+            range_step = my_slice.step or 1
+            # print(range(range_start, range_stop, range_step))
+            return range(range_start, range_stop, range_step)
+
         if isinstance(arg, int):
             return next(x for i, x in enumerate(self) if i==arg)
         elif isinstance(arg, str):
             return next(x for x in self if x.name==arg)
         if isinstance(arg, slice):
-            return MultiSelection(self, select_args=(arg,))
+            return Selection(self, range_args=(get_range(arg),) )
         if isinstance(arg, tuple):
-            return MultiSelection(self, select_args=arg)
+            select_args = []
+            range_args = []
+            for a in arg:
+                if isinstance(a, slice):
+                    range_args.append( get_range(a) )
+                else:
+                    if isinstance(a, int) and a < 0:
+                        a = len(self) + a
+                    select_args.append(a)
+            return Selection(self, select_args=select_args, range_args=range_args)
 
     def tag(self, *args):
         for item in self:
             item.tag(*args)
+
+    def untag(self, *args):
+        for item in self:
+            item.untag(*args)
 
     def apply(self, func):
         # TO DO... test... works OK?
@@ -110,8 +178,8 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     def setattrs(self, **kwargs):
         for item in self:
-            for n, v in kwargs.items:
-                setattr(self, n, v)
+            for n, v in kwargs.items():
+                setattr(item, n, v)
 
     def fuse(self):
         self.warn("fuse is not implemented yet!")
@@ -120,62 +188,33 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
         self.warn("split_rhythm is not implemented yet!")
 
     def copy(self, *args, **kwargs):
+        # TO DO... this should return a selection, NOT a list
         return [item(*args, **kwargs) for item in self]
 
     def copy_tree(self, with_rests=False, *args, **kwargs):
         self.warn("copy_tree is not implemented yet!")
 
     def __iter__(self):
-        self.info("calling iter")
+        # self.info("calling iter")
         # for x in self.get_selection():
         #     yield x
         for i,u in enumerate(self.select_from):
+            # self.info( (i, self.item_ok(i,u), type(u)) )
             if self.item_ok(i,u):
-                # self.info( (i,"OK") )
                 yield u
             # else:
                 # self.info( (i, "--") )
 
     def __len__(self):
+        # self._length = self._length or sum(1 for x in self)
+        # return self._length
         return sum(1 for x in self)
 
     def __call__(self, *args, **kwargs):
-        self.filter_kwargs = {**(self.filter_kwargs or {}),  **kwargs}
-        if self.args:
-            return MultiSelection(self, select_args=args)
-        return self
+        return Selection(self, select_args=args, filter_kwargs=kwargs)
 
-class MultiSelection(Selection):
-    select_args = () # indices, names, or slices
-
-    def get_selection(self):
-        self.info("getting multi selection")
-        selected_list = []
-        for arg in self.select_args:
-            if isinstance(arg, int):
-                selected_list.append(self.select_from[arg])
-            elif isinstance(arg, str): 
-                selected_list.append(next(x for x in self.select_from if x.name==arg))
-            elif isinstance(arg, slice):
-                selected_list.extend(self.select_from[arg])
-        return selected_list
-
-    def __call__(self, *args, **kwargs):
-        self.select_args += args
-        if kwargs:
-            return Selection(self, filter_kwargs=kwargs)    
-        return self
-
-
-# class SubSelection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
-    
-
-# class StarTest(MachineSelectableMixin, material_d.DStarI):
-#     pass
-
-# s = StarTest(name="STAR ME")
-# s.phrases[0].cells.tag("ff")
-# s.phrases[0].non_rest_events.tag("-", ">")
-# calliope.illustrate_me(bubble=s)
+class ExcludeSelection(Selection):
+    def item_ok(self, index, item):
+        return not(super().item_ok(index, item))
 
 

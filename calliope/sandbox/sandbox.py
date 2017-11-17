@@ -18,16 +18,38 @@ import abjad, calliope
 #             return value
 
 
-class CellA(calliope.Cell):
-    event_i = calliope.Event(beats=1, pitch=2)
-    event_ii = calliope.Event(beats=1, pitch=4)
-    event_iii = calliope.Event(beats=0.5, pitch=5)
+class PhraseI(calliope.Phrase):
+    class CellA(calliope.Cell):
+        set_rhythm =  (1, 1, 0.5, 0.5)
+        set_pitches = (2, 4, 5,   7)
+    class CellB(calliope.Cell):
+        set_rhythm =  (2, 2, 0.25, 0.25, 0.5)
+        set_pitches = (2, 4, 5,    7,    9)
+    class CellC(calliope.Cell):
+        set_rhythm =  (1, -1, 1, -1, 1)
+        set_pitches = (2, None, 5, None, 9)
 
-c = CellA()
-print( type( c.events[:2][0] )  )
-# c.events.tag(">")
-# c.illustrate_me()
 
+p = PhraseI()
+
+# p.non_rest_events.setattrs(beats=4)
+# print( len(c.events["event_i", "sdfsfdsdfsdf", "event_ii"]) )
+# c.events[:1].tag(">")
+special_events = p.events[2:-2].exclude(1)
+special_events.tag(">")
+# special_events(pitch=4).tag(">")
+special_events.tag(".")
+special_events.exclude(0,2,3,-1).untag(".")
+
+# print(len(p.cells[:-1].events))
+# special_events[0,1,-1].tag(">")
+# special_events[0,1].untag(">")
+# p.cells[:-1].events
+# p.events[1,2,-1].tag("f")
+
+# print( type( p.select(name__in=("CellA", "CellC"))[1] ) )
+
+p.illustrate_me()
 
 # class SimpleScore(calliope.Score):
 

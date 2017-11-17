@@ -249,12 +249,13 @@ class EventMachine(Machine):
     bookend_rests = ()
     get_children = None
     set_rhythm = None
+    set_pitches = None
 
     # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
 
     def __init__(self, *args, **kwargs):
         rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
-        pitches = kwargs.pop("pitches", None)
+        pitches = kwargs.pop("pitches", None) or self.set_pitches
         pitches_skip_rests = kwargs.pop("pitches_skip_rests", False)
         super().__init__(*args, **kwargs)
 
