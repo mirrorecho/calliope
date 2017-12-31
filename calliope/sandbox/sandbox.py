@@ -2,44 +2,45 @@ import abjad, calliope
 # # from calliope.sandbox import module_0, module_a
 
 
-# class IterEvents(object):
-#     iter_on = None
-#     curr = 0
-
-#     def __init__(self, iter_on):
-#         self.iter_on = iter_on
-
-#     def __next__(self):
-#         if len(self.iter_on) <= self.curr:
-#             raise StopIteration
-#         else:
-#             value = self.iter_on[self.curr]
-#             self.curr += 1 
-#             return value
-
+class CellA(calliope.Cell):
+    set_rhythm =  (1, 1, 0.5, 0.5)
+    set_pitches = (2, 4, 5,   7)
+class CellB(calliope.Cell):
+    set_rhythm =  (2, 2, 0.25, 0.25, 0.5)
+    set_pitches = (2, 4, 5,    7,    9)
+class CellC(calliope.Cell):
+    set_rhythm =  (1, -1, 1, -1, 1)
+    set_pitches = (2, None, 5, None, 9)
+class CellD(CellC):
+    set_pitches = (1, None, 1, None, 1)
 
 class PhraseI(calliope.Phrase):
-    class CellA(calliope.Cell):
-        set_rhythm =  (1, 1, 0.5, 0.5)
-        set_pitches = (2, 4, 5,   7)
-    class CellB(calliope.Cell):
-        set_rhythm =  (2, 2, 0.25, 0.25, 0.5)
-        set_pitches = (2, 4, 5,    7,    9)
-    class CellC(calliope.Cell):
-        set_rhythm =  (1, -1, 1, -1, 1)
-        set_pitches = (2, None, 5, None, 9)
+    cell_a = CellA
+    cell_b = CellB
+    cell_c = CellC
+    cell_c1 = CellC
+    cell_d = CellD
 
 
 p = PhraseI()
+p.cells[0].non_rest_events.tag(".", ">")
 
-# p.non_rest_events.setattrs(beats=4)
-# print( len(c.events["event_i", "sdfsfdsdfsdf", "event_ii"]) )
-# c.events[:1].tag(">")
-special_events = p.events[2:-2].exclude(1)
-special_events.tag(">")
-# special_events(pitch=4).tag(">")
-special_events.tag(".")
-special_events.exclude(0,2,3,-1).untag(".")
+# p.non_rest_events[1].pitch = 22
+
+p.illustrate_me()
+
+# print(p.events.reverse().as_list())
+
+# print(dir(p))
+
+# # p.non_rest_events.setattrs(beats=4)
+# # print( len(c.events["event_i", "sdfsfdsdfsdf", "event_ii"]) )
+# # c.events[:1].tag(">")
+# special_events = p.events[2:-2].exclude(1)
+# # special_events.tag(">")
+# special_events.exclude(pitch=5)(pitch__lt=8).tag(">")
+# special_events.tag(".")
+# special_events.exclude(0,2,3,-1).untag(".")
 
 # print(len(p.cells[:-1].events))
 # special_events[0,1,-1].tag(">")
@@ -49,7 +50,7 @@ special_events.exclude(0,2,3,-1).untag(".")
 
 # print( type( p.select(name__in=("CellA", "CellC"))[1] ) )
 
-p.illustrate_me()
+# print(p["CellA"])
 
 # class SimpleScore(calliope.Score):
 

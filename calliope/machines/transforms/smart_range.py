@@ -3,7 +3,7 @@ import calliope
 
 class SmartRange(calliope.Transform):
     smart_range = (0,24)
-    # NOTE: only works if
+    # NOTE: only works if...?
 
     def __init__(self, *args, **kwargs):
         self.smart_range = args or self.smart_range
@@ -19,8 +19,8 @@ class SmartRange(calliope.Transform):
 
         my_range = abjad.PitchRange.from_pitches(*self.smart_range)
         
-        non_rest_events = machine.non_rest_events
+        non_rest_list = machine.non_rest_events.as_list()
 
-        for previous_event, event in pairwise([non_rest_events[0]] + non_rest_events):
+        for previous_event, event in pairwise([non_rest_list[0]] + non_rest_list):
             pitches_in_range = [p.number for p in my_range.voice_pitch_class(event.pitch)]
             event.pitch = min(pitches_in_range, key=lambda x: abs(x-previous_event.pitch) )

@@ -17,11 +17,11 @@ class Bubble(calliope.Tree):
     # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the abjad TreeContainer
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         if not self.parent_type:
             self.parent_type = Bubble
         if not self.child_types:
             self.child_types = (Bubble,)
+        super().__init__(*args, **kwargs)
 
     # # TO DO: is this the best place for mapping???
     # def map_to(self, *args, **kwargs):
@@ -37,6 +37,15 @@ class Bubble(calliope.Tree):
 
     # TO DO... this implementation of add/mul creates odd nested containers... rethink
     # Could also conflict with abjad tree structures
+
+    def _str_params(self):
+        return ""
+
+    def __repr__(self):
+        return repr(type(self)) + "(" + self._str_params() + ")"
+        # return "calliope.LogicalTie(pitch={0}, beats={1})".format(self.pitch, self.beats)
+
+
     def __add__(self, other):
         return self.parent_type(self(), other)
 

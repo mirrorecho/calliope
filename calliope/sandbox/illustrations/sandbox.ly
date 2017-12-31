@@ -1,4 +1,4 @@
-% 2017-11-16 23:23
+% 2017-12-13 23:54
 
 \version "2.19.54"
 \language "english"
@@ -11,21 +11,31 @@
 
 \score {
     {
-        d'4
-        e'4
+        d'4 -\accent -\staccato
+        e'4 -\accent -\staccato
         f'8 -\accent -\staccato [
-        g'8 ]
-        d'4 -\accent ~
+        g'8 -\accent -\staccato ]
+        d'4 ~
         d'4
-        e'2 -\accent -\staccato
-        f'16 -\accent -\staccato [
-        g'16 -\accent
-        a'8 -\accent ]
-        d'4 -\accent
+        e'2
+        f'16 [
+        g'16
+        a'8 ]
+        d'4
         r4
-        f'4 -\accent -\staccato
+        f'4
         r4
         a'4
-        r2.
+        d'4
+        r4
+        f'4
+        r4
+        a'4
+        cs'4
+        r4
+        cs'4
+        r4
+        cs'4
+        r4
     }
 }

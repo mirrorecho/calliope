@@ -23,6 +23,7 @@ class Tree(TreeMixin, abjad.TreeContainer):
             self[node_name] = node
 
     def __init__(self, *args, **kwargs):
+        # print(args)
         super().__init__(args)
         self.setup(**kwargs)
         self.set_children_from_class(*args, **kwargs)
@@ -132,11 +133,11 @@ class Tree(TreeMixin, abjad.TreeContainer):
         # for child in self.children:
         #     new_self.append(child.copy())
 
-    # TO DO... used? depreciate?
-    def index_children(self):
-        for i, child in enumerate(self.children):
-            child.original_index = i
-            child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
+    # # TO DO... delete?
+    # def index_children(self):
+    #     for i, child in enumerate(self.children):
+    #         child.original_index = i
+    #         child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
 
 
 #     def __str__(self):

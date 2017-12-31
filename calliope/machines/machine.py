@@ -17,6 +17,7 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     metrical_durations = None
     rhythm_default_multiplier = 8
     rhythm_denominator = 32
+    set_name = None
     # TO DO ... implement default meter here...
 
     def __init__(self, *args, **kwargs):
@@ -26,7 +27,14 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
             self.transforms_tree[transform_name] = transform_node
         
         self.transforms_tree._transform_setup(self)
+
+        # base class Fragment takes first argument to be music content, if
+        # first argment a string... overridden here to represent name of machine instead.
+        if len(args) > 0 and type(args[0]) is str:
+            self.set_name = args[0]
+            args = args[1:]
         super().__init__(*args, **kwargs)
+        self.name = self.set_name
 
         # NOTE: since Machine overrides the process_music method,
         # these are implemented here as tags for consinstency with base Fragment method
@@ -39,26 +47,6 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
             self.tag(self.bar_line)
 
         self.transforms_tree._transform_nodes(self)
-
-    # @property
-    # def events(self):
-    #     return self.by_type(calliope.Event)
-
-    # @property
-    # def non_rest_events(self):
-    #     return [e for e in self.events if not e.rest]
-
-    # @property
-    # def cells(self):
-    #     return self.by_type(calliope.Cell)
-
-    # @property
-    # def phrases(self):
-    #     return self.by_type(calliope.Phrase)
-
-    # @property
-    # def logical_ties(self):
-    #     return self.leaves # TO CONSIDER: better to select leaves or select by type=LogicalTie???
 
 class Block(BaseMachine, calliope.SimulFragment):
 
@@ -199,7 +187,6 @@ class Machine(BaseMachine, calliope.Fragment):
                             else:
                                 abjad.attach(attachment, music[music_leaf_index])
 
-
     def get_talea(self):
         return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(append_rest=True), self.rhythm_denominator)
 
@@ -247,7 +234,7 @@ class Machine(BaseMachine, calliope.Fragment):
 
 class EventMachine(Machine):
     bookend_rests = ()
-    get_children = None
+    # get_children = None # TO DO: use? or remove?
     set_rhythm = None
     set_pitches = None
 
@@ -259,8 +246,9 @@ class EventMachine(Machine):
         pitches_skip_rests = kwargs.pop("pitches_skip_rests", False)
         super().__init__(*args, **kwargs)
 
-        if self.get_children:
-            self.extend( self.get_children() )
+        # TO DO: use? or remove?
+        # if self.get_children:
+        #     self.extend( self.get_children() )
 
         if rhythm:
             self.rhythm = rhythm
@@ -345,7 +333,7 @@ class EventMachine(Machine):
 
     @property
     def last_non_rest(self):
-        for l in self.logical_ties[::-1]:
+        for l in reversed(self.logical_ties):
             if not l.rest:
                 return l
 
@@ -379,7 +367,6 @@ class EventMachine(Machine):
             first_event = self.logical_ties[0].parent
             first_event.insert(0, calliope.LogicalTie(rest=True, beats=beats_before))
         if beats_after > 0:
-            # print(self.logical_ties)
             last_event = self.logical_ties[-1].parent
             last_event.append(calliope.LogicalTie(rest=True, beats=beats_after))
 

@@ -131,38 +131,49 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     def __getitem__(self, arg):
         
-        def get_range(my_slice):
-            range_start = my_slice.start
-            if range_start is None:
-                range_start = 0
-            elif range_start < 0:
-                range_start = len(self) + range_start
-            range_stop = my_slice.stop
-            if range_stop is None:
-                range_stop = len(self)
-            elif range_stop < 0:
-                range_stop = len(self) + range_stop
-            range_step = my_slice.step or 1
-            # print(range(range_start, range_stop, range_step))
-            return range(range_start, range_stop, range_step)
+        def get_index(num):
+            """
+            returns actual positive index for negative indexes, based on selection length
+            """
+            return len(self) + num if num < 0 else num
 
-        if isinstance(arg, int):
-            return next(x for i, x in enumerate(self) if i==arg)
-        elif isinstance(arg, str):
-            return next(x for x in self if x.name==arg)
-        if isinstance(arg, slice):
-            return Selection(self, range_args=(get_range(arg),) )
-        if isinstance(arg, tuple):
-            select_args = []
-            range_args = []
-            for a in arg:
-                if isinstance(a, slice):
-                    range_args.append( get_range(a) )
-                else:
-                    if isinstance(a, int) and a < 0:
-                        a = len(self) + a
-                    select_args.append(a)
-            return Selection(self, select_args=select_args, range_args=range_args)
+        try:
+            def get_range(my_slice):
+                range_start = my_slice.start
+                if range_start is None:
+                    range_start = 0
+                range_stop = my_slice.stop
+                if range_stop is None:
+                    range_stop = len(self)
+                range_step = my_slice.step or 1
+                if range_step < 0:
+                    self.warn("Slicing with negative step not supported... beware of unexpected results! Use reversed() instead.")
+                return range(get_index(range_start), get_index(range_stop), range_step)
+
+            if isinstance(arg, int):
+                my_index = get_index(arg)
+                return next(x for i, x in enumerate(self) if i==my_index)
+            elif isinstance(arg, str):
+                return next(x for x in self if x.name==arg)
+            if isinstance(arg, slice):
+                return Selection(self, range_args=(get_range(arg),) )
+            if isinstance(arg, tuple):
+                select_args = []
+                range_args = []
+                for a in arg:
+                    if isinstance(a, slice):
+                        range_args.append( get_range(a) )
+                    else:
+                        if isinstance(a, int):
+                            a = get_index(a)
+                        select_args.append(a)
+                return Selection(self, select_args=select_args, range_args=range_args)
+        except StopIteration as ex:
+            raise KeyError("%s not in selection" % arg) from ex
+
+    @property            
+    def as_reversed(self):
+        return Selection( reversed(self) )
 
     def tag(self, *args):
         for item in self:
@@ -193,6 +204,9 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     def copy_tree(self, with_rests=False, *args, **kwargs):
         self.warn("copy_tree is not implemented yet!")
+
+    def as_list(self):
+        return [x for x in self]
 
     def __iter__(self):
         # self.info("calling iter")
