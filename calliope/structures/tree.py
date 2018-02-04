@@ -24,7 +24,7 @@ class Tree(TreeMixin, abjad.TreeContainer):
 
     def __init__(self, *args, **kwargs):
         # print(args)
-        super().__init__(args)
+        super().__init__(args) # TO DO... ??? WTF with args?
         self.setup(**kwargs)
         self.set_children_from_class(*args, **kwargs)
 

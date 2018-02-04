@@ -92,12 +92,15 @@ class Bubble(calliope.Tree):
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
 
-    def music_container(self, **kwargs):
+    def music_container(self, *args, **kwargs):
         if self.is_simultaneous is not None:
             kwargs["is_simultaneous"] = self.is_simultaneous
         if self.context_name is not None:
             kwargs["context_name"] = self.context_name
-        return self.container_type(name=self.name, **kwargs)
+        if self.name:
+            kwargs["name"] = self.name
+        return self.container_type(*args, **kwargs)
+
 
     def ly(self):
         return format(self.blow())
