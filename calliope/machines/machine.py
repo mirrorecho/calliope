@@ -34,7 +34,8 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
             self.set_name = args[0]
             args = args[1:]
         super().__init__(*args, **kwargs)
-        self.name = self.set_name
+        if self.set_name:
+            self.name = self.set_name
 
         # NOTE: since Machine overrides the process_music method,
         # these are implemented here as tags for consinstency with base Fragment method

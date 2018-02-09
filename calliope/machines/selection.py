@@ -46,19 +46,34 @@ class MachineSelectableMixin(object):
     def logical_ties(self):
         return self.by_type(calliope.LogicalTie)
 
+    # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
+    # not currently working...
+    def select_with(self, selection):
+        selection.innermost_selection.select_from = self
+        return selection
+
+
 class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     select_from = ()
     select_args = None # iterable of names or indices of items
-    filter_kwargs = None
+    filter_kwargs = None # dictionary of attribute names/values to match
     range_args = None # iterable of ranges of indices
-    type_args = None # dictionary of attribute names/values to match
+    type_args = None # iterable of types to match
 
-    # _length = None # cached length
+    # _length = None # cached length?
 
-    def __init__(self, select_from, *args, **kwargs):
+    def __init__(self, select_from=(), *args, **kwargs):
         super().__init__()
         self.select_from = select_from
         self.setup(**kwargs)
+
+    # TO DO... consider if useful:
+    # @property
+    # def innermost_selection(self):
+    #     if isinstance(self.select_from, Selection):
+    #         return self.select_from.innermost_selection
+    #     else:
+    #         return self
 
     def cache(self):
         # TO DO: implement cache?
@@ -125,7 +140,7 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
                     elif getattr(item, n) != v:
                         return False
                 except:
-                    self.warn("tried to filter by '%s', but this attribute doesn't exist" % n)
+                    self.warn("tried to filter by '%s', but this attribute doesn't exist or invalid operator" % n)
                     return False
         return True
 
@@ -199,8 +214,7 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
         self.warn("split_rhythm is not implemented yet!")
 
     def copy(self, *args, **kwargs):
-        # TO DO... this should return a selection, NOT a list
-        return [item(*args, **kwargs) for item in self]
+        return Selection([item(*args, **kwargs) for item in self])
 
     def copy_tree(self, with_rests=False, *args, **kwargs):
         self.warn("copy_tree is not implemented yet!")

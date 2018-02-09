@@ -11,7 +11,7 @@ class PitchesThroughGrid(calliope.Transform):
         setattr(machine, "pitch_grid", calliope.PitchGrid.from_bubble(
                     machine, 
                     *self.tally_apps, 
-                    verion = version,
+                    version = version,
                     pitch_ranges = self.pitch_ranges,
                     )
                 )
