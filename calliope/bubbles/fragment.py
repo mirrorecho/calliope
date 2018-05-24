@@ -44,8 +44,8 @@ class Fragment(calliope.Bubble):
             # if self.transpose:
             #     abjad.mutate(music).transpose(self.transpose)
 
-            if self.respell:
-                tools.respell(music, self.respell)
+            # if self.respell:
+            #     tools.respell(music, self.respell)
 
             if self.time_signature:
                 # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?

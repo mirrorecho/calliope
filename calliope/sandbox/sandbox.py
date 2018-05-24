@@ -23,7 +23,9 @@ class PhraseI(calliope.Phrase):
 
 
 p = PhraseI()
-p.cells[0].non_rest_events.tag(".", ">")
+p.cells[0,1].non_rest_events.tag(".", ">")
+
+p.events[2,3].non_rest_events.untag(">")
 
 # p.non_rest_events[1].pitch = 22
 
