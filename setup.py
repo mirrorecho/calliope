@@ -1,8 +1,9 @@
 from distutils.core import setup
 
 install_requires = [
-    'abjad',
-    'pandas',
+    'abjad>=2.21',
+    'pandas>=0.23',
+    'jupyter>=1.0',
     ]
 
 def main():
@@ -13,7 +14,7 @@ def main():
         name='calliope',
         packages=('calliope',),
         url='https://github.com/mirrorecho/calliope/',
-        version='2.2',
+        version='3.0',
         zip_safe=False,
         )
 
