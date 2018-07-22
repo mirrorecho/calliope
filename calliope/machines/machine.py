@@ -16,6 +16,7 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     use_child_metrical_durations = False
     metrical_durations = None
     meter = None
+    metrical_offset = 0
     rhythm_default_multiplier = 8 # TO DO: confusing... thank of ticks per beat... instead...
     rhythm_denominator = 32
     set_name = None

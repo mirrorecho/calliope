@@ -64,8 +64,8 @@ m = abjad.Meter('''(4/4 (
 
 class TestMe(calliope.Line):
     meter = m
-    # metrical_durations = ( (4,4), )
-    set_rhythm = (0.5, 0.5, 3, 4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
+    set_rhythm = (1, 0.5, 3, 4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
+    time_signature = (3,4)
 
 t = TestMe()
 t.illustrate_me()
