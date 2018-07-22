@@ -13,9 +13,10 @@ import calliope
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(calliope.TagSet, calliope.Tree, bubbles.LineTalea):
 class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
-    # TO DO... create a way to automate metrical durations for workshopping/testing
+    use_child_metrical_durations = False
     metrical_durations = None
-    rhythm_default_multiplier = 8
+    meter = None
+    rhythm_default_multiplier = 8 # TO DO: confusing... thank of ticks per beat... instead...
     rhythm_denominator = 32
     set_name = None
     # TO DO ... implement default meter here...
@@ -51,7 +52,7 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
 
 class Block(BaseMachine, calliope.SimulFragment):
 
-    def comp(self): #????????
+    def comp(self): #TO DO ????????
         pass
 
     @property
@@ -63,7 +64,72 @@ class Machine(BaseMachine, calliope.Fragment):
 
     # TO DO... AUTO MAKE THIS NOT HAVE TO BE 4/4... also, nested for measures/beaming??
     def get_metrical_durations(self):
-        return self.metrical_durations or ( (4,4), ) * math.ceil(self.beats / 4)
+
+        if self.metrical_durations:
+            return self.metrical_durations
+        
+        durations = []
+
+        if self.use_child_metrical_durations:
+            # TO DO... need to test this! (and probably could be a 1-liner)
+            for c in self:
+                my_durations.extend(c.get_metrical_durations())
+            return durations
+        else:
+            meter = getattr(self, "meter", calliope.meters.METER_4_4)
+
+            def node_ticks(node):
+                return (node.duration.numerator / node.duration.denominator) * self.rhythm_denominator
+
+            def next_sibling_or_aunt(node):
+                rel_node = node.root
+                graph_order = node.graph_order
+                ancestor_index = -1
+                while node.parent is not None:
+                    node = node.parent
+                    sibling_index = graph_order[ancestor_index] + 1
+                    if len(node) > sibling_index:
+                        rel_node = node[sibling_index]
+                        break
+                    ancestor_index -= 1
+                return rel_node
+
+            # TO DO CONSIDER... use a single instance of abjad.Meter in meters library?
+            current_node = abjad.Meter(meter).root_node
+            meter_ticker = 0
+            logical_tie_ticker = 0
+
+            """ LOCIG BELOW IS:
+
+            - REPEAT WHILE CURRENT NODE STARTS BEFORE END OF LT
+
+                - while current node ends after lt and able to sub-divide, then sub-divide
+                
+                - add current node
+                
+                - current node moves to next sibling or next aunt or root
+
+            - MOVE TO NEXT LT
+
+            """
+
+            for logical_tie in self.logical_ties:
+
+                while meter_ticker < logical_tie_ticker + abs(logical_tie.ticks): # abs necessary?
+
+                    while meter_ticker + node_ticks(current_node) > logical_tie_ticker + abs(logical_tie.ticks) \
+                            and isinstance(current_node, abjad.rhythmtreetools.RhythmTreeContainer):
+                        current_node = current_node[0]
+
+                    durations.append(current_node.duration.pair)
+                    meter_ticker += node_ticks(current_node)               
+
+                    current_node = next_sibling_or_aunt(current_node)
+
+                logical_tie_ticker += abs(logical_tie.ticks) # abs necessary?
+
+        self.info(durations)
+        return durations
 
     def get_metrical_duration_ticks(self):
         """
@@ -189,7 +255,9 @@ class Machine(BaseMachine, calliope.Fragment):
                                 abjad.attach(attachment, music[music_leaf_index])
 
     def get_talea(self):
-        return abjad.rhythmmakertools.Talea(self.get_signed_ticks_list(append_rest=True), self.rhythm_denominator)
+        return abjad.rhythmmakertools.Talea(
+            self.get_signed_ticks_list(append_rest=True), 
+            self.rhythm_denominator)
 
     def get_rhythm_maker(self):
         return abjad.rhythmmakertools.TaleaRhythmMaker(
@@ -234,6 +302,8 @@ class Machine(BaseMachine, calliope.Fragment):
         return self.ticks / self.rhythm_default_multiplier
 
 class EventMachine(Machine):
+    # TO DO... move to separate module, maybe rename...
+
     bookend_rests = ()
     # get_children = None # TO DO: use? or remove?
     set_rhythm = None

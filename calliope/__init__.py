@@ -48,3 +48,6 @@ from calliope.grids.pitches.tally_circle_of_fifths_range import TallyCircleOfFif
 from calliope.grids.pitches.tally_melodic_intervals import TallyMelodicIntervals
 from calliope.grids.pitches.tally_parallel_intervals import TallyParallelIntervals
 from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
+
+# libraries
+from calliope.libraries import meters

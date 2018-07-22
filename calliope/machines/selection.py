@@ -20,9 +20,14 @@ class MachineSelectableMixin(object):
             type_args=args
             )
 
-    @property
-    def select(self):
-        return Selection(self.select_universe)    
+    # TO CONSIDER
+    # @property
+    # def beats(self):
+    #     return self._beats
+
+    # @property
+    # def measures(self):
+    #     return None
 
     @property
     def phrases(self):
@@ -78,7 +83,6 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     def cache(self):
         # TO DO: implement cache?
         self.warn("cache method not implemented yet")
-        pass
 
     def exclude(self, *args, **kwargs):
         select_args = []
@@ -90,6 +94,10 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     # def reset_selection(self):
     #     self._length = None
+
+    def insert(self, index, new_item):
+        item = self[index]
+        item.parent.insert(item.my_index, new_item) 
 
     @property
     def select_universe(self):

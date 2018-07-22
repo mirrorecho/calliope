@@ -12,6 +12,8 @@ class LogicalTie(calliope.Machine):
     #     self.pitch = pitch
     #     self.rest = rest
 
+    # TO DO: consider... force logical tie ticks to be positive integers?
+
     def get_signed_ticks_list(self, **kwargs):
         return [self.ticks if not self.rest else 0 - self.ticks]
 

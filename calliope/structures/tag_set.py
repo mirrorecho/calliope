@@ -12,7 +12,7 @@ class TagSet(object):
     slurs_inventory = set(("(", "((")) # note... double parens could be used to indicate larger phrasing slur
     hairpins_inventory = set( ("\<","\>") ) # note... may not be needed
 
-    clefs_inventory = set( ("treble", "alto", "bass", "treble^8", "bass_8", "tenor", "bass^15", "percussion") )
+    clefs_inventory = set( ("treble", "alto", "bass", "treble^8", "bass_8", "soprano", "tenor", "bass^15", "percussion") )
     
     # TO DO: add more bar lines?
     bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ) )

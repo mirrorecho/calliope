@@ -1,6 +1,6 @@
-% 2018-05-08 23:50
+% 2018-07-22 13:22
 
-\version "2.19.54"
+\version "2.18.2"
 \language "english"
 
 \header {}
@@ -11,31 +11,36 @@
 
 \score {
     {
-        d'4 -\accent -\staccato
-        e'4 -\accent -\staccato
-        f'8 -\staccato [
-        g'8 -\staccato ]
-        d'4 -\accent -\staccato ~
-        d'4
-        e'2 -\accent -\staccato
-        f'16 -\accent -\staccato [
-        g'16 -\accent -\staccato
-        a'8 -\accent -\staccato ]
-        d'4
-        r4
-        f'4
-        r4
-        a'4
-        d'4
-        r4
-        f'4
-        r4
-        a'4
-        cs'4
-        r4
-        cs'4
-        r4
-        cs'4
-        r4
+        \accidentalStyle modern-cautionary
+        c'8 [
+        c'8 ]
+        c'4 ~
+        c'2
+        c'1
+        c'2 ~
+        c'4
+        c'8 [
+        c'8 ]
+        c'1
+        c'8. [
+        c'16 ~ ]
+        c'4 ~
+        c'2 ~
+        c'1 ~
+        c'8 [
+        c'8 ~ ]
+        c'4 ~
+        c'4 ~
+        c'8 [
+        c'8 ~ ]
+        c'1 ~
+        c'1 ~
+        c'8 [
+        c'8 ]
+        c'8 [
+        c'8 ~ ]
+        c'4 ~
+        c'8 [
+        r8 ]
     }
 }
