@@ -23,18 +23,6 @@ class Bubble(calliope.Tree):
             self.child_types = (Bubble,)
         super().__init__(*args, **kwargs)
 
-    # # TO DO: is this the best place for mapping???
-    # def map_to(self, *args, **kwargs):
-    #     # TO DO... IMPLEMENT MORE FULLY
-    #     bubble_type = args[0]
-    #     if type(args[1]) is calliope.Mapping:
-    #         my_mapping = args[1]
-    #     return bubble_type( *my_mapping.map_root.map_bubble(self, as_copy=True) )
-
-    # def map_filter(self, *args, **kwargs):
-    #     if args[0] is Mapping:
-    #         my_mapping = args[0]
-
     # TO DO... this implementation of add/mul creates odd nested containers... rethink
     # Could also conflict with abjad tree structures
 
@@ -44,7 +32,6 @@ class Bubble(calliope.Tree):
     def __repr__(self):
         return repr(type(self)) + "(" + self._str_params() + ")"
         # return "calliope.LogicalTie(pitch={0}, beats={1})".format(self.pitch, self.beats)
-
 
     def __add__(self, other):
         return self.parent_type(self(), other)
