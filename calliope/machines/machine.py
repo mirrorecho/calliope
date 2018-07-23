@@ -16,10 +16,11 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     use_child_metrical_durations = False
     metrical_durations = None
     meter = None
-    metrical_offset = 0
     rhythm_default_multiplier = 8 # TO DO: confusing... thank of ticks per beat... instead...
     rhythm_denominator = 32
     set_name = None
+    defined_length = None # pre-determined length in beats, will padd rests at end if needed
+
     # TO DO ... implement default meter here...
 
     def __init__(self, *args, **kwargs):
@@ -38,16 +39,6 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
         super().__init__(*args, **kwargs)
         if self.set_name:
             self.name = self.set_name
-
-        # NOTE: since Machine overrides the process_music method,
-        # these are implemented here as tags for consinstency with base Fragment method
-        if self.time_signature:
-            self.tag("\\numericTimeSignature")
-            self.tag("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]))
-        if self.clef:
-            self.tag(self.clef)
-        if self.bar_line:
-            self.tag(self.bar_line)
 
         self.transforms_tree._transform_nodes(self)
 
@@ -77,7 +68,7 @@ class Machine(BaseMachine, calliope.Fragment):
                 my_durations.extend(c.get_metrical_durations())
             return durations
         else:
-            meter = getattr(self, "meter", calliope.meters.METER_4_4)
+            meter = self.meter or calliope.meters.METER_4_4
 
             def node_ticks(node):
                 return (node.duration.numerator / node.duration.denominator) * self.rhythm_denominator
@@ -97,47 +88,39 @@ class Machine(BaseMachine, calliope.Fragment):
 
             # TO DO CONSIDER... use a single instance of abjad.Meter in meters library?
             current_node = abjad.Meter(meter).root_node
+            
+            if self.pickup:
+                # if there's a pickup, try to match metrical node with the pickup...
+                pickup_pair = (1, int((1 / self.pickup) * self.rhythm_denominator / self.rhythm_default_multiplier))
+                current_node = next((n for n in reversed(current_node.nodes) if n.duration.pair == pickup_pair), current_node)
+
             meter_ticker = 0
             logical_tie_ticker = 0
 
-            """ LOCIG BELOW IS:
-
+            """ LOGIC BELOW IS:
             - REPEAT WHILE CURRENT NODE STARTS BEFORE END OF LT
-
                 - while current node ends after lt and able to sub-divide, then sub-divide
-                
                 - add current node
-                
                 - current node moves to next sibling or next aunt or root
-
             - MOVE TO NEXT LT
-
             """
 
-            for logical_tie in self.logical_ties:
+            for ticks in self.get_signed_ticks_list():
 
-                while meter_ticker < logical_tie_ticker + abs(logical_tie.ticks): # abs necessary?
+                while meter_ticker < logical_tie_ticker + abs(ticks):
 
-                    while meter_ticker + node_ticks(current_node) > logical_tie_ticker + abs(logical_tie.ticks) \
+                    while meter_ticker + node_ticks(current_node) > logical_tie_ticker + abs(ticks) \
                             and isinstance(current_node, abjad.rhythmtreetools.RhythmTreeContainer):
                         current_node = current_node[0]
 
                     durations.append(current_node.duration.pair)
                     meter_ticker += node_ticks(current_node)               
-
                     current_node = next_sibling_or_aunt(current_node)
 
-                logical_tie_ticker += abs(logical_tie.ticks) # abs necessary?
+                logical_tie_ticker += abs(ticks) # abs necessary?
 
-        self.info(durations)
+        # self.info(durations)
         return durations
-
-    def get_metrical_duration_ticks(self):
-        """
-        returns a number representing the total number of ticks in this line (relative to the object's rhythm_denominator)
-        .... based on the defined metrical durations for this object
-        """
-        return int(sum([d[0]/d[1] for d in self.get_metrical_durations()]) * self.rhythm_denominator)
 
     def cleanup_data(self, **kwargs):
 
@@ -257,7 +240,7 @@ class Machine(BaseMachine, calliope.Fragment):
 
     def get_talea(self):
         return abjad.rhythmmakertools.Talea(
-            self.get_signed_ticks_list(append_rest=True), 
+            self.get_signed_ticks_list(), 
             self.rhythm_denominator)
 
     def get_rhythm_maker(self):
@@ -287,11 +270,6 @@ class Machine(BaseMachine, calliope.Fragment):
             # print(music_logical_tie)
             self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_count, **kwargs)
             leaf_count += len(music_logical_tie)
-
-    def process_music(self, music, **kwargs):
-        # NOTE: intentionally NOT calling super().process_music here
-        # because Fragment's process_music method would conflict...
-        pass
 
     def music(self, **kwargs):
         my_music = self.container_type( self.get_rhythm_music(**kwargs) )
@@ -354,6 +332,7 @@ class EventMachine(Machine):
         for l in self.logical_ties:
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
 
+    # TO DO: ticks_before and ticks_after ever used? KISS?
     @property
     def ticks_before(self):
         if self.children:
@@ -409,17 +388,17 @@ class EventMachine(Machine):
             if not l.rest:
                 return l
 
-    def get_signed_ticks_list(self, append_rest=False):
+    def get_signed_ticks_list(self):
         # TO DO.. there's probably a more elegant one-liner for this!
         return_list = []
         for l in self.logical_ties:
             return_list.extend(l.get_signed_ticks_list())
         
-        if append_rest:
+        if self.defined_length:
             ticks_end = self.ticks
-            metrical_duration_ticks = self.get_metrical_duration_ticks()
-            if metrical_duration_ticks > ticks_end:
-                return_list.append(int(ticks_end - metrical_duration_ticks))
+            defined_length_ticks = self.defined_length * self.rhythm_default_multiplier
+            if defined_length_ticks > ticks_end:
+                return_list.append(int(ticks_end - defined_length_ticks))
 
         return return_list
 

@@ -14,16 +14,8 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
         TO DO EVENTUALLY... probably some more elegant way to do this, but for now this works
         """
 
-        # WARNING... THIS ONLY WORKS FOR 4/4!!!!!!!
+        # TO DO WARNING... THIS ONLY WORKS FOR 4/4!!!!!!!
         measure_length = abjad.Duration( (4,4) )
-
-        # if self.time_signature:
-        #     measure_length = abjad.Duration(self.time_signature)
-        # else:
-        #     # if no time signature specified, then this gets the pair for the duration of the first measure:
-        #     measure_length = sum([abjad.Duration(i) for i in self.get_metrical_durations()[0]])
-
-        # print(self.get_metrical_durations()[0])
 
         leaves = abjad.select(music).by_leaf()
         rest_measures = 0

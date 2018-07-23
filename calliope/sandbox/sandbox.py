@@ -47,29 +47,38 @@ import abjad, calliope
 # print(dir(m.root_node))
 
 # RESTS MUST ONLY TAKE UP ONE NODE
-# LOGICAL TIE NOTES MUST CAN TAKE UP MULTIPLE... BUT ONLY AT SAME LEVEL WITH SAME PARENT
+# NOTES MUST CAN TAKE UP MULTIPLE... BUT ONLY AT SAME LEVEL WITH SAME PARENT
 # BEAMS SPECIFY LEVEL
-m = abjad.Meter('''(4/4 (
-        (2/4 (
-            1/4
-            1/4
-            )
-        )
-        (2/4 (
-            1/4
-            1/4
-            )
-        )
-    ))''')
 
-class TestMe(calliope.Line):
-    meter = m
+
+# m = abjad.Meter('''(4/4 (
+#         (2/4 (
+#             1/4
+#             1/4
+#             )
+#         )
+#         (2/4 (
+#             1/4
+#             1/4
+#             )
+#         )
+#     ))''')
+
+class TestMe(calliope.Cell):
     set_rhythm = (1, 0.5, 3, 4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
-    time_signature = (3,4)
+    # set_rhythm = (0.5, 0.5, 3)
+    time_signature = (4,4)
+    # defined_length = 48
+    pickup = 1
 
 t = TestMe()
 t.illustrate_me()
 
+
+# staff = abjad.Staff("c'16 d'8 e'8 fs8")
+# time_signature = abjad.TimeSignature((3, 8), partial=(1,16))
+# abjad.attach(time_signature, staff[0])
+# abjad.show(staff) 
 
 
 

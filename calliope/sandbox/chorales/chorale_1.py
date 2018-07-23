@@ -17,8 +17,8 @@ class PhraseBlock1(calliope.PhraseBlock):
         clef = "bass"
 
     class Bass(calliope.Phrase):
-        set_pitches = (-8, -3, -1, 0, -1, -3, -4, -3, -8)
-        set_rhythm =  (1, 1, 1, 1, 0.5, 0.5, 1, 1, 1)
+        set_pitches = (None, -3, -1, 0, -1, -3, -4, -3, -8)
+        set_rhythm =  (-1, 1, 1, 1, 0.5, 0.5, 1, 1, 1)
         clef = "bass"
         respell = "sharps"
 
@@ -62,14 +62,12 @@ class PhraseBlock3(calliope.PhraseBlock):
         set_rhythm =  ( 1,  0.5, 0.5, 1,  1,  0.5, 0.5, 1, 1,  1)
         clef = "bass"
         respell = "sharps"
-        metrical_durations = ( ((1,4),)*4 )* 2
 
     class Bass(calliope.Phrase):
         set_pitches = (-6, -5,  -6,  -8, -1,  -3,  -5,  -6,  -8,  -10, -12, -13)
         set_rhythm =  (1,   0.5, 0.5, 1,  0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1,   1 )
         clef = "bass"
         respell = "sharps"
-        metrical_durations = ( ((1,4),)*4 )* 2
 
 class PhraseBlock4(calliope.PhraseBlock):
     
@@ -118,7 +116,8 @@ class PhraseBlock5(calliope.PhraseBlock):
         set_rhythm =  ( 1,  1,  0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1,   1,  1)
         clef = "bass"
         respell = "sharps"
-        metrical_durations = ( ((1,4),)*4 )* 2
+        pickup = 2
+        time_signature = (3,4)
 
 
 c1 = calliope.MatchSequence(
@@ -160,5 +159,7 @@ c2 = calliope.MatchSequence(*phrases_1_repeats)
 
 # class ChoraleGrid(calliope.LineBlock):
 
+# calliope.illustrate_me(bubble=c1.get_inverted())
 
-calliope.illustrate_me(bubble=c2.get_inverted())
+b = PhraseBlock5.Bass().illustrate_me()
+# calliope.illustrate_me(bubble=b)

@@ -3,10 +3,12 @@ import calliope
 
 class Fragment(calliope.Bubble):
     """
-    A fragment of (ususually) horizontal music.
+    A fragment of (ususually) horizontal music. Includes conveniences like
+    specifiying time signature, spelling, clef, etc.
     """
     is_simultaneous = False
     time_signature = None
+    pickup = None # must be able to be represented as a single note with no dots
     clef = None
     bar_line = None
     respell = None # set to "sharps" or "flats"  to force respelling
@@ -27,6 +29,8 @@ class Fragment(calliope.Bubble):
     # def __mul__(self, num):
     #     return calliope.LineSequence( bubbles = [self for i in range(num)] )
 
+    # TO DO... apply this same idea more generally for fragments in side of 
+    # fragment blocks for things like time_signature
     def get_respell(self):
         if self.respell:
             return self.respell
@@ -55,7 +59,14 @@ class Fragment(calliope.Bubble):
                 time_command =  abjad.indicatortools.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
                 # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
                 # time_command = abjad.TimeSignature( self.time_signature )
-                abjad.attach(time_command, music)
+                abjad.attach(time_command, music_start)
+
+            if self.pickup:
+                partial_value = int((1 / self.pickup) * self.rhythm_denominator / self.rhythm_default_multiplier)
+                partial_command =  abjad.indicatortools.LilyPondCommand("partial " + str(partial_value), "before")
+                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
+                # time_command = abjad.TimeSignature( self.time_signature )
+                abjad.attach(partial_command, music_start)
 
             if self.clef:
                 clef_obj = abjad.Clef(self.clef)
