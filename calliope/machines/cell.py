@@ -12,22 +12,43 @@ class TupletCell(Cell):
 
 class CustomCell(Cell):
     child_types = ()
+    set_beats = None
+    set_rhythm = () # generally wouldn't be used unless attempting something slick... but needed for base class
+    set_pitches = () # ditto
+    can_have_children = False
+    must_have_children = False
+    rest = False
+    
+    _ticks = 0
+
+    def __init__(self, *args, **kwargs):
+        self.beats = kwargs.pop("beats", None) or self.set_beats
+        super().__init__(*args, **kwargs)
 
     def music(self, **kwargs):
+        # NOTE... could override this for custom logic, 
+        # or simply use music_contents attribute for simple strings
         return calliope.Bubble.music(self, **kwargs)
+
+    def get_signed_ticks_list(self, **kwargs):
+        return [self.ticks]
 
     @property
     def ticks(self):
-        return sum([l.ticks for l in self.logical_ties])
+        return self._ticks
+
+    @ticks.setter
+    def ticks(self, value):
+        self._ticks = value
 
     @property
-    def rest(self):
-        return all([l.rest for l in self.logical_ties])
+    def beats(self):
+        return int(self._ticks / self.rhythm_default_multiplier)
 
-    @rest.setter
-    def rest(self, is_rest):
-        for l in self.logical_ties:
-            l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
+    @beats.setter
+    def beats(self, my_beats):
+        if my_beats:
+            self._ticks = int(my_beats * self.rhythm_default_multiplier)
             
 
 class CellBlock(calliope.Block):

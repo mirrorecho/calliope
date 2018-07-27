@@ -65,14 +65,34 @@ import abjad, calliope
 #     ))''')
 
 class TestMe(calliope.Cell):
-    set_rhythm = (1, 0.5, 3, 4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
+    set_rhythm = (-1, 0.5, 3, -4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
     # set_rhythm = (0.5, 0.5, 3)
     time_signature = (4,4)
     # defined_length = 48
     pickup = 1
 
 t = TestMe()
-t.illustrate_me()
+t.events[0,1,3,4].tag("YO")
+# print(t.events[0].tags)
+# print(t.events[1].tags)
+
+# r = abjad.Rest(abjad.Duration(1,4))
+# # r = abjad.Note("c4")
+# mark = abjad.Markup("YOYOYO", direction=Up)
+# abjad.attach(mark, r)
+# abjad.show(r)
+
+c1 = calliope.Cell(
+	calliope.Cell(rhythm=(1,1,1,1,1,1), pitches=(0,-1,0,-1,2,3)),
+	calliope.CustomCell(beats=4, music_contents="\\times 4/5 { f4 g a b c' }"),
+	calliope.Cell(rhythm=(1,1,1,1), pitches=(0,-1,0,-1)),
+	)
+
+print(c1.get_signed_ticks_list())
+print(c1[1].get_signed_ticks_list())
+
+print(c1.beats)
+# c1.illustrate_me()
 
 
 # staff = abjad.Staff("c'16 d'8 e'8 fs8")

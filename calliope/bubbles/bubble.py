@@ -88,7 +88,6 @@ class Bubble(calliope.Tree):
             kwargs["name"] = self.name
         return self.container_type(*args, **kwargs)
 
-
     def ly(self):
         return format(self.blow())
 

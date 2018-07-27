@@ -46,10 +46,12 @@ class MachineSelectableMixin(object):
         return self.by_type(calliope.Event).exclude(rest=True)
 
     @property
-    # TO DO... consider... would this perform better by returning a selection leaves instead of 
-    # selecting by type?
     def logical_ties(self):
         return self.by_type(calliope.LogicalTie)
+
+    @property
+    def logical_ties_or_custom(self):
+        return self.by_type(calliope.LogicalTie, calliope.CustomCell)
 
     # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
     # not currently working...

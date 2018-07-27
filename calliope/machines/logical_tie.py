@@ -6,6 +6,8 @@ class LogicalTie(calliope.Machine):
     pitch = None # if None, defaults to Event's pitch
     rest = False
     is_primary = True # True if this logical tie is a primary one for it's parent event
+    can_have_children = True
+    must_have_children = False
 
     # def set_data(self, beats=None, pitch=None, rest=False, **kwargs):
     #     self.beats = beats
@@ -33,11 +35,19 @@ class LogicalTie(calliope.Machine):
 
     @property
     def use_ancestor_attachments(self):
-        return self.is_first_non_rest
+        # TO DO: reconsider?
+        """
+        If a rest(s) precede the first note in this logical tie's event,
+        this causes ancestor attachments to always be attached to that first note 
+        (as opposed to rest). If the entire event is a rest, then attach to the
+        first rest.
+        """
+        return self.is_first_non_rest or (self.my_index == 0 and self.parent.rest)
 
     @property
     def is_first_non_rest(self):
         return self is self.parent.first_non_rest
+
 
     @property
     def ticks_before(self):

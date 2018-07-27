@@ -20,6 +20,8 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     rhythm_denominator = 32
     set_name = None
     defined_length = None # pre-determined length in beats, will padd rests at end if needed
+    can_have_children = True
+    must_have_children = True
 
     # TO DO ... implement default meter here...
 
@@ -133,10 +135,12 @@ class Machine(BaseMachine, calliope.Fragment):
 
         last_rest = None
 
+        # removes empty nodes if the nodes are types that should have children
+        # and merges sequentual rests
+        # TO DO: consider... only merge rests if not tagged?
         for leaf in self.leaves:
             parent_item = leaf.parent
-            if not isinstance(leaf, calliope.LogicalTie):
-                # just in case there are already empty events / segments showing up as leaves ... remove them
+            if leaf.must_have_children:
                 parent_item.remove(leaf)
             else:
                 logical_tie = leaf
@@ -165,8 +169,13 @@ class Machine(BaseMachine, calliope.Fragment):
             else:
                 return abjad.NamedPitch(pitch_thingy).number
 
-        if not data_logical_tie.rest:
-            # TO DO: consider... can rests be taged????
+        if isinstance(data_logical_tie, calliope.CustomCell):
+            print("MEOW")
+            custom_music = data_logical_tie.music()
+            m = abjad.mutate(music_logical_tie)
+            m.replace(custom_music)
+
+        elif not data_logical_tie.rest:
 
             event = data_logical_tie.parent
             pitch = data_logical_tie.pitch
@@ -204,39 +213,41 @@ class Machine(BaseMachine, calliope.Fragment):
             else:
                 self.warn("can't set pitch because '%s' is not abjad.Pitch, str, int, list, or tuple" % pitch,  data_logical_tie )
 
-            for tag_name in data_logical_tie.get_all_tags():
-                spanners_to_close = set(self._open_spanners) & calliope.TagSet.spanner_closures.get(tag_name, set() )
-                for p in spanners_to_close:
-                    spanner = data_logical_tie.get_attachment(p)
-                    start_index = self._open_spanners[p]
-                    stop_index = music_leaf_index + 1
-                    if isinstance(spanner, abjad.Slur):
-                        # slurs go to the end of the logical tie, not the beginning
-                        stop_index += len(music_logical_tie) - 1
-                    abjad.attach(spanner, music[start_index:stop_index])
-                    del self._open_spanners[p]
+        # TO DO: these loops could be cleaner...
+        for tag_name in data_logical_tie.get_all_tags():
+            spanners_to_close = set(self._open_spanners) & calliope.TagSet.spanner_closures.get(tag_name, set() )
+            for p in spanners_to_close:
+                spanner = data_logical_tie.get_attachment(p)
+                start_index = self._open_spanners[p]
+                stop_index = music_leaf_index + 1
+                if isinstance(spanner, abjad.Slur):
+                    # slurs go to the end of the logical tie, not the beginning
+                    stop_index += len(music_logical_tie) - 1
+                abjad.attach(spanner, music[start_index:stop_index])
+                del self._open_spanners[p]
 
-            # NOTE... here it's important to through attachments a second time... or we might delete the attachment we just added!! (and get an 
-            # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
-            for tag_name in data_logical_tie.get_all_tags():            
-                if tag_name in calliope.TagSet.start_spanners_inventory:
-                    self._open_spanners[tag_name]=music_leaf_index
-                else:
-                    attachment = data_logical_tie.get_attachment(tag_name)
-                    if attachment:
-                        if callable(attachment):
-                            # TO DO... this won't work with chords!
-                            # attachment(music_logical_tie)
+        # NOTE... here it's important to through attachments a second time... or we might delete the attachment we just added!! (and get an 
+        # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
+        for tag_name in data_logical_tie.get_all_tags():
+            if tag_name in calliope.TagSet.start_spanners_inventory:
+                self._open_spanners[tag_name]=music_leaf_index
+            else:
+                attachment = data_logical_tie.get_attachment(tag_name)
+                if attachment:
+                    if callable(attachment):
+                        # TO DO... this won't work with chords!
+                        # attachment(music_logical_tie)
+                        stop_index = music_leaf_index + len(music_logical_tie)
+                        attachment(music[music_leaf_index:stop_index])
+                    else:
+                        # stem tremolos should be attached to every leaf in logical tie...
+                        if isinstance(attachment, abjad.indicatortools.StemTremolo):
                             stop_index = music_leaf_index + len(music_logical_tie)
-                            attachment(music[music_leaf_index:stop_index])
+                            for leaf in music[music_leaf_index:stop_index]:
+                                abjad.attach(attachment, leaf)
                         else:
-                            # stem tremolos should be attached to every leaf in logical tie...
-                            if isinstance(attachment, abjad.indicatortools.StemTremolo):
-                                stop_index = music_leaf_index + len(music_logical_tie)
-                                for leaf in music[music_leaf_index:stop_index]:
-                                    abjad.attach(attachment, leaf)
-                            else:
-                                abjad.attach(attachment, music[music_leaf_index])
+                            abjad.attach(attachment, music[music_leaf_index])
+
 
     def get_talea(self):
         return abjad.rhythmmakertools.Talea(
@@ -265,7 +276,7 @@ class Machine(BaseMachine, calliope.Fragment):
         self._open_spanners = {} # important in case music() metchod gets called twice on the same object
         music_logical_ties = calliope.by_logical_tie_group_rests(music)
         leaf_count=0
-        for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties):
+        for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties_or_custom):
             # print( "TL: %s" % leaf_count  )
             # print(music_logical_tie)
             self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_count, **kwargs)
@@ -321,15 +332,15 @@ class EventMachine(Machine):
 
     @property
     def ticks(self):
-        return sum([l.ticks for l in self.logical_ties])
+        return sum([l.ticks for l in self.logical_ties_or_custom])
 
     @property
     def rest(self):
-        return all([l.rest for l in self.logical_ties])
+        return all([l.rest for l in self.logical_ties_or_custom])
 
     @rest.setter
     def rest(self, is_rest):
-        for l in self.logical_ties:
+        for l in self.logical_ties: # TO DO... what about custom here?
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
 
     # TO DO: ticks_before and ticks_after ever used? KISS?
@@ -391,7 +402,7 @@ class EventMachine(Machine):
     def get_signed_ticks_list(self):
         # TO DO.. there's probably a more elegant one-liner for this!
         return_list = []
-        for l in self.logical_ties:
+        for l in self.logical_ties_or_custom:
             return_list.extend(l.get_signed_ticks_list())
         
         if self.defined_length:

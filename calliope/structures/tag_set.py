@@ -27,6 +27,11 @@ class TagSet(object):
                 "grey",        "darkred",        "darkgreen",   "darkblue",
                 "darkcyan",    "darkmagenta",    "darkyellow",))
 
+    # TO DO: useful? ...
+    # # the set of tags that are NOT allowed
+    # # TO DO.. maybe allow surs, hairpins to rests?
+    # no_rests_inventory = articulations_inventory | dynamics_inventory | slurs_inventory
+
     # TO DO... should prevent dupes in tremolos
 
     # defines things that the spanners close:
@@ -135,7 +140,7 @@ class TagSet(object):
         """
         in general, the first item uses parent attachments (e.g. if event is first item in a segment, and a segment
         is tagged with "mf", then event is event is also "mf"... but not if event is second item in the segment)
-        ...overriden in LogicalTieData so that the first NONREST item uses ancestor attachments (instead of first item)
+        ...overriden in LogicalTie so that the first NONREST item uses ancestor attachments (instead of first item)
         """
         return self.my_index == 0 
 
