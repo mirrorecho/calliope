@@ -1,5 +1,6 @@
 from copy import deepcopy
-from abjad import *
+from abjad import * # TO DO... kill this
+import abjad
 
 # TO DO... could also pass note as pitch object
 def get_pitch_number(pitch_object):
@@ -96,8 +97,8 @@ def set_pitches(music, pitches=None, transpose=0, offset=0, indices=None, pitch_
                     music.insert(chord_index, chord)
                 elif pitch_stuff == "x":
                     note.written_pitch = 0
-                    x_notes_on = indicatortools.LilyPondCommand('xNotesOn', 'before')
-                    x_notes_off = indicatortools.LilyPondCommand('xNotesOff', 'after')
+                    x_notes_on = abjad.LilyPondCommand('xNotesOn', 'before')
+                    x_notes_off = abjad.LilyPondCommand('xNotesOff', 'after')
                     attach(x_notes_on, note)
                     attach(x_notes_off, note)
                 else:

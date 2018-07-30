@@ -13,10 +13,12 @@ class MachineSelectableMixin(object):
         # for tree_node in getattr(self, tree_universe):
         #     yield tree_node
         # raise Exception(self.children, "DFKJDKFJ")
-        generator = self.depth_first()
-        items = list(generator)
+        # generator = self.depth_first()
+        # items = list(generator)
         # raise Exception(items, 'asdf')
         tree_universe = list(self.depth_first())
+        # print(tree_universe, "YA")
+        # self.info(tree_universe)
         # raise Exception(tree_universe, "FOO")
         # return list(getattr(self, tree_universe))
         return tree_universe
@@ -24,6 +26,7 @@ class MachineSelectableMixin(object):
     def by_type(self, *args, tree_universe="nodes"):
         selection =self.by_type_universe(tree_universe)
         # raise Exception(list(selection), "BARK")
+        # print(args, "TYPES")
         return Selection(
             select_from=selection, 
             type_args=args
@@ -61,7 +64,9 @@ class MachineSelectableMixin(object):
     @property
     def logical_ties_or_container(self):
         # return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
+        # print(len(self), "AA")
         result = self.by_type(calliope.LogicalTie)
+        # print(len(self), "BB")
         # raise Exception(list(result), "MEOW")
         return result
 
@@ -130,10 +135,10 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
         
         if self.type_args and not isinstance(item, self.type_args):
             return False
-
         # self.info(type(item))
         
         if self.select_args or self.range_args:
+            print("C")
             arg_found = False
             if self.select_args: 
                 if index in self.select_args or item.name in self.select_args:

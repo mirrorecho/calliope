@@ -1,7 +1,6 @@
 import abjad, calliope
 # # from calliope.sandbox import module_0, module_a
 
-
 # class CellA(calliope.Cell):
 #     set_rhythm =  (1, 1, 0.5, 0.5)
 #     set_pitches = (2, 4, 5,   7)
@@ -132,14 +131,29 @@ import abjad, calliope
 # abjad.attach(time_signature, staff[0])
 # abjad.show(staff) 
  
-c = calliope.Cell(rhythm=(1,1,1,1), pitches=(1,2,3,4))
-c.illustrate_me()
 
+
+class MyPhrase(calliope.Phrase):
+    class CellA(calliope.Cell):
+        set_rhythm = (1,2,3,4)
+        set_pitches = (2,4,6,8)
+
+    class CellB(CellA):
+        set_pitches = (0,2,3,5)
+
+p = MyPhrase()
+p.cells[1].events.tag(".",">")
+
+p.illustrate_me()
+
+
+# print("---------------")
+# print(c.logical_ties)
 
 # print(c.pitches)
 # print(c.events(pitch__gt=3).tag(".")
 # raise Exception(c.children)
 
 # b = calliope.Bubble(music_contents="c4 c4")
-# b.illustrate_me()
+
 

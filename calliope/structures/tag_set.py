@@ -65,14 +65,14 @@ class TagSet(object):
             return abjad.ComplexBeam(beam_rests=True)
         elif tag_name in self.stem_tremolos_inventory:
             tremolo_flags = int(tag_name[1:])
-            return abjad.indicatortools.StemTremolo(tremolo_flags)
+            return abjad.StemTremolo(tremolo_flags)
         elif tag_name in self.tremolos_inventory:
             tremolo_count = int(tag_name[8:])
-            return abjad.indicatortools.Tremolo(beam_count=tremolo_count, is_slurred=True)
+            return abjad.Tremolo(beam_count=tremolo_count, is_slurred=True)
         elif tag_name == "~":
-            return abjad.spannertools.Tie()
+            return abjad.Tie()
         elif tag_name == "8va":
-            return abjad.spannertools.OctavationSpanner(start=1)
+            return abjad.OctavationSpanner(start=1)
         elif tag_name == "{":
             return abjad.HorizontalBracketSpanner(markup="YO") # TO DO - CONSIDER... add markup?
             # return abjad.Slur()

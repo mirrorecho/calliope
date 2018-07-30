@@ -126,7 +126,7 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
     def by_type(self, prototype):
         # return [e for e in self.nodes if isinstance(e, args) ]
         nodes = list(self.depth_first())
-        print(nodes, "DLKSJFLDKJ")
+        # self.info(nodes)
         return [e for e in nodes if isinstance(e, prototype) ]
 
     @property

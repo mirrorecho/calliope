@@ -141,7 +141,7 @@ class Machine(BaseMachine, calliope.Fragment):
         # removes empty nodes if the nodes are types that should have children
         # and merges sequentual rests
         # TO DO: consider... only merge rests if not tagged?
-        for leaf in self.leaves:
+        for leaf in self.logical_ties:
             parent_item = leaf.parent
             if leaf.must_have_children:
                 parent_item.remove(leaf)
@@ -159,18 +159,21 @@ class Machine(BaseMachine, calliope.Fragment):
                     self.warn("0/negative ticks detected and removed...", logical_tie)
                     parent_item.remove(logical_tie)
 
-            # now, remove empty parents and grandparents
+            # now, remove empty parents ands grandparents
             remove_empty_ancestors(parent_item)
 
     def process_logical_tie(self, music, music_logical_tie, data_logical_tie, music_leaf_index, **kwargs):
         # data_logical_tie.info(data_logical_tie.parent.name)
 
         # TO DO... THIS IS NOT THE BEST PLACE FOR THIS LOGIC... REFACTOR
+        # TO DO... cast as float
         def get_pitch_number(pitch_thingy):
             if isinstance(pitch_thingy, int):
                 return pitch_thingy
             else:
                 return abjad.NamedPitch(pitch_thingy).number
+
+        print(data_logical_tie, "YO!!")
 
         if isinstance(data_logical_tie, calliope.ContainerCell):
             custom_music = data_logical_tie.music()
@@ -184,7 +187,8 @@ class Machine(BaseMachine, calliope.Fragment):
             if pitch is None: # note, have to test specifically for None, since 0 has measning here!
                 pitch = event.pitch
             respell = data_logical_tie.get_respell()
-            
+
+
             # TO DO: code below is clunky... refactor
             if isinstance(pitch, (list, tuple)):
                 if respell=="flats":
@@ -244,7 +248,7 @@ class Machine(BaseMachine, calliope.Fragment):
                         attachment(music[music_leaf_index:stop_index])
                     else:
                         # stem tremolos should be attached to every leaf in logical tie...
-                        if isinstance(attachment, abjad.indicatortools.StemTremolo):
+                        if isinstance(attachment, abjad.StemTremolo):
                             stop_index = music_leaf_index + len(music_logical_tie)
                             for leaf in music[music_leaf_index:stop_index]:
                                 abjad.attach(attachment, leaf)
@@ -280,8 +284,8 @@ class Machine(BaseMachine, calliope.Fragment):
         music_logical_ties = calliope.by_logical_tie_group_rests(music)
         leaf_count=0
         # for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties_or_container):
-        print(music_logical_ties)
-        print(list(self.logical_ties_or_container))
+        print("MUSIC:", music_logical_ties)
+        print("DATA:", list(self.logical_ties_or_container))
         print("----------------------")
         # TO DO: consider check for unequal length of musical_logical_ties/self.logical_ties_or_container?
         # e.g. look at abjad.Sequence        
@@ -291,7 +295,7 @@ class Machine(BaseMachine, calliope.Fragment):
         for music_logical_tie, data_logical_tie in pairs:
             # raise(data_logical_tie)
             # print( "TL: %s" % leaf_count)
-            # print(music_logical_tie)
+            #print(music_logical_tie)
             self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_count, **kwargs)
             leaf_count += len(music_logical_tie)
 
