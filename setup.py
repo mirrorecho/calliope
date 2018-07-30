@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 install_requires = [
-    'abjad[development,ipython]>=2.21',
+    'abjad[development,ipython]>=3.0',
     'pandas>=0.23',
     'jupyter>=1.0',
     ]

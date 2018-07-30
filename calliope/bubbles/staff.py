@@ -106,14 +106,14 @@ class Piano(StaffGroup):
     class Piano2(Staff):
         clef = "bass"
     context_name = "PianoStaff"
-    instrument=abjad.instrumenttools.Piano()
+    instrument=abjad.Piano()
 
 class Harp(StaffGroup):
     class Harp1(Staff): pass
     class Harp2(Staff):
         clef = "bass"
     context_name = "PianoStaff"
-    instrument=abjad.instrumenttools.Harp()
+    instrument=abjad.Harp()
 
 class StaffWithVoices(CopyChildrenBubble, Staff):
     is_simultaneous = True

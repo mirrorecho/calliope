@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 import math, copy, abjad
+from abjadext import rmakers
+from abjad import rhythmtrees
 import calliope
 
 # TO DO... re-add TagSet once this is properly implemented
@@ -13,6 +15,7 @@ import calliope
 # TO DO... re-add TagSet once this is properly implemented
 # class MachineBubbleBase(calliope.TagSet, calliope.Tree, bubbles.LineTalea):
 class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
+    create_container = False 
     use_child_metrical_durations = False
     metrical_durations = None
     meter = None
@@ -112,7 +115,7 @@ class Machine(BaseMachine, calliope.Fragment):
                 while meter_ticker < logical_tie_ticker + abs(ticks):
 
                     while meter_ticker + node_ticks(current_node) > logical_tie_ticker + abs(ticks) \
-                            and isinstance(current_node, abjad.rhythmtreetools.RhythmTreeContainer):
+                            and isinstance(current_node, rhythmtrees.RhythmTreeContainer):
                         current_node = current_node[0]
 
                     durations.append(current_node.duration.pair)
@@ -169,8 +172,7 @@ class Machine(BaseMachine, calliope.Fragment):
             else:
                 return abjad.NamedPitch(pitch_thingy).number
 
-        if isinstance(data_logical_tie, calliope.CustomCell):
-            print("MEOW")
+        if isinstance(data_logical_tie, calliope.ContainerCell):
             custom_music = data_logical_tie.music()
             m = abjad.mutate(music_logical_tie)
             m.replace(custom_music)
@@ -199,6 +201,7 @@ class Machine(BaseMachine, calliope.Fragment):
                     m = abjad.mutate([note])
                     m.replace(chord)
             elif isinstance(pitch, (int, str, abjad.Pitch)):
+                print("MEOW")
                 # TO DO: these respell methods look to be private///
                 # invetigate further or change!!!!!
                 # ALSO TO DO... BUG WITH cf or bs OCTAVES! (workaround is to always convert to # first)
@@ -250,15 +253,15 @@ class Machine(BaseMachine, calliope.Fragment):
 
 
     def get_talea(self):
-        return abjad.rhythmmakertools.Talea(
-            self.get_signed_ticks_list(), 
-            self.rhythm_denominator)
+        return rmakers.Talea(
+            counts=self.get_signed_ticks_list(), 
+            denominator=self.rhythm_denominator)
 
     def get_rhythm_maker(self):
-        return abjad.rhythmmakertools.TaleaRhythmMaker(
+        return rmakers.TaleaRhythmMaker(
             talea=self.get_talea(),
             read_talea_once_only=True,
-            beam_specifier=abjad.rhythmmakertools.BeamSpecifier(
+            beam_specifier=rmakers.BeamSpecifier(
                 beam_each_division=True,
                 beam_rests=True,
                 ),
@@ -276,15 +279,25 @@ class Machine(BaseMachine, calliope.Fragment):
         self._open_spanners = {} # important in case music() metchod gets called twice on the same object
         music_logical_ties = calliope.by_logical_tie_group_rests(music)
         leaf_count=0
-        for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties_or_custom):
-            # print( "TL: %s" % leaf_count  )
+        # for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties_or_container):
+        print(music_logical_ties)
+        print(list(self.logical_ties_or_container))
+        print("----------------------")
+        # TO DO: consider check for unequal length of musical_logical_ties/self.logical_ties_or_container?
+        # e.g. look at abjad.Sequence        
+        pairs = zip(music_logical_ties, self.logical_ties_or_container)
+
+        # raise Exception(list(pairs))
+        for music_logical_tie, data_logical_tie in pairs:
+            # raise(data_logical_tie)
+            # print( "TL: %s" % leaf_count)
             # print(music_logical_tie)
             self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_count, **kwargs)
             leaf_count += len(music_logical_tie)
 
     def music(self, **kwargs):
-        my_music = self.container_type( self.get_rhythm_music(**kwargs) )
-        self.process_rhythm_music(my_music, **kwargs)
+        my_music = self.container_type(components=self.get_rhythm_music(**kwargs), **kwargs)
+        self.process_rhythm_music(music=my_music, **kwargs)
         return my_music
 
     @property
@@ -332,11 +345,11 @@ class EventMachine(Machine):
 
     @property
     def ticks(self):
-        return sum([l.ticks for l in self.logical_ties_or_custom])
+        return sum([l.ticks for l in self.logical_ties_or_container])
 
     @property
     def rest(self):
-        return all([l.rest for l in self.logical_ties_or_custom])
+        return all([l.rest for l in self.logical_ties_or_container])
 
     @rest.setter
     def rest(self, is_rest):
@@ -384,6 +397,7 @@ class EventMachine(Machine):
     def pitches(self, values):
         my_length = len(self.events)
         for i, v in enumerate(values[:my_length]):
+            print(v)
             self.events[i].pitch = v
             self.events[i].rest = v is None
 
@@ -402,7 +416,7 @@ class EventMachine(Machine):
     def get_signed_ticks_list(self):
         # TO DO.. there's probably a more elegant one-liner for this!
         return_list = []
-        for l in self.logical_ties_or_custom:
+        for l in self.logical_ties_or_container:
             return_list.extend(l.get_signed_ticks_list())
         
         if self.defined_length:

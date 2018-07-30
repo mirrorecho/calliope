@@ -1,14 +1,20 @@
 import calliope
 
 class Cell(calliope.EventMachine):
-    child_types = (calliope.EventMachine, )
+    child_types = (calliope.EventMachine, ) # TO DO: ???
 
     def __init__(self, *args, **kwargs):
         self.child_types = child_types = (calliope.Cell, calliope.Event) # just to be safe
         super().__init__(*args, **kwargs)
 
-class TupletCell(Cell):
-    proportions = (1,1,1)
+class ContainerCell(Cell):
+    """
+    By default, an abjad container is only created for the outermost machine... 
+    but this ContainerCell is used to create a container for the cell itself...
+    """
+    def get_signed_ticks_list(self, **kwargs):
+        return [self.ticks]
+
 
 class CustomCell(Cell):
     child_types = ()
@@ -29,9 +35,6 @@ class CustomCell(Cell):
         # NOTE... could override this for custom logic, 
         # or simply use music_contents attribute for simple strings
         return calliope.Bubble.music(self, **kwargs)
-
-    def get_signed_ticks_list(self, **kwargs):
-        return [self.ticks]
 
     @property
     def ticks(self):

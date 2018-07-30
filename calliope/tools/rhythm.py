@@ -9,7 +9,7 @@ def split(music, durations=((4,4),), cyclic=True, *args, **kwargs):
 
 # TO DO... refactor 
 def by_logical_tie_group_rests(music):
-    logical_ties = abjad.select(music).by_logical_tie()
+    logical_ties = abjad.select(music).logical_ties()
 
     return_logical_ties = []
     previous_rest_list = []

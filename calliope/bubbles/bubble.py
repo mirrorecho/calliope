@@ -14,7 +14,7 @@ class Bubble(calliope.Tree):
     music_contents = None
     child_types = ()
     parent_type = None
-    # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the abjad TreeContainer
+    # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the uqbar UniqueTreeContainer
 
     def __init__(self, *args, **kwargs):
         if not self.parent_type:
@@ -73,7 +73,7 @@ class Bubble(calliope.Tree):
             pdf_filename = "%s.pdf" % path
             my_persistance_agent.as_pdf(pdf_filename)
             if open_pdf:
-                abjad.systemtools.IOManager.open_file(pdf_filename)
+                abjad.IOManager.open_file(pdf_filename)
         if as_midi:
             print("YO MIDI")
             midi_filename = "%s.midi" % path
@@ -93,7 +93,7 @@ class Bubble(calliope.Tree):
 
     def get_lilypond_file(self):
         music = self.blow()
-        lilypond_file = abjad.lilypondfiletools.LilyPondFile.new(music, includes=self.stylesheets, 
+        lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
             )
         self.info("got abjad representation of lilypond file... now rendering with lilypond")
         return lilypond_file

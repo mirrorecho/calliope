@@ -1,5 +1,6 @@
 import abjad
 import calliope
+import uqbar
 
 class MachineSelectableMixin(object):
 
@@ -11,12 +12,20 @@ class MachineSelectableMixin(object):
         # return [t for t in getattr(self, tree_universe)]
         # for tree_node in getattr(self, tree_universe):
         #     yield tree_node
-        return getattr(self, tree_universe)
+        # raise Exception(self.children, "DFKJDKFJ")
+        generator = self.depth_first()
+        items = list(generator)
+        # raise Exception(items, 'asdf')
+        tree_universe = list(self.depth_first())
+        # raise Exception(tree_universe, "FOO")
+        # return list(getattr(self, tree_universe))
+        return tree_universe
 
     def by_type(self, *args, tree_universe="nodes"):
-        # self.info( ("calling by type", args) )
+        selection =self.by_type_universe(tree_universe)
+        # raise Exception(list(selection), "BARK")
         return Selection(
-            select_from=self.by_type_universe(tree_universe), 
+            select_from=selection, 
             type_args=args
             )
 
@@ -50,8 +59,11 @@ class MachineSelectableMixin(object):
         return self.by_type(calliope.LogicalTie)
 
     @property
-    def logical_ties_or_custom(self):
-        return self.by_type(calliope.LogicalTie, calliope.CustomCell)
+    def logical_ties_or_container(self):
+        # return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
+        result = self.by_type(calliope.LogicalTie)
+        # raise Exception(list(result), "MEOW")
+        return result
 
     # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
     # not currently working...
@@ -110,7 +122,6 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     def by_type_universe(self, tree_universe):
         # TO DO... does this work OK????
-        print("SYO")
         for item in self:
             for tree_node in getattr(item, tree_universe):
                 yield tree_node

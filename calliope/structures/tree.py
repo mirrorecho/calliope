@@ -2,13 +2,14 @@ import inspect
 import copy
 import abjad
 import calliope
+import uqbar
 
-TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(abjad.TreeContainer))
+TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(uqbar.containers.UniqueTreeContainer))
 
 class TreeMixin(calliope.CalliopeBaseMixin):
     pass
 
-class Tree(TreeMixin, abjad.TreeContainer):
+class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
     child_types = ()
 
     # TO DO: use these...?
@@ -44,8 +45,8 @@ class Tree(TreeMixin, abjad.TreeContainer):
         if inspect.isclass(node):
             node = node()
         if type(arg) is slice:
-            # needed for base TreeContainer implementation:
-            abjad.TreeContainer.__setitem__(self, arg, node)
+            # needed for base UniqueTreeContainer implementation:
+            uqbar.containers.UniqueTreeContainer.__setitem__(self, arg, node)
         elif not isinstance(node, self.child_types):
             # print(self.child_types)
             # print(node)
@@ -53,7 +54,7 @@ class Tree(TreeMixin, abjad.TreeContainer):
         else:
             if type(arg) is int:
                 # if setting based on integer index or slice, use abjad's tree container default behavior
-                abjad.TreeContainer.__setitem__(self, arg, node)
+                uqbar.containers.UniqueTreeContainer.__setitem__(self, arg, node)
             else:
                 node.name = arg # just as a precaution
                 
@@ -63,11 +64,11 @@ class Tree(TreeMixin, abjad.TreeContainer):
 
                 for i, b in enumerate(self.children):
                     if b.name == arg:
-                        abjad.TreeContainer.__setitem__(self, i, node)
+                        uqbar.containers.UniqueTreeContainer.__setitem__(self, i, node)
                         new_child = False
                         break
                 if new_child:
-                    abjad.TreeContainer.__setitem__(self,
+                    uqbar.containers.UniqueTreeContainer.__setitem__(self,
                         slice(len(self), len(self)),
                         [node]
                         )
@@ -112,8 +113,21 @@ class Tree(TreeMixin, abjad.TreeContainer):
             return True
         return False
 
-    def by_type(self, *args):
-        return [e for e in self.nodes if isinstance(e, args) ]
+    # TO DO: remove/refactor:
+    @property
+    def nodes(self):
+        return list(self.depth_first())
+
+    # TO DO: remove/refactor:
+    @property
+    def leaves(self):
+        return list(self.depth_first(top_down=False))
+
+    def by_type(self, prototype):
+        # return [e for e in self.nodes if isinstance(e, args) ]
+        nodes = list(self.depth_first())
+        print(nodes, "DLKSJFLDKJ")
+        return [e for e in nodes if isinstance(e, prototype) ]
 
     @property
     def my_index(self):

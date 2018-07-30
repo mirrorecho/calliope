@@ -64,15 +64,15 @@ import abjad, calliope
 #         )
 #     ))''')
 
-class TestMe(calliope.Cell):
-    set_rhythm = (-1, 0.5, 3, -4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
-    # set_rhythm = (0.5, 0.5, 3)
-    time_signature = (4,4)
-    # defined_length = 48
-    pickup = 1
+# class TestMe(calliope.Cell):
+#     set_rhythm = (-1, 0.5, 3, -4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
+#     # set_rhythm = (0.5, 0.5, 3)
+#     time_signature = (4,4)
+#     # defined_length = 48
+#     pickup = 1
 
-t = TestMe()
-t.events[0,1,3,4].tag("YO")
+# t = TestMe()
+# t.events[0,1,3,4].tag("YO")
 # print(t.events[0].tags)
 # print(t.events[1].tags)
 
@@ -82,29 +82,64 @@ t.events[0,1,3,4].tag("YO")
 # abjad.attach(mark, r)
 # abjad.show(r)
 
-c1 = calliope.Cell(
-	calliope.Cell(rhythm=(1,1,1,1,1,1), pitches=(0,-1,0,-1,2,3)),
-	calliope.CustomCell(beats=4, music_contents="\\times 4/5 { f4 g a b c' }"),
-	calliope.Cell(rhythm=(1,1,1,1), pitches=(0,-1,0,-1)),
-	)
+# c1 = calliope.Cell(
+#     calliope.Cell(rhythm=(1,1,1,1,1), pitches=(0,-1,0,-1,2,3)),
+#     calliope.CustomCell(beats=4, music_contents="\\times 4/5 { f4 g a b c' }"),
+#     calliope.Cell(rhythm=(1,1,1,1,3), pitches=(0,-1,0,-1)),
+#     )
 
-print(c1.get_signed_ticks_list())
-print(c1[1].get_signed_ticks_list())
+# print(c1.get_signed_ticks_list())
+# print(c1[1].get_signed_ticks_list())
 
-print(c1.beats)
+# print(c1.beats)
 # c1.illustrate_me()
 
+# t = abjad.Tuplet((2, 3),
+#     "b8 b8 b8"
+#     )
+# # abjad.show(t)
+# print(dir(t))
+
+
+# class TupletCell(calliope.ContainerCell):
+#     multiplier = (2,3)
+#     container_type = abjad.Tuplet
+
+#     @property
+#     def ticks(self):
+#         tuplet_ticks = sum([l.ticks for l in self.logical_ties])
+#         return int(tuplet_ticks * self.multiplier[0] / self.multiplier[1])
+
+#     def music(self, **kwargs):
+#         my_music = self.container_type(multiplier=self.multiplier, music=self.get_rhythm_music(**kwargs), **kwargs)
+#         self.process_rhythm_music(my_music, **kwargs)
+#         return my_music
+
+# t = TupletCell(rhythm=(1,1,1,1,1), multiplier=(4,5))
+# p = calliope.Phrase(
+#     calliope.Cell(rhythm=(2,2)),
+#     t,
+#     calliope.Cell(rhythm=(2,2)),
+#     )Roustom
+# p.illustrate_me()
+
+
+# print(p)
+# print(p.music())
 
 # staff = abjad.Staff("c'16 d'8 e'8 fs8")
 # time_signature = abjad.TimeSignature((3, 8), partial=(1,16))
 # abjad.attach(time_signature, staff[0])
 # abjad.show(staff) 
+ 
+c = calliope.Cell(rhythm=(1,1,1,1), pitches=(1,2,3,4))
+c.illustrate_me()
 
 
+# print(c.pitches)
+# print(c.events(pitch__gt=3).tag(".")
+# raise Exception(c.children)
 
-
-
-
-
-
+# b = calliope.Bubble(music_contents="c4 c4")
+# b.illustrate_me()
 
