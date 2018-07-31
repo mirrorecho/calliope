@@ -1,9 +1,9 @@
-% 2017-09-25 20:53
-
-\version "2.19.54"
+\version "2.18.2"
 \language "english"
 
-\header {}
+\header {
+    tagline = ##f
+}
 
 \layout {}
 

@@ -1,0 +1,17 @@
+{
+  "calliope/_bak/cycles_cells.py": true,
+  "calliope/_bak/cycles_loop.py": true,
+  "calliope/_bak/cycles_transform.py": true,
+  "calliope/_bak/machine_transform_pitches_displaced.py": true,
+  "calliope/sandbox/_bak/bubble_test_mark_0.py": true,
+  "calliope/sandbox/_bak/bubble_test_mark_a.py": true,
+  "calliope/sandbox/_bak/bubble_test_score.py": true,
+  "calliope/sandbox/_bak/bubble_test_staves.py": true,
+  "calliope/sandbox/_bak/sandbox.py": true,
+  "calliope/sandbox/_bak/sandbox2.py": true,
+  "calliope/sandbox/_bak/test1.py": true,
+  "calliope/sandbox/_bak/test2.py": true,
+  "calliope/sandbox/chorales/chorale_1.py": true,
+  "calliope/sandbox/spelling.py": true,
+  "calliope/structures/series.py": true
+}

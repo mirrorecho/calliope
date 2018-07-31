@@ -22,20 +22,20 @@
         ~
         af'2
         c'4
-        -\staccato
         -\accent
+        -\staccato
         d'4
-        -\staccato
         -\accent
+        -\staccato
         ~
         d'4
         ef'4
-        -\staccato
         -\accent
+        -\staccato
         ~
         ef'2
         f'1
-        -\staccato
         -\accent
+        -\staccato
     }
 }

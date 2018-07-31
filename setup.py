@@ -2,8 +2,11 @@ from distutils.core import setup
 
 install_requires = [
     'abjad[development,ipython]>=3.0',
+    'abjad-ext-rmakers>=3.0',
     'pandas>=0.23',
     'jupyter>=1.0',
+    'pytest>=3.6',
+    'pytest-cov',
     ]
 
 def main():
