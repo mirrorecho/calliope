@@ -1,3 +1,7 @@
 [
-  "tests/test_Bubble.py::test_Bubble_music"
+  "tests/test_Bubble.py::test_Bubble_music",
+  "tests/test_Machine.py::test_Machine_init",
+  "tests/test_Machine.py::test_Machine_durations",
+  "tests/test_Machine.py::test_Machine_process_rhythm_music",
+  "tests/test_MachineSelectableMixin.py::test_MachineSelectableMixin"
 ]

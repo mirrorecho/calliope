@@ -81,12 +81,12 @@ class TagSet(object):
         elif tag_name in self.clefs_inventory:
             return abjad.Clef(tag_name)
         elif tag_name in self.colors_inventory:
-            return lambda x : abjad.agenttools.LabelAgent(x).color_leaves(tag_name)
+            return lambda x : abjad.label(x).color_leaves(tag_name)
         elif not tag_name in self.stop_spanners_inventory:
             if tag_name[0] == "\\":
                 return abjad.LilyPondCommand(tag_name[1:])
             else:
-                return abjad.Markup(tag_name, direction=Up)
+                return abjad.Markup(tag_name, direction=abjad.Up)
 
     # TO DO... only if needed
     # def get_attachments(self, **kwargs):

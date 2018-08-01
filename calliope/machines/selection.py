@@ -4,33 +4,23 @@ import uqbar
 
 class MachineSelectableMixin(object):
 
-    @property
-    def select_universe(self):
-        return self
+    # @property
+    # def select_universe(self):
+    #     return self
 
-    def by_type_universe(self, tree_universe):
-        # return [t for t in getattr(self, tree_universe)]
-        # for tree_node in getattr(self, tree_universe):
-        #     yield tree_node
-        # raise Exception(self.children, "DFKJDKFJ")
-        # generator = self.depth_first()
-        # items = list(generator)
-        # raise Exception(items, 'asdf')
-        tree_universe = list(self.depth_first())
-        # print(tree_universe, "YA")
-        # self.info(tree_universe)
-        # raise Exception(tree_universe, "FOO")
-        # return list(getattr(self, tree_universe))
-        return tree_universe
+    def by_type_universe(self):
+        # TO DO... delay creating the list?
+        return list(self.depth_first())
 
-    def by_type(self, *args, tree_universe="nodes"):
-        selection =self.by_type_universe(tree_universe)
-        # raise Exception(list(selection), "BARK")
-        # print(args, "TYPES")
+    def by_type(self, *args):
+        selection = self.by_type_universe()
         return Selection(
             select_from=selection, 
             type_args=args
             )
+
+    # TO CONSIDER
+    # able to set pitches / rhythm at this level (as opposed to machine)
 
     # TO CONSIDER
     # @property
@@ -63,12 +53,7 @@ class MachineSelectableMixin(object):
 
     @property
     def logical_ties_or_container(self):
-        # return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
-        # print(len(self), "AA")
-        result = self.by_type(calliope.LogicalTie)
-        # print(len(self), "BB")
-        # raise Exception(list(result), "MEOW")
-        return result
+        return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
 
     # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
     # not currently working...
@@ -118,27 +103,26 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
         item = self[index]
         item.parent.insert(item.my_index, new_item) 
 
-    @property
-    def select_universe(self):
-        # TO DO: is this right???
-        for item in self:
-            for child in item:
-                yield child
+    # @property
+    # def select_universe(self):
+    #     # TO DO: is this right???
+    #     for item in self:
+    #         for child in item:
+    #             yield child
 
-    def by_type_universe(self, tree_universe):
+    def by_type_universe(self):
         # TO DO... does this work OK????
+        # TO DO... does this delay creating the list?
         for item in self:
-            for tree_node in getattr(item, tree_universe):
+            for tree_node in list(item.depth_first()):
                 yield tree_node
 
     def item_ok(self, index, item):
         
         if self.type_args and not isinstance(item, self.type_args):
             return False
-        # self.info(type(item))
         
         if self.select_args or self.range_args:
-            print("C")
             arg_found = False
             if self.select_args: 
                 if index in self.select_args or item.name in self.select_args:
@@ -246,7 +230,7 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
         self.warn("copy_tree is not implemented yet!")
 
     def as_list(self):
-        return [x for x in self]
+        return list(self)
 
     def __iter__(self):
         # self.info("calling iter")

@@ -113,20 +113,8 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
             return True
         return False
 
-    # TO DO: remove/refactor:
-    @property
-    def nodes(self):
-        return list(self.depth_first())
-
-    # TO DO: remove/refactor:
-    @property
-    def leaves(self):
-        return list(self.depth_first(top_down=False))
-
     def by_type(self, prototype):
-        # return [e for e in self.nodes if isinstance(e, args) ]
         nodes = list(self.depth_first())
-        # self.info(nodes)
         return [e for e in nodes if isinstance(e, prototype) ]
 
     @property

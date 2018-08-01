@@ -19,7 +19,7 @@ def by_logical_tie_group_rests(music):
             previous_rest_list += [logical_tie[0]]
         else:
             if previous_rest_list:
-                return_logical_ties += [abjad.selectiontools.LogicalTie( previous_rest_list )]
+                return_logical_ties += [abjad.LogicalTie( previous_rest_list )]
             previous_rest_list = []
             return_logical_ties += [logical_tie]
     return return_logical_ties

@@ -80,6 +80,12 @@ class Machine(BaseMachine, calliope.Fragment):
 
             def next_sibling_or_aunt(node):
                 rel_node = node.root
+                if not rel_node:
+                    # iff node is already root, than node.root is None
+                    # so just return node
+                    return node
+
+                rel_node_sib = None
                 graph_order = node.graph_order
                 ancestor_index = -1
                 while node.parent is not None:
@@ -87,6 +93,7 @@ class Machine(BaseMachine, calliope.Fragment):
                     sibling_index = graph_order[ancestor_index] + 1
                     if len(node) > sibling_index:
                         rel_node = node[sibling_index]
+                        rel_node_sib = node[sibling_index]
                         break
                     ancestor_index -= 1
                 return rel_node
@@ -141,12 +148,12 @@ class Machine(BaseMachine, calliope.Fragment):
         # removes empty nodes if the nodes are types that should have children
         # and merges sequentual rests
         # TO DO: consider... only merge rests if not tagged?
-        for leaf in self.logical_ties:
-            parent_item = leaf.parent
-            if leaf.must_have_children:
-                parent_item.remove(leaf)
+        for logical_tie in self.logical_ties:
+            parent_item = logical_tie.parent
+            if logical_tie.must_have_children:
+                # TO DO... keep this? Necessary?
+                parent_item.remove(logical_tie)
             else:
-                logical_tie = leaf
                 if last_rest is not None and logical_tie.rest:
                     last_rest.ticks += logical_tie.ticks
                     parent_item.remove(logical_tie)
@@ -172,8 +179,6 @@ class Machine(BaseMachine, calliope.Fragment):
                 return pitch_thingy
             else:
                 return abjad.NamedPitch(pitch_thingy).number
-
-        print(data_logical_tie, "YO!!")
 
         if isinstance(data_logical_tie, calliope.ContainerCell):
             custom_music = data_logical_tie.music()
@@ -205,7 +210,7 @@ class Machine(BaseMachine, calliope.Fragment):
                     m = abjad.mutate([note])
                     m.replace(chord)
             elif isinstance(pitch, (int, str, abjad.Pitch)):
-                print("MEOW")
+                # print("MEOW")
                 # TO DO: these respell methods look to be private///
                 # invetigate further or change!!!!!
                 # ALSO TO DO... BUG WITH cf or bs OCTAVES! (workaround is to always convert to # first)
@@ -242,8 +247,8 @@ class Machine(BaseMachine, calliope.Fragment):
                 attachment = data_logical_tie.get_attachment(tag_name)
                 if attachment:
                     if callable(attachment):
-                        # TO DO... this won't work with chords!
-                        # attachment(music_logical_tie)
+                        # used for coloring, maybe other stuff in the future
+                        # TO DO: may not be working correctly... need to set up test
                         stop_index = music_leaf_index + len(music_logical_tie)
                         attachment(music[music_leaf_index:stop_index])
                     else:
@@ -256,14 +261,25 @@ class Machine(BaseMachine, calliope.Fragment):
                             abjad.attach(attachment, music[music_leaf_index])
 
 
-    def get_talea(self):
-        return rmakers.Talea(
-            counts=self.get_signed_ticks_list(), 
-            denominator=self.rhythm_denominator)
+    def get_rhythm_music(self, **kwargs):
+        self.cleanup_data()
 
-    def get_rhythm_maker(self):
-        return rmakers.TaleaRhythmMaker(
-            talea=self.get_talea(),
+        ticks_list = self.get_signed_ticks_list()
+        my_ticks = sum([abs(t) for t in ticks_list])
+
+        metrical_durations = self.get_metrical_durations()
+        metrical_durations_ticks = int(sum([ (d[0]/d[1]) * self.rhythm_denominator for d in metrical_durations]))
+
+        # add rest at end if needed to prevent talea problems if metrical durations
+        # length is greater than music (my_ticks) length
+        if my_ticks < metrical_durations_ticks:
+            ticks_list.append(my_ticks-metrical_durations_ticks)
+
+        talea = rmakers.Talea(
+            counts=ticks_list, 
+            denominator=self.rhythm_denominator)
+        talea_rmaker = rmakers.TaleaRhythmMaker(
+            talea=talea,
             read_talea_once_only=True,
             beam_specifier=rmakers.BeamSpecifier(
                 beam_each_division=True,
@@ -274,19 +290,14 @@ class Machine(BaseMachine, calliope.Fragment):
             # extra_counts_per_division=extra_counts_per_division, # for testing only...
         )
 
-    def get_rhythm_music(self, **kwargs):
-        # return self.get_rhythm_maker()([abjad.Duration(d) for d in self.metrical_durations.flattened()])
-        return self.get_rhythm_maker()([abjad.Duration(d) for d in self.get_metrical_durations()])
+        leaf_selections = talea_rmaker([abjad.Duration(d) for d in self.get_metrical_durations()])
+        return self.container_type(components=leaf_selections, **kwargs)
 
     def process_rhythm_music(self, music, **kwargs):
-        self.cleanup_data()
         self._open_spanners = {} # important in case music() metchod gets called twice on the same object
         music_logical_ties = calliope.by_logical_tie_group_rests(music)
         leaf_count=0
         # for music_logical_tie, data_logical_tie in zip(music_logical_ties, self.logical_ties_or_container):
-        print("MUSIC:", music_logical_ties)
-        print("DATA:", list(self.logical_ties_or_container))
-        print("----------------------")
         # TO DO: consider check for unequal length of musical_logical_ties/self.logical_ties_or_container?
         # e.g. look at abjad.Sequence        
         pairs = zip(music_logical_ties, self.logical_ties_or_container)
@@ -300,7 +311,7 @@ class Machine(BaseMachine, calliope.Fragment):
             leaf_count += len(music_logical_tie)
 
     def music(self, **kwargs):
-        my_music = self.container_type(components=self.get_rhythm_music(**kwargs), **kwargs)
+        my_music = self.get_rhythm_music(**kwargs)
         self.process_rhythm_music(music=my_music, **kwargs)
         return my_music
 
@@ -401,7 +412,6 @@ class EventMachine(Machine):
     def pitches(self, values):
         my_length = len(self.events)
         for i, v in enumerate(values[:my_length]):
-            print(v)
             self.events[i].pitch = v
             self.events[i].rest = v is None
 

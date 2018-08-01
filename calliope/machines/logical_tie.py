@@ -52,7 +52,7 @@ class LogicalTie(calliope.Machine):
     @property
     def ticks_before(self):
         running_count = 0
-        for l in self.root.leaves:
+        for l in self.root.logical_ties_or_container:
             if l is self:
                 return running_count
             running_count += l.ticks

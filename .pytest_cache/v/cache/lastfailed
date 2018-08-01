@@ -13,5 +13,6 @@
   "calliope/sandbox/_bak/test2.py": true,
   "calliope/sandbox/chorales/chorale_1.py": true,
   "calliope/sandbox/spelling.py": true,
-  "calliope/structures/series.py": true
+  "calliope/structures/series.py": true,
+  "tests/test_MachineSelectableMixin.py::test_MachineSelectableMixin": true
 }

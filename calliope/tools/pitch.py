@@ -1,5 +1,4 @@
 from copy import deepcopy
-from abjad import * # TO DO... kill this
 import abjad
 
 # TO DO... could also pass note as pitch object
@@ -7,13 +6,14 @@ def get_pitch_number(pitch_object):
     if isinstance(pitch_object, int):
         return pitch_object
     elif isinstance(pitch_object, str):
-        return pitchtools.NamedPitch(pitch_object).pitch_number
-    elif isinstance(pitch_object, pitchtools.Pitch):
+        return abjad.NamedPitch(pitch_object).pitch_number
+    elif isinstance(pitch_object, abjad.Pitch):
         return pitch_object.pitch_number
     elif isinstance(pitch_object, (list, tuple)):
         return [get_pitch_number(p) for p in pitch_object]
     # TO DO... error handling here?
 
+# TO DO: used? KISS?
 def remove_pitch_repetitions(pitch_row):
     ret_row = []
     for i, p in enumerate(pitch_row):
@@ -21,13 +21,15 @@ def remove_pitch_repetitions(pitch_row):
             ret_row.append(p)
     return ret_row
 
-
+# TO DO: used? KISS?
 def get_pitch_hz(pitch):
     return 261.6 * (2**( get_pitch_number(pitch) /12))
 
+# TO DO: used? KISS?
 def get_pitch_range(low_pitch, high_pitch):
-    return pitchtools.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
+    return abjad.PitchRange("[" + str(get_pitch_number(low_pitch)) + ", " + str(get_pitch_number(high_pitch)) + "]")
 
+# TO DO: used? KISS?
 def get_pitch_ranges(
             num_lines=1,
             low_pitches=[0],
@@ -55,13 +57,14 @@ def get_pitch_ranges(
             pitch_ranges.append(pitch_range)
     return pitch_ranges
     
-
+# TO DO: used? KISS?
 def transpose_pitches(pitch_stuff, transpose):
     if isinstance(pitch_stuff, (list, tuple)):
         return [transpose_pitches(p, transpose) for p in pitch_stuff]
     else:
         return get_pitch_number(pitch_stuff) + transpose
 
+# TO DO: used? KISS?
 def pitches_from_intervals(intervals, start_pitch=0):
     """
     takes a start pitch and list of intervals, and returns a list of pitch numbers
@@ -69,6 +72,7 @@ def pitches_from_intervals(intervals, start_pitch=0):
     start_pitch_number = get_pitch_number(start_pitch)
     return [get_pitch_number(sum(intervals[:x+1])) + start_pitch_number for x in range(len(intervals))]
 
+# TO DO: used? KISS?
 # TO DO: add transpose, and spelling here! (also, could add auto-spelling)
 def set_pitches(music, pitches=None, transpose=0, offset=0, indices=None, pitch_range=None):
     # TO DO... transpose should use real transpose interval!
@@ -107,7 +111,7 @@ def set_pitches(music, pitches=None, transpose=0, offset=0, indices=None, pitch_
                 if pitch_range is not None:
                     note.written_pitch = pitchtools.transpose_pitch_expr_into_pitch_range([note.written_pitch.pitch_number], pitch_range)[0]
 
-
+# TO DO: used? KISS?
 def respell(music, respell="auto"):
     if respell == "flats":
         mutate(music).respell_with_flats()
@@ -117,7 +121,7 @@ def respell(music, respell="auto"):
     elif respell == "auto":
         print("AUTO RESPELL NOT SUPPORTED YET...")
 
-
+# TO DO: used? KISS?
 # TO DO EVENTUALLY... replace by class... also replace within music?
 def replace_pitch(pitch_stuff, pitch, other_pitch):
     if isinstance(pitch_stuff, (list, tuple)):
@@ -129,8 +133,8 @@ def replace_pitch(pitch_stuff, pitch, other_pitch):
             return get_pitch_number(pitch_stuff)
 
 
+# TO DO: move this? keep using it at all?
 # TO DO... auto-find best harmonic?
-# TO DO.... make this!
 def string_harmonics(music, 
             show_pitch_indices=(None,), # none shows all
             harmonic_types=["artificial"], 

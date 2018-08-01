@@ -133,19 +133,43 @@ import abjad, calliope
  
 
 
-class MyPhrase(calliope.Phrase):
-    class CellA(calliope.Cell):
-        set_rhythm = (1,2,3,4)
-        set_pitches = (2,4,6,8)
+# class MyPhrase(calliope.Phrase):
+#     class CellA(calliope.Cell):
+#         set_rhythm = (1,2,3,4)
+#         set_pitches = (2,4,6,8)
 
-    class CellB(CellA):
-        set_pitches = (0,2,3,5)
+#     class CellB(CellA):
+#         set_pitches = (0,2,3,5)
 
-p = MyPhrase()
-p.cells[1].events.tag(".",">")
+# p = MyPhrase()
+# p.cells[1].events.tag(".",">")
 
-p.illustrate_me()
+# p.illustrate_me()
 
+class PhraseA(calliope.Phrase):
+    class Cell1(calliope.Cell):
+        set_rhythm=(1,1,1,1)
+        set_pitches=(0,2,3,5)
+    class Cell2(Cell1):
+        set_rhythm=(1,0.5,0.5,2)
+    class Cell3(Cell1):
+        set_pitches=(7,5,3,2)
+
+p = PhraseA()
+
+p_cells_1_2 = p.cells[0,1]
+
+print(p.events.as_list())
+print(p_cells_1_2.as_list())
+print(p_cells_1_2[-1:].as_list())
+
+
+# print(list(p.cells[0,-1].logical_ties))
+
+
+
+
+# c_4_4_a.illustrate_me()
 
 # print("---------------")
 # print(c.logical_ties)
