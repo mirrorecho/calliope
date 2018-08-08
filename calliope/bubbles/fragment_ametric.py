@@ -26,17 +26,17 @@ class Ametric(calliope.Fragment):
 
         leaves = select(music).by_leaf()
         if self.show_x_meter:
-            x_meter_command = abjad.LilyPondCommand( ("timeX"), "before" )
+            x_meter_command = abjad.LilyPondLiteral( (r"\timeX"), "before" )
             attach(x_meter_command, music)
         else:
             # HIDE THE TIME SIGNATURE:
-            hide_time_command = abjad.LilyPondCommand("""once \override Staff.TimeSignature #'stencil = ##f """, "before")
+            hide_time_command = abjad.LilyPondLiteral(r"""\once \override Staff.TimeSignature #'stencil = ##f """, "before")
             attach(hide_time_command, music)
         if self.duration:
-            time_command =  abjad.LilyPondCommand("time " + str(self.duration[0]) + "/" + str(self.duration[1]), "before")
+            time_command =  abjad.LilyPondLiteral(r"\time " + str(self.duration[0]) + "/" + str(self.duration[1]), "before")
             attach(time_command, music)
         if self.start_bar_line:
-            bar_command =  abjad.LilyPondCommand('bar "' + self.start_bar_line + '"', 'before')
+            bar_command =  abjad.LilyPondLiteral(r'\bar "' + self.start_bar_line + '"', 'before')
             attach(bar_command, music)
         else:
             # MAYBE TO DO... auto calculate bar-length based on longest bubble
@@ -48,7 +48,7 @@ class Ametric(calliope.Fragment):
             tempo_text = abjad.Tempo(textual_indication=my_text)
             attach(tempo_text, music)
         if self.accidental_style:
-            accidental_style_command = abjad.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
+            accidental_style_command = abjad.LilyPondLiteral("accidentalStyle " + self.accidental_style, "before")
             attach(accidental_style_command, music)
         return music
 

@@ -1,7 +1,13 @@
 [
   "tests/test_Bubble.py::test_Bubble_music",
+  "tests/test_EventMachine.py::test_EventMachine_set_pitches",
+  "tests/test_Fragment.py::test_Fragment",
+  "tests/test_Line.py::test_Line_replace_multimeasure_rests",
   "tests/test_Machine.py::test_Machine_init",
   "tests/test_Machine.py::test_Machine_durations",
   "tests/test_Machine.py::test_Machine_process_rhythm_music",
-  "tests/test_MachineSelectableMixin.py::test_MachineSelectableMixin"
+  "tests/test_MachineSelectableMixin.py::test_MachineSelectableMixin_cells",
+  "tests/test_MachineSelectableMixin.py::test_MachineSelectableMixin_events_kwargs",
+  "tests/test_Selection.py::test_Selection_str",
+  "tests/test_Selection.py::test_Selection_chained_str"
 ]

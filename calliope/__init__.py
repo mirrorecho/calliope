@@ -2,7 +2,7 @@
 from calliope.structures.base import CalliopeBaseMixin
 from calliope.tools.basic import illustrate_me
 from calliope.tools.rhythm import by_logical_tie_group_rests
-from calliope.tools.pitch import respell
+# from calliope.tools.pitch import respell
 
 # structures
 from calliope.structures.tree import TreeMixin, Tree
@@ -31,14 +31,14 @@ from calliope.machines.line import Line, LineBlock
 
 # machine transforms
 from calliope.machines.transforms.transform import Transform
-from calliope.machines.transforms.filtering import Filter, Remove
-from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
-from calliope.machines.transforms.make_chords import MakeChords 
-from calliope.machines.transforms.sorting import SortByPitch, SortByDuration 
-from calliope.machines.transforms.tagging import Tagging, Slur, BracketByType, BracketCells
 from calliope.machines.transforms.transpose import Transpose, Displace, DisplaceFifths
-from calliope.machines.transforms.smart_range import SmartRange
-from calliope.machines.transforms.pitches_through_grid import PitchesThroughGrid
+# from calliope.machines.transforms.filtering import Filter, Remove
+# from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
+# from calliope.machines.transforms.make_chords import MakeChords 
+# from calliope.machines.transforms.sorting import SortByPitch, SortByDuration 
+# from calliope.machines.transforms.tagging import Tagging, Slur, BracketByType, BracketCells
+# from calliope.machines.transforms.smart_range import SmartRange
+# from calliope.machines.transforms.pitches_through_grid import PitchesThroughGrid
 
 # grids
 from calliope.grids.grid_base import GridBase

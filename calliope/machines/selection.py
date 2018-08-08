@@ -8,14 +8,21 @@ class MachineSelectableMixin(object):
     # def select_universe(self):
     #     return self
 
-    def by_type_universe(self):
+    def get_nodes(self):
         # TO DO... delay creating the list?
-        return list(self.depth_first())
+        my_nodes = [self]
+        my_nodes.extend(self.depth_first())
+        return my_nodes
+
+    @property
+    def nodes(self):
+        return Selection(
+            select_from=self.get_nodes()
+            )        
 
     def by_type(self, *args):
-        selection = self.by_type_universe()
         return Selection(
-            select_from=selection, 
+            select_from=self.get_nodes(), 
             type_args=args
             )
 
@@ -34,6 +41,14 @@ class MachineSelectableMixin(object):
     @property
     def phrases(self):
         return self.by_type(calliope.Phrase)
+
+    @property
+    def select(self):
+        return Selection(select_from=self.children)
+
+    @property
+    def select_cells(self):
+        return Selection(select_from=self.children, type_args=(calliope.Cell,))
 
     @property
     def cells(self):
@@ -55,12 +70,18 @@ class MachineSelectableMixin(object):
     def logical_ties_or_container(self):
         return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
 
+    # TO DO: not working yet... finish inplementing:
+    # def tag_span(self, open_tag, close_tag=None):
+    #     open_tag = list(self.spanner_closures[close_tag])[0]
+    #     self[0].tag(open_tag)
+    #     close_tag = 
+    #     self[-1].tag()
+
     # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
     # not currently working...
     def select_with(self, selection):
         selection.innermost_selection.select_from = self
         return selection
-
 
 class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     select_from = ()
@@ -71,10 +92,22 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
 
     # _length = None # cached length?
 
-    def __init__(self, select_from=(), *args, **kwargs):
+    def __init__(self, select_from=(), select_root=None, *args, **kwargs):
         super().__init__()
         self.select_from = select_from
+        self.select_root = select_root or getattr(select_from, "select_root", None)
         self.setup(**kwargs)
+
+    def print_comments(self):
+        my_len = len(self)
+        return_str = "with %s items" % my_len + ": [\n"
+        for i in self[:10]:
+            return_str += "#    %s\n" % i
+        if my_len > 10:
+            return_str += "#    ... (%s more)\n" % (my_len-10)
+        return_str += "#    ]"
+        return return_str
+
 
     # TO DO... consider if useful:
     # @property
@@ -110,49 +143,59 @@ class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
     #         for child in item:
     #             yield child
 
-    def by_type_universe(self):
+    def get_nodes_generator(self):
         # TO DO... does this work OK????
         # TO DO... does this delay creating the list?
         for item in self:
-            for tree_node in list(item.depth_first()):
+            yield item
+            for tree_node in item.depth_first():
                 yield tree_node
+
+    def get_nodes(self):
+        return list(self.get_nodes_generator())
+
+    def get_children_generator(self):
+        for item in self:
+            for tree_node in item.children:
+                yield tree_node
+    
+    @property
+    def children(self):
+        return list(self.get_children_generator())
 
     def item_ok(self, index, item):
         
-        if self.type_args and not isinstance(item, self.type_args):
-            return False
+        if not (self.type_args or self.select_args or self.range_args or self.filter_kwargs):
+            return True
+
+        if self.type_args and isinstance(item, self.type_args):
+            return True
         
         if self.select_args or self.range_args:
-            arg_found = False
             if self.select_args: 
                 if index in self.select_args or item.name in self.select_args:
-                    arg_found = True
-                    # item.info("FOUND")
-            if not arg_found and self.range_args:
-                # print(self.range_args[0])
-                # print("HAHAHAHA")
+                    return True
+            if self.range_args:
                 for r in self.range_args:
                     if index in r:
-                        arg_found = True
-                        break
-            if not arg_found:
-                return False
+                        return True
 
         if self.filter_kwargs:
             for n, v in self.filter_kwargs.items():
                 try:
-                    if n[-4:] == "__in":
-                        return getattr(item, n[:-4]) in v
-                    if n[-4:] == "__lt":
-                        return getattr(item, n[:-4]) < v
-                    elif n[-4:] == "__gt":
-                        return getattr(item, n[:-4]) > v
-                    elif getattr(item, n) != v:
-                        return False
+                    if "__" in n:
+                        n, pred = n.split("__")
+                        if pred == "in" and getattr(item, n) in v:
+                            return True
+                        if pred == "lt" and getattr(item, n) < v:
+                            return True
+                        elif pred == "gt" and getattr(item, n) > v:
+                            return True
+                    elif getattr(item, n) == v:
+                        return True
                 except:
                     self.warn("tried to filter by '%s', but this attribute doesn't exist or invalid operator" % n)
-                    return False
-        return True
+        return False
 
     def __getitem__(self, arg):
         

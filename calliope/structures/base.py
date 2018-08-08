@@ -2,10 +2,10 @@ import os, inspect
 
 
 class CalliopeBaseMixin(object):
-
+    print_kwargs = ()
 
     # NOTE: __init__ should NOT be called here, because other base classes will need to to __init_called for them instead
-    
+
     def setup(self, *args, **kwargs):
         for name, value in kwargs.items():
             setattr(self, name, value)
@@ -42,6 +42,26 @@ class CalliopeBaseMixin(object):
 
         return os.path.join(full_directory, filename)
 
+    def print_comments(self):
+        """
+        hook for adding 'comments' to end of __str__
+        """
+        return ""
+
+    def __str__(self):
+        # TO DO: add test for this!
+        my_args = []
+        my_name = getattr(self, "name", None)
+        if  my_name: 
+            my_args.append('"%s"' % my_name)
+        for k in self.print_kwargs:
+            v = getattr(self, k, None)
+            v = '"%s"' % v if isinstance(v, str) else str(v)
+            my_args.append(k + "=" + v)
+        my_args_string = ", ".join(my_args)
+        my_comments = self.print_comments()
+        my_comments = " # " + my_comments if my_comments else ""
+        return self.__module__ + "." + type(self).__name__ + "(" + my_args_string + ")" + my_comments
 
     def _feedback(self, msg_prefix, msg="(no message)", msg_data=None, **kwargs):
         print("%s - %s/%s: %s" % (msg_prefix, self.__class__.__name__, getattr(self, "name", "no name"), msg)  )

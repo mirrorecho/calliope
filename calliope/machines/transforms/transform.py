@@ -6,19 +6,28 @@ class BaseTransform(calliope.Tree):
 
 class Transform(BaseTransform):
     child_types = (BaseTransform, )
+    mask = False
 
-    def _transform_setup(self, bubble):
-        self.transform_setup(bubble)
-        for c in self.children:
-            c._transform_setup(bubble)
+    def __init__(self, *args, **kwargs):
+        # print(args)
+        super().__init__(*args, **kwargs) # TO DO... ??? WTF with args?
+        self.setup(**kwargs)
 
-    def _transform_nodes(self, bubble):
-        self.transform_nodes(bubble)
-        for c in self.children:
-            c._transform_nodes(bubble)
+    def __call__(self, selectable, **kwargs):
+        if not self.mask:
+            self.transform(selectable, **kwargs)
 
-    def transform_setup(self, bubble):
+    def transform(self, selectable, **kwargs):
+        """
+        hook for doing something to the machine
+        """
         pass
 
-    def transform_nodes(self, bubble):
-        pass
+    @classmethod
+    def make(cls, callable, **kwargs):
+        my_transform = cls(**kwargs)
+        my_transform.transform = callable
+        return my_transform
+
+
+

@@ -49,21 +49,21 @@ class Fragment(calliope.Bubble):
             #     abjad.mutate(music).transpose(self.transpose)
 
             # if self.respell:
-            #     tools.respell(music, self.respell)
+            #     calliope.respell(music, self.respell)
 
             if self.time_signature:
                 # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?
-                time_command_numeric =  abjad.LilyPondCommand("numericTimeSignature", "before")
+                time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
                 abjad.attach(time_command_numeric, music_start)
 
-                time_command =  abjad.LilyPondCommand("time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+                time_command =  abjad.LilyPondLiteral(r"\time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
                 # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
                 # time_command = abjad.TimeSignature( self.time_signature )
                 abjad.attach(time_command, music_start)
 
             if self.pickup:
                 partial_value = int((1 / self.pickup) * self.rhythm_denominator / self.rhythm_default_multiplier)
-                partial_command =  abjad.LilyPondCommand("partial " + str(partial_value), "before")
+                partial_command =  abjad.LilyPondLiteral(r"\partial " + str(partial_value), "before")
                 # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
                 # time_command = abjad.TimeSignature( self.time_signature )
                 abjad.attach(partial_command, music_start)
@@ -73,7 +73,7 @@ class Fragment(calliope.Bubble):
                 abjad.attach(clef_obj, music_start)
 
             if self.bar_line:
-                bar_command =  abjad.LilyPondCommand('bar "' + self.bar_line + '"', 'before')
+                bar_command =  abjad.LilyPondLiteral(r'\bar "' + self.bar_line + '"', 'before')
                 abjad.attach(bar_command, music_start)
 
     # TO DO: this is experimental only at the moment...
@@ -113,11 +113,11 @@ class SegmentMixin(object):
             # NOTE... True adds command to compress, False adds compand to expand, None does nothing
             
             if self.compress_full_bar_rests == True:
-                rests_command =  abjad.LilyPondCommand("compressFullBarRests", "before")
+                rests_command =  abjad.LilyPondLiteral(r"\compressFullBarRests", "before")
                 abjad.attach(rests_command, music_start)
 
             elif self.compress_full_bar_rests == False:
-                rests_command =  abjad.LilyPondCommand("expandFullBarRests", "before")
+                rests_command =  abjad.LilyPondLiteral(r"\expandFullBarRests", "before")
                 abjad.attach(rests_command, music_start)
 
             # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
@@ -130,12 +130,12 @@ class SegmentMixin(object):
                 abjad.attach(tempo, music_start)
 
             elif self.tempo_command:
-                tempo_command =  abjad.LilyPondCommand("tempo \markup \\fontsize #3 { %s }" % self.tempo_command, "before")
+                tempo_command =  abjad.LilyPondLiteral(r"\tempo \markup \fontsize #3 { %s }" % self.tempo_command, "before")
                 # print(tempo_command)
                 abjad.attach(tempo_command, music_start)
 
             if self.accidental_style:
-                accidental_style_command = abjad.LilyPondCommand("accidentalStyle " + self.accidental_style, "before")
+                accidental_style_command = abjad.LilyPondLiteral(r"\accidentalStyle " + self.accidental_style, "before")
                 abjad.attach(accidental_style_command, music_start)
 
 class Segment(SegmentMixin, Fragment):
@@ -155,13 +155,14 @@ class MultiFragment(Fragment):
         return my_music
 
     def music(self, **kwargs):
+        # TO DO... test this!!!!!!
         my_music = super().music(**kwargs)
 
         if self.multi_voiced and len(my_music) > 1:
             for container in my_music[0:-1]:
-                command_voices = abjad.LilyPondCommand('\\ ', 'after')
+                command_voices = abjad.LilyPondLiteral('\\ ', 'after')
                 abjad.attach(command_voices, container)
-            command_one_voice = abjad.LilyPondCommand('oneVoice', 'after')
+            command_one_voice = abjad.LilyPondLiteral('\oneVoice', 'after')
             abjad.attach(command_one_voice, my_music)
         return my_music
 

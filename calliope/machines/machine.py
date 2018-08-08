@@ -22,30 +22,33 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     rhythm_default_multiplier = 8 # TO DO: confusing... thank of ticks per beat... instead...
     rhythm_denominator = 32
     set_name = None
-    defined_length = None # pre-determined length in beats, will padd rests at end if needed
+    defined_length = None # pre-determined length in beats, will pad rests at end if needed
     can_have_children = True
-    must_have_children = True
+    must_have_children = True # TO DO: used?
+    transforms = () # can be set to any iterable
 
     # TO DO ... implement default meter here...
 
     def __init__(self, *args, **kwargs):
-        self.transforms_tree = calliope.Transform()
-        for transform_name in type(self).class_sequence( child_types=(calliope.Transform,) ): 
-            transform_node = getattr(self, transform_name)
-            self.transforms_tree[transform_name] = transform_node
-        
-        self.transforms_tree._transform_setup(self)
-
         # base class Fragment takes first argument to be music content, if
         # first argment a string... overridden here to represent name of machine instead.
         if len(args) > 0 and type(args[0]) is str:
             self.set_name = args[0]
             args = args[1:]
         super().__init__(*args, **kwargs)
+        
         if self.set_name:
             self.name = self.set_name
+        
+        for transform in self.get_transforms():
+            transform(self)
 
-        self.transforms_tree._transform_nodes(self)
+    def get_transforms(self, *args, **kwargs):
+        my_transforms = []
+        for transform_class_name in type(self).class_sequence( child_types=(calliope.Transform,) ): 
+            my_transforms.append( getattr(self, transform_class_name)() )
+        my_transforms.extend(self.transforms)
+        return my_transforms
 
 class Block(BaseMachine, calliope.SimulFragment):
 
@@ -321,18 +324,19 @@ class Machine(BaseMachine, calliope.Fragment):
 
 class EventMachine(Machine):
     # TO DO... move to separate module, maybe rename...
-
+    print_kwargs = ("beats",)
     bookend_rests = ()
     # get_children = None # TO DO: use? or remove?
     set_rhythm = None
     set_pitches = None
+    pitches_skip_rests = False
 
     # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
 
     def __init__(self, *args, **kwargs):
         rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
         pitches = kwargs.pop("pitches", None) or self.set_pitches
-        pitches_skip_rests = kwargs.pop("pitches_skip_rests", False)
+        pitches_skip_rests = kwargs.pop("pitches_skip_rests", self.pitches_skip_rests)
         super().__init__(*args, **kwargs)
 
         # TO DO: use? or remove?

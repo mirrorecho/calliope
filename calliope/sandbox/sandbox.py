@@ -1,29 +1,6 @@
 import abjad, calliope
 # # from calliope.sandbox import module_0, module_a
 
-# class CellA(calliope.Cell):
-#     set_rhythm =  (1, 1, 0.5, 0.5)
-#     set_pitches = (2, 4, 5,   7)
-# class CellB(calliope.Cell):
-#     set_rhythm =  (2, 2, 0.25, 0.25, 0.5)
-#     set_pitches = (2, 4, 5,    7,    9)
-# class CellC(calliope.Cell):
-#     set_rhythm =  (1, -1, 1, -1, 1)
-#     set_pitches = (2, None, 5, None, 9)
-# class CellD(CellC):
-#     set_pitches = (1, None, 1, None, 1)
-
-# class PhraseI(calliope.Phrase):
-#     # cell_a = CellA
-#     cell_b = CellB
-#     cell_c = CellC
-#     cell_c1 = CellC
-#     cell_d = CellD
-
-#     meter = (5,4)
-#     # metrical_durations = ( (1,4), ((1,16),)*4, (2,4), (1,4) )
-#     metrical_offset = -1
-
 # pb = calliope.PhraseBlock(
 #     PhraseI("yo1"), 
 #     PhraseI("yo2", metrical_offset=0)
@@ -49,7 +26,6 @@ import abjad, calliope
 # NOTES MUST CAN TAKE UP MULTIPLE... BUT ONLY AT SAME LEVEL WITH SAME PARENT
 # BEAMS SPECIFY LEVEL
 
-
 # m = abjad.Meter('''(4/4 (
 #         (2/4 (
 #             1/4
@@ -62,13 +38,6 @@ import abjad, calliope
 #             )
 #         )
 #     ))''')
-
-# class TestMe(calliope.Cell):
-#     set_rhythm = (-1, 0.5, 3, -4, 3, 0.5, 0.5, 4, 0.75, 7.75, 3, 9, 0.5, 0.5, 2)
-#     # set_rhythm = (0.5, 0.5, 3)
-#     time_signature = (4,4)
-#     # defined_length = 48
-#     pickup = 1
 
 # t = TestMe()
 # t.events[0,1,3,4].tag("YO")
@@ -122,62 +91,61 @@ import abjad, calliope
 #     )Roustom
 # p.illustrate_me()
 
-
-# print(p)
-# print(p.music())
-
-# staff = abjad.Staff("c'16 d'8 e'8 fs8")
-# time_signature = abjad.TimeSignature((3, 8), partial=(1,16))
-# abjad.attach(time_signature, staff[0])
-# abjad.show(staff) 
- 
-
-
-# class MyPhrase(calliope.Phrase):
-#     class CellA(calliope.Cell):
-#         set_rhythm = (1,2,3,4)
-#         set_pitches = (2,4,6,8)
-
-#     class CellB(CellA):
-#         set_pitches = (0,2,3,5)
-
-# p = MyPhrase()
-# p.cells[1].events.tag(".",">")
-
-# p.illustrate_me()
-
 class PhraseA(calliope.Phrase):
+    class InitialRest(calliope.RestEvent):
+        set_beats=4
     class Cell1(calliope.Cell):
-        set_rhythm=(1,1,1,1)
-        set_pitches=(0,2,3,5)
-    class Cell2(Cell1):
+        set_rhythm=(-1,1,-1,1)
+    class Cell2(calliope.Cell):
         set_rhythm=(1,0.5,0.5,2)
     class Cell3(Cell1):
-        set_pitches=(7,5,3,2)
+        set_pitches=(2,2,2,None)
 
+    class AccentMe(calliope.Transform):
+        def transform(self, selectable, **kwargs):
+            selectable.non_rest_events.tag(">")
+
+
+def add_dots(selectable, **kwargs):
+    for d in selectable.non_rest_events:
+        d.tag(".")
+
+t = calliope.Transform.make(add_dots)
 p = PhraseA()
+t(p)
 
-p_cells_1_2 = p.cells[0,1]
-
-print(p.events.as_list())
-print(p_cells_1_2.as_list())
-print(p_cells_1_2[-1:].as_list())
+p.illustrate_me()
 
 
-# print(list(p.cells[0,-1].logical_ties))
+# p_args_a = calliope.Phrase(
+#         calliope.RestEvent(beats=4),
+#         calliope.Cell(rhythm=(-1,1,-1,1)),
+#         calliope.Cell(rhythm=(1,0.5,0.5,2)),
+#         calliope.Cell(rhythm=(-1,1,-1,1), pitches=(2,2,2,None)),
+#         )
+# # p_args_a.ly()
+# # p_args_a.pitches= [0,1,2,3,4,5,6,7,8,9,None,None,12]
+# # p_args_a.events[3].rest = True
+
+# p_args_a.pitches=(0,None,4)*4 + (2,)
+# print(p_args_a.ly())
+
+# print(PhraseANew().pitches)
+
+# class FragmentA(calliope.Fragment):
+#     music_contents = "e'2. R2."
+#     time_signature = (3,4)
+#     clef = "bass"
+
+# class FragmentB(calliope.Fragment):
+#     music_contents = "cs'2. d'2 r4 b2."
+#     bar_line = "!"
 
 
+# f = calliope.Fragment(FragmentA(), FragmentB())
 
+# print(format(f.music()))
 
-# c_4_4_a.illustrate_me()
-
-# print("---------------")
-# print(c.logical_ties)
-
-# print(c.pitches)
-# print(c.events(pitch__gt=3).tag(".")
-# raise Exception(c.children)
-
-# b = calliope.Bubble(music_contents="c4 c4")
+# f.illustrate_me()
 
 

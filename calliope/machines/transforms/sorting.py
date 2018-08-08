@@ -7,7 +7,7 @@ class Sorting(calliope.Transform):
     def key_method(self, item):
         return item.index
 
-    def transform_nodes(self, machine):
+    def transform(self, selectable, **kwargs):
         machine[:] = sorted( machine, key = lambda e : self.key_method(e), reverse=self.reverse)
 
 

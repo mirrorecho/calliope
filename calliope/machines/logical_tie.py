@@ -2,6 +2,7 @@ import calliope
 
 class LogicalTie(calliope.Machine):
     # original_duration = 0 # TO DO: USE THIS?
+    print_kwargs = ("beats", "pitch", "rest")
     ticks = 0
     pitch = None # if None, defaults to Event's pitch
     rest = False

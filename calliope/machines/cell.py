@@ -1,6 +1,7 @@
 import calliope
 
 class Cell(calliope.EventMachine):
+    print_kwargs = ("rhythm", "pitches")
     child_types = (calliope.EventMachine, ) # TO DO: ???
 
     def __init__(self, *args, **kwargs):

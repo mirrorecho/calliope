@@ -10,7 +10,9 @@ def test_Bubble_music():
     music = my_bubble.music()
 
     assert isinstance(music, abjad.Container)
-    assert format(my_bubble.music()) == uqbar.strings.normalize("""
+    # these should all be equivalent  since ly calls blow and formats, and blow calls music/process_music
+    # (but process_music on the Bubble base class is a hook that does nothing)
+    assert format(music) == format(my_bubble.blow()) == my_bubble.ly() == uqbar.strings.normalize("""
         { 
             c4 
             c4 

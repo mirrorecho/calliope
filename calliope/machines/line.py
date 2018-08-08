@@ -9,15 +9,27 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
     # auto_split_beams = True
     # auto_split_notes = True
 
-    def replace_multimeasure_rests(self, music):
-        """
-        TO DO EVENTUALLY... probably some more elegant way to do this, but for now this works
+    def replace_multimeasure_rests(self, music, measure_duration=(4,4)):
         """
 
-        # TO DO WARNING... THIS ONLY WORKS FOR 4/4!!!!!!!
-        measure_length = abjad.Duration( (4,4) )
+        """
 
-        leaves = abjad.select(music).by_leaf()
+        # # TO DO EVENTUALLY... some more elegant way to do this, but for now this works
+        # # LOOK INTO: abjad's rewrite meter (which should do anyway for the duration)
+        # #.... would look somethind like this:
+        # for shard in adbjad.mutate(music).split([(4,4)], cyclic=True):
+        #     abjad.mutate(shard).rewrite_meter((4,4))
+
+        # for shard in adbjad.mutate(music).split([(4,4)], cyclic=True):
+        #     if all(isinstance(x, abjad.Rest) for x in shard):
+        #         abjad.mutate(shard).replace(abjad.MultimeasureRest(shard))
+
+
+
+        # TO DO WARNING... SHOULD READ IN TIME SIGNATURE
+        measure_length = abjad.Duration( measure_duration )
+
+        leaves = abjad.select(music).leaves()
         rest_measures = 0
         measure_duration_tally = abjad.Duration(0)
         
@@ -61,7 +73,6 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
 
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)
-        # self.info("PROCESSING RESTS")
         self.replace_multimeasure_rests(music)
 
 class LineBlock(calliope.Block):

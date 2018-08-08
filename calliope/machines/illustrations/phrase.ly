@@ -1,9 +1,9 @@
-% 2018-07-29 21:58
-
-\version "2.18.2"
+\version "2.19.82"
 \language "english"
 
-\header {}
+\header {
+    tagline = ##f
+}
 
 \layout {}
 
@@ -11,16 +11,19 @@
 
 \score {
     {
+        r4
+        c'4
+        r4
+        c'4
+        c'4
+        c'8
+        [
+        c'8
+        ]
         c'2
-        c'2
-        c'4
-        c'4
-        c'4
-        c'4
-        c'4
-        c'4 ~
-        c'4
-        c'4 ~
-        c'4
+        d'4
+        d'4
+        d'4
+        r4
     }
 }

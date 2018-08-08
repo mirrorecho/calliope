@@ -5,8 +5,8 @@ install_requires = [
     'abjad-ext-rmakers>=3.0',
     'pandas>=0.23',
     'jupyter>=1.0',
-    'pytest>=3.6',
-    'pytest-cov',
+    'pytest>=3.7',
+    'pytest-cov>=2.5',
     ]
 
 def main():

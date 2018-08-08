@@ -135,6 +135,9 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
         # for child in self.children:
         #     new_self.append(child.copy())
 
+    def print_comments(self):
+        return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)
+
     # # TO DO... delete?
     # def index_children(self):
     #     for i, child in enumerate(self.children):
