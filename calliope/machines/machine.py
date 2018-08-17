@@ -26,6 +26,7 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
     can_have_children = True
     must_have_children = True # TO DO: used?
     transforms = () # can be set to any iterable
+    factory = None
 
     # TO DO ... implement default meter here...
 
@@ -35,13 +36,24 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
         if len(args) > 0 and type(args[0]) is str:
             self.set_name = args[0]
             args = args[1:]
+
+        if isinstance(self, calliope.Factory):
+            self.factory = self
+        
         super().__init__(*args, **kwargs)
         
         if self.set_name:
             self.name = self.set_name
-        
+
+
         for transform in self.get_transforms():
             transform(self)
+
+    def set_children_from_class(self, *args, **kwargs):
+        if self.factory is not None:
+            self.factory.fabricate(self, *args, **kwargs) # TO DO... remove args/kwargs here?
+        else:
+            super().set_children_from_class(*args, **kwargs)
 
     def get_transforms(self, *args, **kwargs):
         my_transforms = []

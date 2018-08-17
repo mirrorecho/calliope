@@ -67,6 +67,7 @@ class CopyChildrenBubble(calliope.Bubble):
         # self.info()
         self.set_children(self, copy_children_from)
 
+    # TO DO... consider merging into set_children_from_class
     def set_children(self, parent_bubble, copy_children_from):
         # TO DO... there might be a better way to iterate through all children...
         if copy_children_from:

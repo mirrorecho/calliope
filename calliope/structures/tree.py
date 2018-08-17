@@ -18,6 +18,7 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
     original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
     # can be overriden to set children based on other/special logic
+    # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places
     def set_children_from_class(self, *args, **kwargs):
         for node_name in type(self).class_sequence(): 
             node = getattr(self, node_name)

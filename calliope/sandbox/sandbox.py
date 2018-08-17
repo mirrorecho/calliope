@@ -88,33 +88,42 @@ import abjad, calliope
 #     calliope.Cell(rhythm=(2,2)),
 #     t,
 #     calliope.Cell(rhythm=(2,2)),
-#     )Roustom
-# p.illustrate_me()
+#     )
+
+
+class SomeFactory(calliope.Factory):
+
+    def fabricate(self, machine, *args, **kwargs):
+        machine.extend([calliope.Cell(rhythm=(2,2)), calliope.Cell(rhythm=(4,4))])
+
+# TWO WAYS TO USE FACTORIES (class vs instance)
+# 1)
+class MyPhrase(SomeFactory, calliope.Phrase): pass
+p = MyPhrase()
+# 2)
+p = calliope.Phrase(factory=SomeFactory())
+
+
+
 
 class PhraseA(calliope.Phrase):
-    class InitialRest(calliope.RestEvent):
-        set_beats=4
-    class Cell1(calliope.Cell):
-        set_rhythm=(-1,1,-1,1)
-    class Cell2(calliope.Cell):
-        set_rhythm=(1,0.5,0.5,2)
-    class Cell3(Cell1):
-        set_pitches=(2,2,2,None)
+    class CellA(calliope.Cell):
+        set_rhythm=(3,3)
+        set_pitches=(0,2)
+    class CellA(calliope.Cell):
+        set_rhythm=(2,4)
+        set_pitches=(4,5)
 
     class AccentMe(calliope.Transform):
         def transform(self, selectable, **kwargs):
             selectable.non_rest_events.tag(">")
 
-
-def add_dots(selectable, **kwargs):
-    for d in selectable.non_rest_events:
-        d.tag(".")
-
-t = calliope.Transform.make(add_dots)
 p = PhraseA()
-t(p)
+selection = p.events(pitch__gt=0)
 
-p.illustrate_me()
+pc = calliope.Cell(factory=calliope.CopyEventsFactory(selection=selection))
+
+print(pc.name, "YA")
 
 
 # p_args_a = calliope.Phrase(

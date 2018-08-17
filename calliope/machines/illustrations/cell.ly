@@ -1,4 +1,4 @@
-\version "2.18.2"
+\version "2.19.82"
 \language "english"
 
 \header {
@@ -11,25 +11,12 @@
 
 \score {
     {
-        r2
-        r4
-        c'4
+        cs'2
         ~
-        c'8
-        [
-        c'8
+        cs'4
+        d'4
         ~
-        ]
-        c'4
-        c'2
-        c'1
-        ~
-        c'1
-        c'4
-        ~
-        c'8
-        [
-        r8
-        ]
+        d'4
+        ef'4
     }
 }

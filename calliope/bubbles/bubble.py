@@ -39,6 +39,7 @@ class Bubble(calliope.Tree):
     def __mul__(self, num):
         return self.parent_type( **[self() for i in range(num)] )
 
+    # TO DO: is this ever used? KISS!
     def fuse(self, count):
         # TO DO... this could be more elegant!!!
         my_index = self.my_index

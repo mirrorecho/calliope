@@ -4,7 +4,7 @@ import os, inspect
 class CalliopeBaseMixin(object):
     print_kwargs = ()
 
-    # NOTE: __init__ should NOT be called here, because other base classes will need to to __init_called for them instead
+    # NOTE: __init__ should NOT be here, because other base classes will need to have __init__ called for them instead
 
     def setup(self, *args, **kwargs):
         for name, value in kwargs.items():
@@ -63,6 +63,7 @@ class CalliopeBaseMixin(object):
         my_comments = " # " + my_comments if my_comments else ""
         return self.__module__ + "." + type(self).__name__ + "(" + my_args_string + ")" + my_comments
 
+    # TO DO... reconcile this with __str__?
     def _feedback(self, msg_prefix, msg="(no message)", msg_data=None, **kwargs):
         print("%s - %s/%s: %s" % (msg_prefix, self.__class__.__name__, getattr(self, "name", "no name"), msg)  )
         if msg_data is not None:    

@@ -29,6 +29,10 @@ from calliope.machines.cell import Cell, CellBlock, ContainerCell, CustomCell #,
 from calliope.machines.phrase import Phrase, PhraseBlock
 from calliope.machines.line import Line, LineBlock
 
+# machine factories
+from calliope.factories.factory import Factory
+from calliope.factories.copy_events import CopyEventsFactory
+
 # machine transforms
 from calliope.machines.transforms.transform import Transform
 from calliope.machines.transforms.transpose import Transpose, Displace, DisplaceFifths
