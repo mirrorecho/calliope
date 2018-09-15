@@ -10,9 +10,10 @@ import pandas as pd
 import abjad
 import calliope
 
-class GridBase(calliope.CalliopeBaseMixin):
-    to_bubble_type = calliope.Bubble
-    row_to_bubble_type = calliope.Fragment
+class GridBase(calliope.Factory):
+    row_machine_type = calliope.Line
+    item_machine_type = calliope.Event
+
     output_directory = None
     save_attrs = ("data", "start_data")
     version = 1
@@ -27,10 +28,14 @@ class GridBase(calliope.CalliopeBaseMixin):
     name = None
 
     def __init__(self, *args, **kwargs):
-        if "get_start_data" in kwargs:
-            self.get_start_data = types.MethodType( kwargs.pop("get_start_data"), self )
 
-        self.setup(**kwargs)
+        # TO DO... need?        
+        # if "get_start_data" in kwargs:
+        #     self.get_start_data = types.MethodType( kwargs.pop("get_start_data"), self )
+
+        # self.setup(**kwargs)
+        super().__init__(*args, **kwargs)
+        
         self.tally_apps = list(args)
 
         if self.auto_load:
@@ -60,43 +65,46 @@ class GridBase(calliope.CalliopeBaseMixin):
 
         self.reset_tally()
 
-    @classmethod
-    def from_bubble(cls, bubble, *args, **kwargs):
-        bubble_records = [cls.row_list_from_bubble(b) for b in bubble]
-        kwargs["output_directory"] = bubble.get_module_info()[0]
-        kwargs["get_start_data"] = lambda s: pd.DataFrame.from_records(bubble_records)
-        kwargs["name"] = "from_%s" % (bubble.name or bubble.__class__.__name__)
-        return cls(*args, **kwargs)
+    # TO DO THESE SHOULD TO BE RETHOUGHT...
 
-    @classmethod
-    def row_list_from_bubble(self, bubble):
-        return [cls.item_from_bubble(b) for b in bubble]
+    # @classmethod
+    # def from_bubble(cls, bubble, *args, **kwargs):
+    #     bubble_records = [cls.row_list_from_bubble(b) for b in bubble]
+    #     kwargs["output_directory"] = bubble.get_module_info()[0]
+    #     kwargs["get_start_data"] = lambda s: pd.DataFrame.from_records(bubble_records)
+    #     kwargs["name"] = "from_%s" % (bubble.name or bubble.__class__.__name__)
+    #     return cls(*args, **kwargs)
 
-    @classmethod
-    def item_from_bubble(self, bubble):
-        return bubble
+    # @classmethod
+    # def row_list_from_bubble(self, bubble):
+    #     return [cls.item_from_bubble(b) for b in bubble]
 
-    def illustrate_me(self):
-        self.to_bubble().illustrate_me(directory=self.output_directory)
+    # @classmethod
+    # def item_from_bubble(self, bubble):
+    #     return bubble
+
+    # def illustrate_me(self):
+    #     self.to_bubble().illustrate_me(directory=self.output_directory)
 
     def illustrate_start(self):
         show_copy = self.copy_me(reset=True)
         show_copy.name += "_start"
         show_copy.illustrate_me()
 
-    def to_bubble(self, bubble_type=None, row_bubble_type=None):
-        return (bubble_type or self.to_bubble_type)(
-            *self.data.apply(lambda row: self.row_to_bubble(row, row_bubble_type), axis=1),
-            name = "%s_%s" % (self.name, self.__class__.__name__)
+    def fabricate(self, machine, *args, **kwargs):
+        machine.extend(
+            self.data.apply(lambda row: self.row_to_machine(row), axis=1)
+            )
+        # TO DO: needed?
+        # machine.name = "%s_%s" % (self.name, self.__class__.__name__)
+
+    def row_to_machine(self, row):
+        return (self.row_machine_type)(
+            *row.apply(self.item_to_machine)
             )
 
-    def row_to_bubble(self, row, row_bubble_type=None):
-        return (row_bubble_type or self.row_to_bubble_type)(
-            *row.apply(self.item_to_bubble)
-            )
-
-    def item_to_bubble(self, item):
-        return item
+    def item_to_machine(self, item):
+        return (self.item_machine_type)(item)
 
     def get_output_file_path(self, save_attr):
         return self.get_output_path(

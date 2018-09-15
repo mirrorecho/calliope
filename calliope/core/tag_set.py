@@ -1,5 +1,5 @@
 import abjad
-from calliope import structures, bubbles
+import calliope
 
 # TO DO: rename to TaggableMixin?
 class TagSet(object):

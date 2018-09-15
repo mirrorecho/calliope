@@ -2,7 +2,7 @@ import calliope
 
 # TO DO... some way to window/overlap to tally up longer things effectively?
 
-class TallyBase(calliope.CalliopeBaseMixin):
+class TallyBase(calliope.BaseMixin):
     row_weights = None # could be used to make the tally count more at given spots
     column_weights = None # could be used to make the tally count more at given spots
 

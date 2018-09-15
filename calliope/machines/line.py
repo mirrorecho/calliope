@@ -1,6 +1,7 @@
 import abjad
 import calliope
 
+# TO DO: consider renaming?
 class Line(calliope.SegmentMixin, calliope.EventMachine):
     child_types = (calliope.Phrase, calliope.Cell, calliope.Event,)
 

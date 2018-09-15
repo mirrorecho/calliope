@@ -5,8 +5,6 @@ import abjad
 import calliope
 
 class PitchGrid(calliope.GridBase):
-    to_bubble_type = calliope.CellBlock
-    row_to_bubble_type = calliope.Cell
     pitch_ranges = None
     # auto_move_into_ranges = False # TO DO... use this?
 
@@ -57,18 +55,18 @@ class PitchGrid(calliope.GridBase):
             self.move_into_ranges()
             # print(self.data)
 
-
-    def item_to_bubble(self, item):
+    def item_to_machine(self, item):
         return calliope.Event(pitch=item, beats=1)
 
-    @classmethod
-    def row_list_from_bubble(cls, bubble):
-        return [cls.item_from_bubble(e) for e in bubble.non_rest_events]
+    # TO DO... rethink
+    # @classmethod
+    # def row_list_from_bubble(cls, bubble):
+    #     return [cls.item_from_bubble(e) for e in bubble.non_rest_events]
 
-    @classmethod
-    def item_from_bubble(cls, bubble):
-        if hasattr(bubble, "pitch"):
-            return abjad.NumberedPitch(bubble.pitch).number
-        else:
-            print("WARNING: bubble item has no pitch attribute for pitch grid")
-            return 0
+    # @classmethod
+    # def item_from_bubble(cls, bubble):
+    #     if hasattr(bubble, "pitch"):
+    #         return abjad.NumberedPitch(bubble.pitch).number
+    #     else:
+    #         print("WARNING: bubble item has no pitch attribute for pitch grid")
+    #         return 0

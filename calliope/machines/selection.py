@@ -83,7 +83,7 @@ class MachineSelectableMixin(object):
         selection.innermost_selection.select_from = self
         return selection
 
-class Selection(MachineSelectableMixin, calliope.CalliopeBaseMixin):
+class Selection(MachineSelectableMixin, calliope.BaseMixin):
     select_from = ()
     select_args = None # iterable of names or indices of items
     filter_kwargs = None # dictionary of attribute names/values to match

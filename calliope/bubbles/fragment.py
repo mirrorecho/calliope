@@ -90,7 +90,7 @@ class Fragment(calliope.Bubble):
 
 class SegmentMixin(object):
     """
-    intented to be used with Fragment, SegmentMixin implements some conveniences useful for longer
+    intended to be used with Fragment, SegmentMixin implements some conveniences useful for longer
     segments of music (e.g. adding rehearsal marks).
     """
     child_types = (Fragment, )

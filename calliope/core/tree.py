@@ -6,7 +6,7 @@ import uqbar
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(uqbar.containers.UniqueTreeContainer))
 
-class TreeMixin(calliope.CalliopeBaseMixin):
+class TreeMixin(calliope.BaseMixin):
     pass
 
 class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):

@@ -1,12 +1,10 @@
 # tools
-from calliope.structures.base import CalliopeBaseMixin
-from calliope.tools.basic import illustrate_me
-from calliope.tools.rhythm import by_logical_tie_group_rests
-# from calliope.tools.pitch import respell
-
-# structures
-from calliope.structures.tree import TreeMixin, Tree
-from calliope.structures.tag_set import TagSet
+from calliope.core.base_mixin import BaseMixin
+from calliope.core.illustrate_me import illustrate_me
+from calliope.core.rhythm import by_logical_tie_group_rests
+# from calliope.core.pitch import respell
+from calliope.core.tree import TreeMixin, Tree
+from calliope.core.tag_set import TagSet
 
 # bubbles
 from calliope.bubbles.bubble import Bubble
@@ -32,10 +30,12 @@ from calliope.machines.line import Line, LineBlock
 # machine factories
 from calliope.factories.factory import Factory
 from calliope.factories.copy_events import CopyEventsFactory
+from calliope.factories.stack_pitches import StackPitches
 
 # machine transforms
-from calliope.machines.transforms.transform import Transform
-from calliope.machines.transforms.transpose import Transpose, Displace, DisplaceFifths
+from calliope.transforms.transform import Transform
+from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths
+from calliope.transforms.add_constant_pitch import AddConstantPitch
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 
@@ -55,3 +55,4 @@ from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 
 # libraries
 from calliope.libraries import meters
+from calliope.libraries.pitch_sequence import PitchSequence

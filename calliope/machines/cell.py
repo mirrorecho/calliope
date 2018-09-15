@@ -8,6 +8,7 @@ class Cell(calliope.EventMachine):
         self.child_types = child_types = (calliope.Cell, calliope.Event) # just to be safe
         super().__init__(*args, **kwargs)
 
+# TO DO ???
 class ContainerCell(Cell):
     """
     By default, an abjad container is only created for the outermost machine... 
@@ -16,7 +17,7 @@ class ContainerCell(Cell):
     def get_signed_ticks_list(self, **kwargs):
         return [self.ticks]
 
-
+# TO DO ???
 class CustomCell(Cell):
     child_types = ()
     set_beats = None
@@ -58,8 +59,5 @@ class CustomCell(Cell):
 class CellBlock(calliope.Block):
     # TO DO... implement this better... 
     child_types = (Cell,)
-    # is_simultaneous = True
-    pass
-
 
 

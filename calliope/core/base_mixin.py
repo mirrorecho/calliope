@@ -1,7 +1,7 @@
 import os, inspect
 
 
-class CalliopeBaseMixin(object):
+class BaseMixin(object):
     print_kwargs = ()
 
     # NOTE: __init__ should NOT be here, because other base classes will need to have __init__ called for them instead

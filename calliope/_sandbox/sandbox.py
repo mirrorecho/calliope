@@ -1,4 +1,33 @@
 import abjad, calliope
+
+# class MyFactory(calliope.Factory):
+#     factory_pitches=(0,1,2)
+#     factory_rhythm=(2,2,4)
+
+#     def get_pitches(self):
+#         return [f + 12 for f in self.factory_pitches]
+
+# f = calliope.Cell(
+#     factory = MyFactory()
+#     )
+# f.illustrate_me()
+
+
+# class MyStack(calliope.StackPitches, calliope.CellBlock):
+#     factory_pitches = (0,2,5,3,7,)
+#     factory_rhythm = (1,2,1,3,1)
+#     intervals = ( (0,12), (7,8) )
+
+#     class Add0Pitch(calliope.AddConstantPitch): 
+#         pitch = 0
+
+# c = MyStack()
+# print(c.select)
+# c.illustrate_me()
+
+
+
+
 # # from calliope.sandbox import module_0, module_a
 
 # pb = calliope.PhraseBlock(
@@ -91,39 +120,41 @@ import abjad, calliope
 #     )
 
 
-class SomeFactory(calliope.Factory):
+# class SomeFactory(calliope.Factory):
 
-    def fabricate(self, machine, *args, **kwargs):
-        machine.extend([calliope.Cell(rhythm=(2,2)), calliope.Cell(rhythm=(4,4))])
+#     def fabricate(self, machine, *args, **kwargs):
+#         machine.extend([calliope.Cell(rhythm=(2,2)), calliope.Cell(rhythm=(4,4))])
 
-# TWO WAYS TO USE FACTORIES (class vs instance)
-# 1)
-class MyPhrase(SomeFactory, calliope.Phrase): pass
-p = MyPhrase()
-# 2)
-p = calliope.Phrase(factory=SomeFactory())
-
-
+# # TWO WAYS TO USE FACTORIES (class vs instance)
+# # 1)
+# class MyPhrase(SomeFactory, calliope.Phrase): pass
+# p = MyPhrase()
+# # 2)
+# p = calliope.Phrase(factory=SomeFactory())
 
 
-class PhraseA(calliope.Phrase):
-    class CellA(calliope.Cell):
-        set_rhythm=(3,3)
-        set_pitches=(0,2)
-    class CellA(calliope.Cell):
-        set_rhythm=(2,4)
-        set_pitches=(4,5)
 
-    class AccentMe(calliope.Transform):
-        def transform(self, selectable, **kwargs):
-            selectable.non_rest_events.tag(">")
 
-p = PhraseA()
-selection = p.events(pitch__gt=0)
+# class PhraseA(calliope.Phrase):
+#     class CellA(calliope.Cell):
+#         set_rhythm=(3,3)
+#         set_pitches=(0,2)
+#     class CellA(calliope.Cell):
+#         set_rhythm=(2,4)
+#         set_pitches=(4,5)
 
-pc = calliope.Cell(factory=calliope.CopyEventsFactory(selection=selection))
+#     class AccentMe(calliope.Transform):
+#         def transform(self, selectable, **kwargs):
+#             selectable.non_rest_events.tag(">")
 
-print(pc.name, "YA")
+# p = PhraseA()
+# selection = p.events(pitch__gt=0)
+
+# pc = calliope.Cell(
+#     factory=calliope.CopyEventsFactory(selection=selection)
+#     )
+
+# print(pc.name, "YA")
 
 
 # p_args_a = calliope.Phrase(

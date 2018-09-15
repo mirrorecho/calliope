@@ -1,7 +1,8 @@
 import abjad
 import calliope
 
-class BaseTransform(calliope.Tree):
+# TO DO: WTF why this extra base class?
+class BaseTransform(calliope.BaseMixin):
     pass # just for inheritance consistency
 
 class Transform(BaseTransform):
@@ -23,11 +24,12 @@ class Transform(BaseTransform):
         """
         pass
 
-    @classmethod
-    def make(cls, callable, **kwargs):
-        my_transform = cls(**kwargs)
-        my_transform.transform = callable
-        return my_transform
+    # TO DO: useful, or KISS?
+    # @classmethod
+    # def make(cls, callable, **kwargs):
+    #     my_transform = cls(**kwargs)
+    #     my_transform.transform = callable
+    #     return my_transform
 
 
 

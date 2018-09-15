@@ -7,7 +7,7 @@ class Transpose(calliope.Transform):
     interval = 0 
 
     def transform(self, selectable, **kwargs):
-        for event in machine.events:
+        for event in selectable.non_rest_events:
             event.transpose(self.interval)
 
 class Displace(calliope.Transform):
@@ -15,7 +15,7 @@ class Displace(calliope.Transform):
     multiple = 1
 
     def transform(self, selectable, **kwargs):
-        for event in machine.events:
+        for event in selectable.non_rest_events:
             event.transpose(self.interval * self.multiple)
 
 class DisplaceFifths(Displace):
