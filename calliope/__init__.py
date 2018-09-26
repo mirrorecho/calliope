@@ -36,6 +36,7 @@ from calliope.factories.stack_pitches import StackPitches
 from calliope.transforms.transform import Transform
 from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths
 from calliope.transforms.add_constant_pitch import AddConstantPitch
+from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 

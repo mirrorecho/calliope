@@ -1,5 +1,8 @@
 import abjad, calliope
 
+c = calliope.Event(beats=2, pitch=2)
+# c.illustrate_me()
+
 # class MyFactory(calliope.Factory):
 #     factory_pitches=(0,1,2)
 #     factory_rhythm=(2,2,4)

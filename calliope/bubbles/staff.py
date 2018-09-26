@@ -16,12 +16,15 @@ class Staff(calliope.Bubble):
         
         # needed for horizontal brackets:
         music.consists_commands.append('Horizontal_bracket_engraver')
+        music_leaves = abjad.select(music).leaves()
+        if len(music_leaves) > 0:
+            music_start = music_leaves[0]
 
-        if self.instrument:
-            abjad.attach(self.instrument, music)
-        if self.clef:
-            clef_obj = abjad.Clef(self.clef)
-            abjad.attach(clef_obj, music)
+            if self.instrument and len(music) > 0:
+                abjad.attach(self.instrument, music_start)
+            if self.clef:
+                clef_obj = abjad.Clef(self.clef)
+                abjad.attach(clef_obj, music_start)
         super().process_music(music, **kwargs)
 
     def show(self):
@@ -95,6 +98,7 @@ class StaffGroup(CopyChildrenBubble):
     instrument = None
     
     def process_music(self, music, **kwargs):
+        # TO DO: confirm... does this still work?
         if self.instrument:
             abjad.attach(self.instrument, music)
         super().process_music(music, **kwargs)

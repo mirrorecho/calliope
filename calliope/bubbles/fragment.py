@@ -42,7 +42,7 @@ class Fragment(calliope.Bubble):
         super().process_music(music, **kwargs)
 
         if len(music) > 0:
-            music_start = music[0]
+            music_start = abjad.select(music).leaves()[0]
 
             # TO DO... keep this...???
             # if self.transpose:

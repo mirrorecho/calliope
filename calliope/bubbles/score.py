@@ -24,8 +24,8 @@ class AutoScore(Score):
             for bubble in copy_children_from:
                 self[bubble.name] = calliope.Staff(
                     instrument=abjad.Instrument(
-                        instrument_name=bubble.name, 
-                        short_instrument_name=bubble.name)
+                        name=bubble.name, 
+                        short_name=bubble.name)
                     )
         super().set_children(parent_bubble, copy_children_from)
 
