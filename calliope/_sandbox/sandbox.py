@@ -1,8 +1,31 @@
 import abjad, calliope
 
-c = calliope.Event(beats=2, pitch=2)
+c = calliope.Cell(
+    rhythm=(1,1,1,1,3,2), 
+    pitches=(2,0,None,7,None,6)
+    )
+
+cb = calliope.CellBlock(
+    calliope.Cell("violin1",
+        rhythm=(1,1,1,1,3,2), 
+        pitches=(4,0,None,7,None,6)        
+        ),
+    calliope.Cell("violin2",
+        rhythm=(1,1,1,1,3,2), 
+        pitches=(2,0,None,7,None,6)        
+        ),
+    )
+
+# THESE ALL WORK OK:
+# calliope.illustrate_me(bubble=cb)
+# cb.illustrate_me()
 # c.illustrate_me()
 
+# TO DO: why doesn't this work?????!!!!
+# calliope.illustrate_me(bubble=c)
+
+
+ 
 # class MyFactory(calliope.Factory):
 #     factory_pitches=(0,1,2)
 #     factory_rhythm=(2,2,4)

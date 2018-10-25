@@ -61,16 +61,7 @@ class BaseMachine(calliope.MachineSelectableMixin, calliope.TagSet):
             my_transforms.append( getattr(self, transform_class_name)() )
         my_transforms.extend(self.transforms)
         return my_transforms
-
-class Block(BaseMachine, calliope.SimulFragment):
-
-    def comp(self): #TO DO ????????
-        pass
-
-    @property
-    def ticks(self):
-        return max([c.ticks for c in self])
-
+                                                            
 
 class Machine(BaseMachine, calliope.Fragment):
 

@@ -19,13 +19,14 @@ from calliope.bubbles.sequence import MatchSequence
 from calliope.machines.selection import MachineSelectableMixin, Selection
 
 # machines
-from calliope.machines.machine import BaseMachine, Block, Machine, EventMachine
+from calliope.machines.machine import BaseMachine, Machine, EventMachine
 # ... note the order, inner to outer, is important...
 from calliope.machines.logical_tie import LogicalTie
 from calliope.machines.event import Event, RestEvent
-from calliope.machines.cell import Cell, CellBlock, ContainerCell, CustomCell #, TupletCell 
-from calliope.machines.phrase import Phrase, PhraseBlock
-from calliope.machines.line import Line, LineBlock
+from calliope.machines.cell import Cell, ContainerCell, CustomCell #, TupletCell 
+from calliope.machines.phrase import Phrase
+from calliope.machines.line import Line
+from calliope.machines.block import Block, EventBlock, CellBlock, PhraseBlock, LineBlock
 
 # machine factories
 from calliope.factories.factory import Factory

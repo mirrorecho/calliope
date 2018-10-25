@@ -56,8 +56,3 @@ class CustomCell(Cell):
             self._ticks = int(my_beats * self.rhythm_default_multiplier)
             
 
-class CellBlock(calliope.Block):
-    # TO DO... implement this better... 
-    child_types = (Cell,)
-
-

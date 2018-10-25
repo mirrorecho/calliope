@@ -87,3 +87,4 @@ target/
 *.sublime-workspace
 
 *.sublime-workspace
+*.DS_Store

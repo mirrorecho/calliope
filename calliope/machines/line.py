@@ -75,9 +75,3 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)
         self.replace_multimeasure_rests(music)
-
-class LineBlock(calliope.Block):
-    # TO DO... implement this better... 
-    child_types = (Line,)
-    # is_simultaneous = True
-    pass

@@ -9,7 +9,7 @@ class Score(calliope.CopyChildrenBubble):
 
     container_type=abjad.Score
     child_types=(calliope.Staff, calliope.StaffGroup)
-    # TO DO... the following are no longer used... kep them?
+    # TO DO... the following are no longer used... keep them?
     hide_empty = False 
     title = ""
 
