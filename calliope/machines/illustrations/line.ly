@@ -10,22 +10,34 @@
 \paper {}
 
 \score {
-    <<
-        {
-            {
-                \accidentalStyle modern-cautionary
-                c'4
-                c''4
-                ~
-                c''4
-            }
-        }
-        {
-            {
-                \accidentalStyle modern-cautionary
-                d'2
-                g'4
-            }
-        }
-    >>
+    {
+        \accidentalStyle modern-cautionary
+        bf8
+        [
+        a8
+        ]
+        ef'4
+        d'8
+        [
+        cs'8
+        ]
+        fs'8
+        [
+        f'8
+        ]
+        b'4
+        bf'8
+        [
+        bf'8
+        ]
+        ef''8
+        [
+        cs''8
+        ]
+        af''4
+        fs''8
+        [
+        fs''8
+        ]
+    }
 }

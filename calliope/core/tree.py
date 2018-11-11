@@ -85,6 +85,7 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
         return my_sequence
 
     @classmethod
+    #DAH! Keep this? Too Hacky?
     def from_module(cls, module, **kwargs):
         module_members_info = sorted([
                 (

@@ -53,6 +53,7 @@ class LogicalTie(calliope.Machine):
     @property
     def ticks_before(self):
         running_count = 0
+        # TO DO: shouldn't go to root for blocks!
         for l in self.root.logical_ties_or_container:
             if l is self:
                 return running_count

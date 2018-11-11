@@ -1,20 +1,105 @@
 import abjad, calliope
 
-c = calliope.Cell(
-    rhythm=(1,1,1,1,3,2), 
-    pitches=(2,0,None,7,None,6)
+class Arrange(calliope.Transform):
+    arrange_from = None
+
+    def __init__(self, arrange_from=None, **kwargs):
+        self.arrange_from = arrange_from or self.arrange_from
+        super().__init__(**kwargs) 
+
+    # def get_detination_branches(self, selectable):
+    #     if self.detination_branch_names:
+    #         return selectable[*self.detination_branch_names]
+    #      else: 
+    #         selectable.select
+
+    def transform(self, selectable, **kwargs):
+        for name,value in kwargs.items():
+            selectable[name].append(self.arrange_from[value]())
+
+
+class PhraseA(calliope.Phrase):
+    class CellA1(calliope.Cell):
+        set_rhythm=(3,3,3,3) 
+        set_pitches=(4,7,5,3)
+    class CellA2(calliope.Cell):
+        set_rhythm=(2,4,4,2)
+        set_pitches=(0,2,0,2)
+
+class PhraseB(calliope.Phrase):
+    class CellB1(PhraseA.CellA1):
+        set_rhythm=(2,2,2,2) 
+    class CellB2(PhraseA.CellA2):
+        set_rhythm=(2,2,2,2) 
+
+
+phrase_block = calliope.PhraseBlock(
+    PhraseA(),
+    PhraseB(),
     )
 
-cb = calliope.CellBlock(
-    calliope.Cell("violin1",
-        rhythm=(1,1,1,1,3,2), 
-        pitches=(4,0,None,7,None,6)        
-        ),
-    calliope.Cell("violin2",
-        rhythm=(1,1,1,1,3,2), 
-        pitches=(2,0,None,7,None,6)        
-        ),
-    )
+
+class CloselyScore(calliope.Score):
+    stylesheets=("../../stylesheets/score.ily",)
+    class Violin(calliope.Staff):
+        instrument=abjad.Violin(
+            name="Violin", short_name="vln.")
+
+    class Cello(calliope.Staff):
+        instrument=abjad.Cello(
+            name="Cello", short_name="vc.")
+        clef="bass"
+
+closely_score = CloselyScore()
+
+phrase_a = PhraseA()
+phrase_a.non_rest_events(pitch=0).setattrs(rest=True)
+
+arrange_block = Arrange(phrase_block)
+arrange_block(closely_score, Violin=0, Cello=1)
+
+# closely_score["Violin"].append(calliope.Cell(rhythm=(1,1,1,1)))
+# closely_score["Cello"].append(calliope.Cell(rhythm=(2,1), pitches=(4,2)))
+# calliope.illustrate_me(bubble=cs, score_type=CloselyScore)
+# calliope.illustrate_me(bubble=cs)
+
+# phrase_a.illustrate_me()
+closely_score.illustrate_me()
+
+
+# p = PhraseA()
+# AccentMe()(p["CellA2"])
+# p.illustrate_me()
+
+
+# class MyTree(calliope.Tree):
+#     class SubTreeYo(calliope.Tree):
+#         pass
+#     class SubTree(calliope.Tree):
+#         pass
+#     class SubTree2(calliope.Tree):
+#         pass
+
+
+
+# print(MyTree.class_sequence())
+
+
+# c = calliope.Cell(
+#     rhythm=(1,1,1,1,3,2), 
+#     pitches=(2,0,None,7,None,6)
+#     )
+
+# cb = calliope.CellBlock(
+#     calliope.Cell("violin1",
+#         rhythm=(1,1,1,1,3,2), 
+#         pitches=(4,0,None,7,None,6)        
+#         ),
+#     calliope.Cell("violin2",
+#         rhythm=(1,1,1,1,3,2), 
+#         pitches=(2,0,None,7,None,6)        
+#         ),
+#     )
 
 # THESE ALL WORK OK:
 # calliope.illustrate_me(bubble=cb)

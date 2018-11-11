@@ -6,7 +6,7 @@ class BaseMixin(object):
 
     # NOTE: __init__ should NOT be here, because other base classes will need to have __init__ called for them instead
 
-    def setup(self, *args, **kwargs):
+    def setup(self, *args, **kwargs): # TO DO... ??? WTF with args?
         for name, value in kwargs.items():
             setattr(self, name, value)
 

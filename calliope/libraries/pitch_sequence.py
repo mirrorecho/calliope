@@ -1,6 +1,8 @@
 import abjad
 import calliope
 
+# TO DO- consider: why live in libraries?
+
 class PitchSequence(calliope.BaseMixin):
     # TO DO: implement as either numbers or abjad pitch objects
     intervals = ()

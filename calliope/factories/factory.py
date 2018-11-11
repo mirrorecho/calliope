@@ -10,7 +10,8 @@ class Factory(calliope.BaseMixin):
             self.setup(*args, **kwargs)
 
     def get_branches_kwargs(self, *args, **kwargs):
-        return () # e.g. return (dict(rhythm=(1,2), pitches=(2,1)))
+        # should return an iterable of dictionaries
+        return () # e.g. return (dict(rhythm=(1,2), pitches=(2,1)), dict(...),)
 
     def get_branch(self, *args, **kwargs):
         return self.branch_type(**kwargs)

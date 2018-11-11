@@ -58,6 +58,11 @@ class MachineSelectableMixin(object):
     def events(self):
         return self.by_type(calliope.Event)
 
+    # TO CONSIDER: useful?
+    # @property
+    # def lines(self):
+    #     return self.by_type(calliope.Line)
+
     @property
     def non_rest_events(self):
         return self.by_type(calliope.Event).exclude(rest=True)

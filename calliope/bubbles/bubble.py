@@ -67,16 +67,18 @@ class Bubble(calliope.Tree):
         bubble_to_illustrate = self if not score_type else score_type(self)
         # print(bubble_to_illustrate.ly())
 
-        my_persistance_agent = abjad.persist( bubble_to_illustrate.get_lilypond_file() )
+        ly_file = bubble_to_illustrate.get_lilypond_file()
+        my_persistance_agent = abjad.persist( ly_file )
+
         path = self.get_output_path(**kwargs)
-        
+        print("%s.ly" % path)
+
         if as_pdf:
             pdf_filename = "%s.pdf" % path
             my_persistance_agent.as_pdf(pdf_filename)
             if open_pdf:
                 abjad.IOManager.open_file(pdf_filename)
         if as_midi:
-            print("YO MIDI")
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
 

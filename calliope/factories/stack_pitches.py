@@ -17,11 +17,11 @@ class StackPitches(calliope.Factory):
 
         for i in range(len(intervals[0])):
             my_pitches = [
-                pitch + intervals[pitch_i % len(intervals)][i] if pitch else None
+                pitch + intervals[pitch_i % len(intervals)][i] if pitch is not None else None
                 for pitch_i, pitch in enumerate(initial_pitches)
                 ]
             my_new_branch = initial_branch(pitches=my_pitches)
-            my_branches.append(my_new_branch)
+            my_branches.insert(0, my_new_branch)
 
         return my_branches
 

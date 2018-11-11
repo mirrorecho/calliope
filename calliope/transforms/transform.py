@@ -1,17 +1,12 @@
 import abjad
 import calliope
 
-# TO DO: WTF why this extra base class?
-class BaseTransform(calliope.BaseMixin):
-    pass # just for inheritance consistency
-
-class Transform(BaseTransform):
-    child_types = (BaseTransform, )
+class Transform(calliope.BaseMixin):
     mask = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         # print(args)
-        super().__init__(*args, **kwargs) # TO DO... ??? WTF with args?
+        super().__init__(**kwargs) 
         self.setup(**kwargs)
 
     def __call__(self, selectable, **kwargs):
