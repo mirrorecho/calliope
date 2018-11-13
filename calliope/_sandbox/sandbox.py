@@ -61,10 +61,31 @@ arrange_block(closely_score, Violin=0, Cello=1)
 # closely_score["Violin"].append(calliope.Cell(rhythm=(1,1,1,1)))
 # closely_score["Cello"].append(calliope.Cell(rhythm=(2,1), pitches=(4,2)))
 # calliope.illustrate_me(bubble=cs, score_type=CloselyScore)
-# calliope.illustrate_me(bubble=cs)
+# calliope.illustrate_me(bubble=closely_score)
+
+print(phrase_block.cells[1:].events)
+"""
+
+Score
+(StaffGroup)(...)
+Staff
+(Voice)
+Segment [SegmentBlock]
+(Line) [LineBlock]
+(Cell)(...) [CellBlock]
+(Event)
+(LogicalTie)
+Leaf (psuedo)
+
+"""
+
+my_score.sections["a"].staves["violin"].lines[2]
+
+my_score.sections["a"].staves["violin"].lines[2]
+
 
 # phrase_a.illustrate_me()
-closely_score.illustrate_me()
+# closely_score.illustrate_me()
 
 
 # p = PhraseA()
