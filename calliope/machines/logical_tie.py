@@ -9,6 +9,7 @@ class LogicalTie(calliope.Machine):
     is_primary = True # True if this logical tie is a primary one for it's parent event
     can_have_children = True
     must_have_children = False
+    select_property = "logical_ties"
 
     # def set_data(self, beats=None, pitch=None, rest=False, **kwargs):
     #     self.beats = beats

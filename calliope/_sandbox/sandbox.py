@@ -1,87 +1,168 @@
 import abjad, calliope
 
-class Arrange(calliope.Transform):
-    arrange_from = None
 
-    def __init__(self, arrange_from=None, **kwargs):
-        self.arrange_from = arrange_from or self.arrange_from
-        super().__init__(**kwargs) 
+class MyScore(calliope.Score):
+    class Violins(calliope.StaffGroup):
+        class Violin1Staff(calliope.Staff):
+            instrument=abjad.Violin(
+                name="Violin 1", short_name="vln.1")
+            class ViolinMusicA(calliope.Line):
+                is_simultaneous=False
+                class MyCell(calliope.Cell):
+                    set_rhythm=(1,1,1,5)
+                    set_pitches=(0,2,3,5)
 
-    # def get_detination_branches(self, selectable):
-    #     if self.detination_branch_names:
-    #         return selectable[*self.detination_branch_names]
-    #      else: 
-    #         selectable.select
-
-    def transform(self, selectable, **kwargs):
-        for name,value in kwargs.items():
-            selectable[name].append(self.arrange_from[value]())
-
-
-class PhraseA(calliope.Phrase):
-    class CellA1(calliope.Cell):
-        set_rhythm=(3,3,3,3) 
-        set_pitches=(4,7,5,3)
-    class CellA2(calliope.Cell):
-        set_rhythm=(2,4,4,2)
-        set_pitches=(0,2,0,2)
-
-class PhraseB(calliope.Phrase):
-    class CellB1(PhraseA.CellA1):
-        set_rhythm=(2,2,2,2) 
-    class CellB2(PhraseA.CellA2):
-        set_rhythm=(2,2,2,2) 
+        class Violin2Staff(calliope.Staff):
+            instrument=abjad.Violin(
+                name="Violin 2", short_name="vln.2")
+            class ViolinMusicA(calliope.Bubble):
+                is_simultaneous=False
+                music_contents="c'1 b2 b2"
 
 
-phrase_block = calliope.PhraseBlock(
-    PhraseA(),
-    PhraseB(),
-    )
+# MyScore().illustrate_me()
+s = MyScore()
+print(s.cells)
+
+# s = calliope.Score(
+#     calliope.Staff(
+#         calliope.Bubble(is_simultaneous=False, music_contents="c'1 b2 b2"),
+#         calliope.Bubble(is_simultaneous=False, music_contents="b2 b2 c'1 "),
+#         ),
+#     calliope.Staff(
+#         calliope.Bubble(is_simultaneous=False, music_contents="a2 a2 d'1"),
+#         calliope.Bubble(is_simultaneous=False, music_contents="d'1 a2 a2"),
+#         ),
+#     )
+
+# print(s.staves)
 
 
-class CloselyScore(calliope.Score):
-    stylesheets=("../../stylesheets/score.ily",)
-    class Violin(calliope.Staff):
-        instrument=abjad.Violin(
-            name="Violin", short_name="vln.")
 
-    class Cello(calliope.Staff):
-        instrument=abjad.Cello(
-            name="Cello", short_name="vc.")
-        clef="bass"
 
-closely_score = CloselyScore()
+# s.illustrate_me()
 
-phrase_a = PhraseA()
-phrase_a.non_rest_events(pitch=0).setattrs(rest=True)
 
-arrange_block = Arrange(phrase_block)
-arrange_block(closely_score, Violin=0, Cello=1)
+# class MyTwig(calliope.Tree):
+#     child_types = ()
+#     select_property = "twigs"
 
-# closely_score["Violin"].append(calliope.Cell(rhythm=(1,1,1,1)))
-# closely_score["Cello"].append(calliope.Cell(rhythm=(2,1), pitches=(4,2)))
-# calliope.illustrate_me(bubble=cs, score_type=CloselyScore)
-# calliope.illustrate_me(bubble=closely_score)
+# class MyBranch(calliope.Tree):
 
-print(phrase_block.cells[1:].events)
+#     select_property = "branches"
+
+# MyBranch.child_types = (MyTwig, MyBranch)
+
+# class MyTrunk(calliope.Tree):
+#     child_types = (MyBranch,)
+#     select_property = "trunks"
+
+# class MyTree(calliope.Tree):
+#     child_types = (MyTrunk,)
+
+# # MyTwig.child_types=(MyTrunk,)
+
+
+
+# set_select_properties(MyTree)
+
+
+
+
+# t = MyTree(
+#     MyTwig(name="twig_bad"), # TO DO: this should throw a warning
+#     MyTrunk(name="trunk1",
+#         ),
+#     MyTrunk(name="trunk2",
+#         ),
+#     )
+
+# print(t.trunks["trunk1"])
+
+
+# class Arrange(calliope.Transform):
+#     arrange_from = None
+
+#     def __init__(self, arrange_from=None, **kwargs):
+#         self.arrange_from = arrange_from or self.arrange_from
+#         super().__init__(**kwargs) 
+
+#     # def get_detination_branches(self, selectable):
+#     #     if self.detination_branch_names:
+#     #         return selectable[*self.detination_branch_names]
+#     #      else: 
+#     #         selectable.select
+
+#     def transform(self, selectable, **kwargs):
+#         for name,value in kwargs.items():
+#             selectable[name].append(self.arrange_from[value]())
+
+
+# class PhraseA(calliope.Phrase):
+#     class CellA1(calliope.Cell):
+#         set_rhythm=(3,3,3,3) 
+#         set_pitches=(4,7,5,3)
+#     class CellA2(calliope.Cell):
+#         set_rhythm=(2,4,4,2)
+#         set_pitches=(0,2,0,2)
+
+# class PhraseB(calliope.Phrase):
+#     class CellB1(PhraseA.CellA1):
+#         set_rhythm=(2,2,2,2) 
+#     class CellB2(PhraseA.CellA2):
+#         set_rhythm=(2,2,2,2) 
+
+
+# phrase_block = calliope.PhraseBlock(
+#     PhraseA(),
+#     PhraseB(),
+#     )
+
+
+# class CloselyScore(calliope.Score):
+#     stylesheets=("../../stylesheets/score.ily",)
+#     class Violin(calliope.Staff):
+#         instrument=abjad.Violin(
+#             name="Violin", short_name="vln.")
+
+#     class Cello(calliope.Staff):
+#         instrument=abjad.Cello(
+#             name="Cello", short_name="vc.")
+#         clef="bass"
+
+# closely_score = CloselyScore()
+
+# phrase_a = PhraseA()
+# phrase_a.non_rest_events(pitch=0).setattrs(rest=True)
+
+# arrange_block = Arrange(phrase_block)
+# arrange_block(closely_score, Violin=0, Cello=1)
+
+# # closely_score["Violin"].append(calliope.Cell(rhythm=(1,1,1,1)))
+# # closely_score["Cello"].append(calliope.Cell(rhythm=(2,1), pitches=(4,2)))
+# # calliope.illustrate_me(bubble=cs, score_type=CloselyScore)
+# # calliope.illustrate_me(bubble=closely_score)
+
+# print(phrase_block.cells[1:].events)
+# """
+
 """
-
-Score
-(StaffGroup)(...)
-Staff
-(Voice)
-Segment [SegmentBlock]
-(Line) [LineBlock]
-(Cell)(...) [CellBlock]
-(Event)
-(LogicalTie)
-Leaf (psuedo)
-
+<<Score>>
+( <<StaffGroup>> )(...)
+{Staff}
+( {Voice} ) ( <<VoiceBlock>> )
+{Section} <<SectionBlock>>
+( {Line} ) <<LineBlock>>
+( {Cell} )(...) <<CellBlock>>
+Event
+LogicalTie
+(Leaf) (psuedo) [Chord] (psuedo)
 """
+# """
 
-my_score.sections["a"].staves["violin"].lines[2]
+# my_score.sections["a"].staves["violin"].lines[2]
 
-my_score.sections["a"].staves["violin"].lines[2]
+# my_score.sections["a"].staves["violin"].lines[2]
 
 
 # phrase_a.illustrate_me()

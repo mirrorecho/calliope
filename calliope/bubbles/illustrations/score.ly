@@ -1,34 +1,49 @@
-% 2018-02-19 11:00
-
-\version "2.19.54"
+\version "2.19.82"
 \language "english"
 
-\include "../../stylesheets/score.ily"
-
-\header {}
+\header {
+    tagline = ##f
+}
 
 \layout {}
 
 \paper {}
 
 \score {
-    \new Score <<
-        \context RhythmicStaff = "STRAIGHT" \with {
+    \new Score
+    <<
+        \new Staff
+        \with
+        {
             \consists Horizontal_bracket_engraver
-        } {
-            \clef "percussion"
+        }
+        {
             {
-                c1
-                c1
+                c'1
+                b2
+                b2
+            }
+            {
+                b2
+                b2
+                c'1
             }
         }
-        \context RhythmicStaff = "SIMPLE" \with {
+        \new Staff
+        \with
+        {
             \consists Horizontal_bracket_engraver
-        } {
-            \clef "percussion"
+        }
+        {
             {
-                c1
-                c1
+                a2
+                a2
+                d'1
+            }
+            {
+                d'1
+                a2
+                a2
             }
         }
     >>

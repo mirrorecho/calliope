@@ -1,4 +1,4 @@
-\version "2.18.2"
+\version "2.19.82"
 \language "english"
 
 \header {
@@ -10,8 +10,9 @@
 \paper {}
 
 \score {
-    <<
-        c4
-        c4
-    >>
+    {
+        a2
+        a2
+        d'1
+    }
 }

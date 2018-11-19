@@ -8,46 +8,51 @@ class Bubble(calliope.Tree):
     """
     container_type=abjad.Container
     context_name=None
-    respell=None # TO DO, best place for this?
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
     music_contents = None
-    child_types = ()
-    parent_type = None
+    # select_property = "bubbles" # TO DO: causes oddo recursion when setting properties on startup... WHY?
     # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the uqbar UniqueTreeContainer
 
-    def __init__(self, *args, **kwargs):
-        if not self.parent_type:
-            self.parent_type = Bubble
-        if not self.child_types:
-            self.child_types = (Bubble,)
-        super().__init__(*args, **kwargs)
+    def music_container(self, *args, **kwargs):
+        if self.is_simultaneous is not None:
+            kwargs["is_simultaneous"] = self.is_simultaneous
+        if self.context_name is not None:
+            kwargs["context_name"] = self.context_name
+        if self.name:
+            kwargs["name"] = self.name
+        return self.container_type(*args, **kwargs)
 
-    # TO DO... this implementation of add/mul creates odd nested containers... rethink
-    # Could also conflict with abjad tree structures
+    def music(self, **kwargs):
+        my_container = self.music_container(**kwargs)
+        my_container.extend(
+            self.music_contents if self.music_contents 
+            else [ self.child_music( b ) for b in self ] 
+            )
+        return my_container
 
-    def _str_params(self):
-        return ""
+    def process_music(self, music, **kwargs):
+        pass
 
-    def __repr__(self):
-        return repr(type(self)) + "(" + self._str_params() + ")"
-        # return "calliope.LogicalTie(pitch={0}, beats={1})".format(self.pitch, self.beats)
+    def blow(self, **kwargs):
+        my_music = self.music(**kwargs)
+        self.process_music(my_music, **kwargs)
+        return my_music
 
-    def __add__(self, other):
-        return self.parent_type(self(), other)
+    # TO DO - KISS?
+    def child_music(self, child_bubble):
+        # can be overridden to add custom stuff for each child of a particular bubble
+        return child_bubble.blow()
 
-    def __mul__(self, num):
-        return self.parent_type( **[self() for i in range(num)] )
+    def ly(self):
+        return format(self.blow())
 
-    # TO DO: is this ever used? KISS!
-    def fuse(self, count):
-        # TO DO... this could be more elegant!!!
-        my_index = self.my_index
-        for c in range(count):
-            next_bubble = self.parent[my_index + c + 1]
-            self.extend(next_bubble.children)
-        # for c in range(count):
-        #     self.parent.remove(my_index + c + 1)
+    def get_lilypond_file(self):
+        music = self.blow()
+        lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
+            )
+        self.info("got abjad representation of lilypond file... now rendering with lilypond")
+        return lilypond_file
 
     def illustrate_me(self, 
             score_type = None,
@@ -82,42 +87,6 @@ class Bubble(calliope.Tree):
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
 
-    def music_container(self, *args, **kwargs):
-        if self.is_simultaneous is not None:
-            kwargs["is_simultaneous"] = self.is_simultaneous
-        if self.context_name is not None:
-            kwargs["context_name"] = self.context_name
-        if self.name:
-            kwargs["name"] = self.name
-        return self.container_type(*args, **kwargs)
-
-    def ly(self):
-        return format(self.blow())
-
-    def get_lilypond_file(self):
-        music = self.blow()
-        lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
-            )
-        self.info("got abjad representation of lilypond file... now rendering with lilypond")
-        return lilypond_file
-
-    def child_music(self, child_bubble):
-        # can be overridden to add custom stuff for each child of a particular bubble
-        return child_bubble.blow()
-
-    def process_music(self, music, **kwargs):
-        pass
-
-    def music(self, **kwargs):
-        my_container = self.music_container(**kwargs)
-        my_container.extend(
-            self.music_contents if self.music_contents 
-            else [ self.child_music( b ) for b in self ] 
-            )
-        return my_container
-
-    def blow(self, **kwargs):
-        my_music = self.music(**kwargs)
-        self.process_music(my_music, **kwargs)
-        return my_music
+# bubbles can contain bubbles:
+Bubble.child_types = (Bubble,)
 

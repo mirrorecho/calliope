@@ -4,28 +4,6 @@ import uqbar
 
 class MachineSelectableMixin(object):
 
-    # @property
-    # def select_universe(self):
-    #     return self
-
-    def get_nodes(self):
-        # TO DO... delay creating the list?
-        my_nodes = [self]
-        my_nodes.extend(self.depth_first())
-        return my_nodes
-
-    @property
-    def nodes(self):
-        return Selection(
-            select_from=self.get_nodes()
-            )        
-
-    def by_type(self, *args):
-        return Selection(
-            select_from=self.get_nodes(), 
-            type_args=args
-            )
-
     # TO CONSIDER
     # able to set pitches / rhythm at this level (as opposed to machine)
 
@@ -38,57 +16,22 @@ class MachineSelectableMixin(object):
     # def measures(self):
     #     return None
 
-    @property
-    def phrases(self):
-        return self.by_type(calliope.Phrase)
-
-    @property
-    def select(self):
-        return Selection(select_from=self.children)
-
+    # TO DO: where should the logic for these live???
     @property
     def select_cells(self):
         return Selection(select_from=self.children, type_args=(calliope.Cell,))
 
     @property
-    def cells(self):
-        return self.by_type(calliope.Cell)
-
-    @property
-    def events(self):
-        return self.by_type(calliope.Event)
-
-    # TO CONSIDER: useful?
-    # @property
-    # def lines(self):
-    #     return self.by_type(calliope.Line)
-
-    @property
     def non_rest_events(self):
-        return self.by_type(calliope.Event).exclude(rest=True)
-
-    @property
-    def logical_ties(self):
-        return self.by_type(calliope.LogicalTie)
+        return self.select_by_type(calliope.Event).exclude(rest=True)
 
     @property
     def logical_ties_or_container(self):
-        return self.by_type(calliope.LogicalTie, calliope.ContainerCell)
+        return self.select_by_type(calliope.LogicalTie, calliope.ContainerCell)
 
-    # TO DO: not working yet... finish inplementing:
-    # def tag_span(self, open_tag, close_tag=None):
-    #     open_tag = list(self.spanner_closures[close_tag])[0]
-    #     self[0].tag(open_tag)
-    #     close_tag = 
-    #     self[-1].tag()
 
-    # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
-    # not currently working...
-    def select_with(self, selection):
-        selection.innermost_selection.select_from = self
-        return selection
 
-class Selection(MachineSelectableMixin, calliope.BaseMixin):
+class Selection(MachineSelectableMixin, calliope.SelectableMixin):
     select_from = ()
     select_args = None # iterable of names or indices of items
     filter_kwargs = None # dictionary of attribute names/values to match

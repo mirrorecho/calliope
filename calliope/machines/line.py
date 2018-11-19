@@ -4,6 +4,7 @@ import calliope
 # TO DO: consider renaming?
 class Line(calliope.SegmentMixin, calliope.EventMachine):
     child_types = (calliope.Phrase, calliope.Cell, calliope.Event,)
+    select_property = "lines"
 
     # TO DO: would be awesome to implement these!
     # auto_split_rests = True

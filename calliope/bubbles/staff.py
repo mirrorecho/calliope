@@ -5,12 +5,14 @@ import calliope
 class Voice(calliope.Bubble):
     is_simultaneous = False
     container_type = abjad.Voice
+    select_property = "voices"
 
 class Staff(calliope.Bubble):
     is_simultaneous = False
     container_type = abjad.Staff
     instrument = None
     clef = None
+    select_property = "staves"
 
     def process_music(self, music, **kwargs):
         
@@ -19,7 +21,6 @@ class Staff(calliope.Bubble):
         music_leaves = abjad.select(music).leaves()
         if len(music_leaves) > 0:
             music_start = music_leaves[0]
-
             if self.instrument and len(music) > 0:
                 abjad.attach(self.instrument, music_start)
             if self.clef:
@@ -60,42 +61,39 @@ class RhythmicStaff(Staff):
 #                 )
 #         return return_music
 
-class CopyChildrenBubble(calliope.Bubble):
+# class CopyChildrenBubble(calliope.Bubble):
 
-    def __init__(self, copy_children_from=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+#     def __init__(self, copy_children_from=None, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
         
-        # TO DO: consider... is __init__ the best place for this?
-        # maybe it should be called from music() instead?
-        # self.info()
-        self.set_children(self, copy_children_from)
+#         # TO DO: consider... is __init__ the best place for this?
+#         # maybe it should be called from music() instead?
+#         # self.info()
+#         self.set_children(self, copy_children_from)
 
-    # TO DO... consider merging into set_children_from_class
-    def set_children(self, parent_bubble, copy_children_from):
-        # TO DO... there might be a better way to iterate through all children...
-        if copy_children_from:
-            if isinstance(copy_children_from, calliope.MatchSequence) and not copy_children_from.is_simultaneous:
-                copy_children_from = copy_children_from.get_inverted()
-            for child_bubble in parent_bubble.children:
-                if isinstance(child_bubble, CopyChildrenBubble):
-                    self.set_children(child_bubble, copy_children_from)
-                else:
-                    try:
-                        # self.info(child_bubble)
-                        child_bubble.append(  copy_children_from[child_bubble.name] )
-                    except:
-                        self.warn("""tried appending child music, but %s has no child named '%s'""" 
-                            % (copy_children_from.name, child_bubble.name))
+#     # TO DO... consider merging into set_children_from_class
+#     def set_children(self, parent_bubble, copy_children_from):
+#         # TO DO... there might be a better way to iterate through all children...
+#         if copy_children_from:
+#             if isinstance(copy_children_from, calliope.MatchSequence) and not copy_children_from.is_simultaneous:
+#                 copy_children_from = copy_children_from.get_inverted()
+#             for child_bubble in parent_bubble.children:
+#                 if isinstance(child_bubble, CopyChildrenBubble):
+#                     self.set_children(child_bubble, copy_children_from)
+#                 else:
+#                     try:
+#                         # self.info(child_bubble)
+#                         child_bubble.append(  copy_children_from[child_bubble.name] )
+#                     except:
+#                         self.warn("""tried appending child music, but %s has no child named '%s'""" 
+#                             % (copy_children_from.name, child_bubble.name))
                     
 
-
-
-
-class StaffGroup(CopyChildrenBubble):
+class StaffGroup(calliope.Bubble):
     is_simultaneous = True
     container_type = abjad.StaffGroup
-    child_types=(Staff, CopyChildrenBubble)
     instrument = None
+    select_property = "staff_groups"
     
     def process_music(self, music, **kwargs):
         # TO DO: confirm... does this still work?
@@ -105,6 +103,7 @@ class StaffGroup(CopyChildrenBubble):
 
     def show(self):
         self.show_pdf()
+StaffGroup.child_types = (Staff, StaffGroup)
 
 class Piano(StaffGroup):
     class Piano1(Staff): pass
@@ -120,12 +119,12 @@ class Harp(StaffGroup):
     context_name = "PianoStaff"
     instrument=abjad.Harp()
 
-class StaffWithVoices(CopyChildrenBubble, Staff):
+class StaffWithVoices(Staff):
     is_simultaneous = True
     """
     creates a staff with a voice or voices inside of it
     """
-    child_types=(Voice,) # needed? (throws exception otherwise... why?)
+    child_types=(Voice,)
     instrument=None
     clef=None
 

@@ -2,11 +2,10 @@ import inspect
 import abjad
 import calliope
 
-class Score(calliope.CopyChildrenBubble):
+class Score(calliope.Bubble):
      # NOTE: abjad.Score.__init__ does not take is_simultaneous as an argument,
     # so it needs to be set to be set to None here
     is_simultaneous = None
-
     container_type=abjad.Score
     child_types=(calliope.Staff, calliope.StaffGroup)
     # TO DO... the following are no longer used... keep them?

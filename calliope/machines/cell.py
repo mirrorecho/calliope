@@ -2,13 +2,10 @@ import calliope
 
 class Cell(calliope.EventMachine):
     print_kwargs = ("rhythm", "pitches")
-    child_types = (calliope.EventMachine, ) # TO DO: ???
+    select_property = "cells"
 
-    def __init__(self, *args, **kwargs):
-        self.child_types = child_types = (calliope.Cell, calliope.Event) # just to be safe
-        super().__init__(*args, **kwargs)
+Cell.child_types = (Cell, calliope.Event)
 
-# TO DO ???
 class ContainerCell(Cell):
     """
     By default, an abjad container is only created for the outermost machine... 

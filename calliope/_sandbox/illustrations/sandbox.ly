@@ -1,8 +1,6 @@
 \version "2.19.82"
 \language "english"
 
-\include "../../stylesheets/score.ily"
-
 \header {
     tagline = ##f
 }
@@ -14,52 +12,37 @@
 \score {
     \new Score
     <<
-        \context Staff = "Violin"
-        \with
-        {
-            \consists Horizontal_bracket_engraver
-        }
-        {
+        \context StaffGroup = "Violins"
+        <<
+            \context Staff = "Violin1Staff"
+            \with
             {
-                e'2
-                ~
-                e'4
-                g'4
-                ~
-                g'2
-                f'2
-                ~
-                f'4
-                ef'4
-                ~
-                ef'2
-                c'2
-                d'2
-                ~
-                d'2
-                c'2
-                ~
-                c'2
-                d'2
+                \consists Horizontal_bracket_engraver
             }
-        }
-        \context Staff = "Cello"
-        \with
-        {
-            \consists Horizontal_bracket_engraver
-        }
-        {
             {
-                \clef "bass"
-                e'2
-                g'2
-                f'2
-                ef'2
-                c'2
-                d'2
-                c'2
-                d'2
+                {
+                    {
+                        c'4
+                        d'4
+                        ef'4
+                        f'4
+                        ~
+                        f'1
+                    }
+                }
             }
-        }
+            \context Staff = "Violin2Staff"
+            \with
+            {
+                \consists Horizontal_bracket_engraver
+            }
+            {
+                {
+                    c'1
+                    b2
+                    b2
+                }
+            }
+        >>
     >>
 }

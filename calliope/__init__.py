@@ -1,22 +1,20 @@
-# tools
+# core
 from calliope.core.base_mixin import BaseMixin
 from calliope.core.illustrate_me import illustrate_me
 from calliope.core.rhythm import by_logical_tie_group_rests
 # from calliope.core.pitch import respell
-from calliope.core.tree import TreeMixin, Tree
+from calliope.core.tree import SelectableMixin, Tree
+from calliope.core.selection import MachineSelectableMixin, Selection
 from calliope.core.tag_set import TagSet
 
 # bubbles
 from calliope.bubbles.bubble import Bubble
 from calliope.bubbles.fragment import Fragment, SegmentMixin, Segment, MultiFragment, SimulFragment
 from calliope.bubbles.fragment_ametric import Ametric, AmetricStart
-from calliope.bubbles.staff import (Voice, Staff, RhythmicStaff, CopyChildrenBubble, 
+from calliope.bubbles.staff import (Voice, Staff, RhythmicStaff, 
             StaffGroup, Piano, Harp, StaffWithVoices, InstrumentStaffGroup)
 from calliope.bubbles.score import Score, AutoScore
 from calliope.bubbles.sequence import MatchSequence
-
-# machines selection
-from calliope.machines.selection import MachineSelectableMixin, Selection
 
 # machines
 from calliope.machines.machine import BaseMachine, Machine, EventMachine
@@ -58,3 +56,6 @@ from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 # libraries
 from calliope.libraries import meters
 from calliope.libraries.pitch_sequence import PitchSequence
+
+from calliope.core.startup import startup
+startup()

@@ -1,21 +1,51 @@
 import inspect
 import copy
 import abjad
-import calliope
 import uqbar
+import calliope
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(uqbar.containers.UniqueTreeContainer))
 
-class TreeMixin(calliope.BaseMixin):
-    pass
+class SelectableMixin(calliope.BaseMixin):
+    def get_nodes(self):
+        # TO DO... delay creating the list?
+        my_nodes = [self]
+        my_nodes.extend(self.depth_first())
+        return my_nodes
 
-class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
+    @property
+    def nodes(self):
+        return calliope.Selection(
+            select_from=self.get_nodes()
+            )        
+
+    def select_by_type(self, *args):
+        return calliope.Selection(
+            select_from=self.get_nodes(), 
+            type_args=args
+            )
+
+    @property
+    def select(self):
+        return calliope.Selection(select_from=self.children)
+
+    @classmethod
+    def set_select_property(cls, name, select_type):
+        setattr(cls, name, property(lambda x: x.select_by_type(select_type)))
+
+    def print_comments(self):
+        return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)
+
+
+class Tree(SelectableMixin, uqbar.containers.UniqueTreeContainer):
     child_types = ()
+    select_property = None
+    
+    # # KISS!
+    # parent_type = None 
+    # original_index = None 
+    # original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
-    # TO DO: use these...?
-    # sometimes items are moved arround... this can be used track where an element had been placed previously, which is often useful
-    original_index = None 
-    original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
 
     # can be overriden to set children based on other/special logic
     # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places
@@ -29,7 +59,6 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
         super().__init__(args) # TO DO... ??? WTF with args?
         self.setup(**kwargs)
         self.set_children_from_class(*args, **kwargs)
-
         if not self.child_types:
             self.child_types = (Tree,)
 
@@ -115,10 +144,6 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
             return True
         return False
 
-    def by_type(self, prototype):
-        nodes = list(self.depth_first())
-        return [e for e in nodes if isinstance(e, prototype) ]
-
     @property
     def my_index(self):
         return self.parent.index(self)
@@ -137,18 +162,38 @@ class Tree(TreeMixin, uqbar.containers.UniqueTreeContainer):
         # for child in self.children:
         #     new_self.append(child.copy())
 
-    def print_comments(self):
-        return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)
+    # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
+    # not currently working...
+    def select_with(self, selection):
+        selection.innermost_selection.select_from = self
+        return selection
 
-    # # TO DO... delete?
+
+    # OK TO REMEVE?
+    # def by_type(self, prototype):
+    #     nodes = list(self.depth_first())
+    #     return [e for e in nodes if isinstance(e, prototype) ]
+
+
+    # KISS! 
+    # def fuse(self, count):
+    #     # TO DO... this could be more elegant!!!
+    #     my_index = self.my_index
+    #     for c in range(count):
+    #         next_item = self.parent[my_index + c + 1]
+    #         self.extend(next_item.children)
+    #     # for c in range(count):
+    #     #     self.parent.remove(my_index + c + 1)
+        
+    # def __add__(self, other):
+    #     return self.parent_type(self(), other)
+
+    # def __mul__(self, num):
+    #     return self.parent_type( **[self() for i in range(num)] )
+
     # def index_children(self):
     #     for i, child in enumerate(self.children):
     #         child.original_index = i
     #         child.original_depthwise_index = child.depthwise_index # TO DO... this could get expensive
 
 
-#     def __str__(self):
-#         my_return_string = self.__class__.__name__ + ":" + str(self.depthwise_index)
-#         if self.parent and self.parent is not self.root:
-#             my_return_string = str(self.parent) + " | " + my_return_string
-#         return my_return_string

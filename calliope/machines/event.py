@@ -6,6 +6,7 @@ class Event(calliope.EventMachine):
     pitch = 0 # note, this could be set to a list/tuple to indicate a chord
     original_pitch = 0 # TO DO: used? just a way to track what's going on if pitch is transposed
     child_types = (calliope.LogicalTie,)
+    select_property = "events"
     from_line = None # used in FragmentLine for EventData that's copied from another line (tracks where it's copied from)
     set_beats = None
 
