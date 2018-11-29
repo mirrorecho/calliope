@@ -1,26 +1,30 @@
-class Fragment(Machine):
+import abjad
+import calliope
+
+class Fragment(calliope.Machine):
     """
     Some fragment of machine-based bubbles. Base class for all machines that
     contain child machines.
     """
-
-    print_kwargs = ("beats",)
+    meter = None
+    defined_length = None # pre-determined length in beats, will pad rests at end if needed
     bookend_rests = ()
+    time_signature = None
+    pickup = None # must be able to be represented as a single note with no dots
+    bar_line = None # TO DO: keep?
+
+    # TO DO: consider whether these attributes should only apply to FragmentLine
     set_rhythm = None
     set_pitches = None
     pitches_skip_rests = False
 
-    # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
+    print_kwargs = ("beats",)    # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
 
     def __init__(self, *args, **kwargs):
         rhythm = kwargs.pop("rhythm", None) or self.set_rhythm
         pitches = kwargs.pop("pitches", None) or self.set_pitches
         pitches_skip_rests = kwargs.pop("pitches_skip_rests", self.pitches_skip_rests)
         super().__init__(*args, **kwargs)
-
-        # TO DO: use? or remove?
-        # if self.get_children:
-        #     self.extend( self.get_children() )
 
         if rhythm:
             self.rhythm = rhythm
@@ -36,34 +40,14 @@ class Fragment(Machine):
         if self.bookend_rests:
             self.add_bookend_rests(*self.bookend_rests)
 
-    def remove_empty(self):
-        for child in self:
-            if child.ticks == 0:
-                self.remove(child)
-
-    @property
-    def ticks(self):
-        return sum([l.ticks for l in self.logical_ties_or_container])
-
     @property
     def rest(self):
-        return all([l.rest for l in self.logical_ties_or_container])
+        return all([l.rest for l in self.logical_ties])
 
     @rest.setter
     def rest(self, is_rest):
         for l in self.logical_ties: # TO DO... what about custom here?
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
-
-    # TO DO: ticks_before and ticks_after ever used? KISS?
-    @property
-    def ticks_before(self):
-        if self.children:
-            return self.children[0].ticks_before
-        return 0
-
-    @property
-    def ticks_after(self):
-        return self.ticks_before + self.ticks
 
     @property
     def rhythm(self):
@@ -104,25 +88,12 @@ class Fragment(Machine):
             if not l.rest:
                 return l
 
+    # TO DO: used? or KISS?
     @property
     def last_non_rest(self):
         for l in reversed(self.logical_ties):
             if not l.rest:
                 return l
-
-    def get_signed_ticks_list(self):
-        # TO DO.. there's probably a more elegant one-liner for this!
-        return_list = []
-        for l in self.logical_ties_or_container:
-            return_list.extend(l.get_signed_ticks_list())
-        
-        if self.defined_length:
-            ticks_end = self.ticks
-            defined_length_ticks = self.defined_length * self.rhythm_default_multiplier
-            if defined_length_ticks > ticks_end:
-                return_list.append(int(ticks_end - defined_length_ticks))
-
-        return return_list
 
 
     def transpose(self, interval):
@@ -135,22 +106,18 @@ class Fragment(Machine):
                 else:
                     thing.pitch = abjad.NamedPitch(thing.pitch).transpose(interval)
 
-    def add_bookend_rests(self, beats_before=0, beats_after=0):
-        if beats_before > 0:
-            first_event = self.logical_ties[0].parent
-            first_event.insert(0, calliope.LogicalTie(rest=True, beats=beats_before))
-        if beats_after > 0:
-            last_event = self.logical_ties[-1].parent
-            last_event.append(calliope.LogicalTie(rest=True, beats=beats_after))
 
-    # TO DO: consider making this cyclic???
-    def remove_bookend_rests(self):
-        if self.logical_ties:
-            if self.logical_ties[0].rest:
-                self.logical_ties[0].parent.pop(0)
-        if self.logical_ties:
-            if self.logical_ties[-1].rest:
-                self.logical_ties[-1].parent.pop(-1)
 
     # TO DO... add slur
     # def slur()
+
+    # TO DO: ticks_before and ticks_after ever used? KISS?
+    # @property
+    # def ticks_before(self):
+    #     if self.children:
+    #         return self.children[0].ticks_before
+    #     return 0
+
+    # @property
+    # def ticks_after(self):
+    #     return self.ticks_before + self.ticks

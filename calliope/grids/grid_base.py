@@ -11,7 +11,7 @@ import abjad
 import calliope
 
 class GridBase(calliope.Factory):
-    row_machine_type = calliope.Line
+    row_machine_type = calliope.Segment
     item_machine_type = calliope.Event
 
     output_directory = None

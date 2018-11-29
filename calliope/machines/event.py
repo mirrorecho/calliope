@@ -1,13 +1,12 @@
 import abjad
 import calliope
 
-class Event(calliope.EventMachine):
-    print_kwargs = ("beats", "pitch")
-    pitch = 0 # note, this could be set to a list/tuple to indicate a chord
-    original_pitch = 0 # TO DO: used? just a way to track what's going on if pitch is transposed
+class Event(calliope.FragmentLine):
     child_types = (calliope.LogicalTie,)
     select_property = "events"
-    from_line = None # used in FragmentLine for EventData that's copied from another line (tracks where it's copied from)
+    print_kwargs = ("beats", "pitch")
+
+    pitch = 0 # this could be set to a list/tuple to indicate a chord
     set_beats = None
 
     # TO DO: remove tie_name / beats ?
@@ -39,7 +38,7 @@ class Event(calliope.EventMachine):
     def beats(self, value):
         if value < 0:
             self.rest = True
-        self.first_primary_tie.ticks = abs(int(value * self.rhythm_default_multiplier))
+        self.first_primary_tie.ticks = abs(int(value * calliope.MACHINE_TICKS_PER_BEAT))
 
     @property
     def rest(self):
@@ -58,7 +57,3 @@ class Event(calliope.EventMachine):
         my_tie.beats = beats
         self.append( my_tie )
 
-class RestEvent(Event):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.rest = True

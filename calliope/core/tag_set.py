@@ -11,7 +11,7 @@ class TagSet(object):
     dynamics_inventory = set(("ppp","pp","p","mp","mf","f","ff","fff"))
     
     slurs_inventory = set(("(", "((")) # note... double parens could be used to indicate larger phrasing slur
-    hairpins_inventory = set( ("\<","\>") ) # note... may not be needed
+    hairpins_inventory = set( (r"\<",r"\>") ) # note... may not be needed
 
     clefs_inventory = set( ("treble", "alto", "bass", "treble^8", "bass_8", "soprano", "tenor", "bass^15", "percussion") )
     
@@ -20,7 +20,7 @@ class TagSet(object):
 
     # NOTE "{" is made up shorthand for HorizontalBracket
     start_spanners_inventory = set(("~","8va", "{", "[")) | slurs_inventory | hairpins_inventory
-    stop_spanners_inventory = set( (")", "))", "\!", "~!","8va!", "}", "]"), )
+    stop_spanners_inventory = set( (")", "))", r"\!", "~!","8va!", "}", "]"), )
     stem_tremolos_inventory = set( (":8",":16",":32") )
     tremolos_inventory = set( ("tremolo:1", "tremolo:2", "tremolo:3",) )
     colors_inventory = set(("red",         "green",
@@ -44,7 +44,7 @@ class TagSet(object):
         "}":    set(("{",)),
         "]":    set(("[",)),
     }
-    for item in dynamics_inventory | hairpins_inventory | set( ("\!",) ):
+    for item in dynamics_inventory | hairpins_inventory | set( (r"\!",) ):
         spanner_closures[item] = hairpins_inventory
 
     def __init__(self, *args, **kwargs):
@@ -58,9 +58,9 @@ class TagSet(object):
             return abjad.Dynamic(name=tag_name)
         elif tag_name in self.slurs_inventory:
             return abjad.Slur()
-        elif tag_name == "\<":
+        elif tag_name == r"\<":
             return abjad.Hairpin("<")
-        elif tag_name == "\>":
+        elif tag_name == r"\>":
             return abjad.Hairpin(">")
         elif tag_name == "[":
             return abjad.ComplexBeam(beam_rests=True)
@@ -174,8 +174,8 @@ class TagSet(object):
             end_spanner = ")"
         if spanner == "((":
             end_spanner = "))"
-        if spanner == "\<" or spanner == "\>":
-            end_spanner = "\!"
+        if spanner == r"\<" or spanner == r"\>":
+            end_spanner = r"\!"
         
         for i in range(0, len(items), every_count):
             items[i].tag(spanner)

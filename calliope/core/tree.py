@@ -40,6 +40,7 @@ class SelectableMixin(calliope.BaseMixin):
 class Tree(SelectableMixin, uqbar.containers.UniqueTreeContainer):
     child_types = ()
     select_property = None
+    set_name = None
     
     # # KISS!
     # parent_type = None 
@@ -49,16 +50,17 @@ class Tree(SelectableMixin, uqbar.containers.UniqueTreeContainer):
 
     # can be overriden to set children based on other/special logic
     # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places
-    def set_children_from_class(self, *args, **kwargs):
+    def set_children_from_class(self, **kwargs):
         for node_name in type(self).class_sequence(): 
             node = getattr(self, node_name)
             self[node_name] = node
 
     def __init__(self, *args, **kwargs):
-        # print(args)
-        super().__init__(args) # TO DO... ??? WTF with args?
+        super().__init__(args) # args sets children here...
+        if self.set_name:
+            self.name = self.set_name
         self.setup(**kwargs)
-        self.set_children_from_class(*args, **kwargs)
+        self.set_children_from_class(**kwargs)
         if not self.child_types:
             self.child_types = (Tree,)
 

@@ -1,28 +1,36 @@
 import abjad, calliope
 
+class MyCell(calliope.Cell):
+    pitches = (0,2,4)
+    rhythm = (3,3,2)
 
-class MyScore(calliope.Score):
-    class Violins(calliope.StaffGroup):
-        class Violin1Staff(calliope.Staff):
-            instrument=abjad.Violin(
-                name="Violin 1", short_name="vln.1")
-            class ViolinMusicA(calliope.Line):
-                is_simultaneous=False
-                class MyCell(calliope.Cell):
-                    set_rhythm=(1,1,1,5)
-                    set_pitches=(0,2,3,5)
+c = MyCell()
 
-        class Violin2Staff(calliope.Staff):
-            instrument=abjad.Violin(
-                name="Violin 2", short_name="vln.2")
-            class ViolinMusicA(calliope.Bubble):
-                is_simultaneous=False
-                music_contents="c'1 b2 b2"
+c.illustrate_me()
 
 
-# MyScore().illustrate_me()
-s = MyScore()
-print(s.cells)
+# class MyScore(calliope.Score):
+#     class Violins(calliope.StaffGroup):
+#         class Violin1Staff(calliope.Staff):
+#             instrument=abjad.Violin(
+#                 name="Violin 1", short_name="vln.1")
+#             class ViolinMusicA(calliope.Line):
+#                 is_simultaneous=False
+#                 class MyCell(calliope.Cell):
+#                     set_rhythm=(1,1,1,5)
+#                     set_pitches=(0,2,3,5)
+
+#         class Violin2Staff(calliope.Staff):
+#             instrument=abjad.Violin(
+#                 name="Violin 2", short_name="vln.2")
+#             class ViolinMusicA(calliope.Bubble):
+#                 is_simultaneous=False
+#                 music_contents="c'1 b2 b2"
+
+
+# # MyScore().illustrate_me()
+# s = MyScore()
+# print(s.cells)
 
 # s = calliope.Score(
 #     calliope.Staff(

@@ -25,6 +25,6 @@ def set_select_properties(cls, parent_classes=set()):
 
 def startup():
     # set_select_properties(calliope.Bubble)
-    calliope.Staff.child_types = (calliope.Line, calliope.Cell) # TO DO ... FIX TREE hierarchy
+    calliope.Staff.child_types = (calliope.Segment, calliope.Cell) # TO DO ... FIX TREE hierarchy
     set_select_properties(calliope.Score)
-    set_select_properties(calliope.Line)
+    set_select_properties(calliope.Segment)

@@ -1,10 +1,26 @@
 import abjad
 import calliope
 
-# TO DO: consider renaming?
-class Line(calliope.SegmentMixin, calliope.EventMachine):
+# TO DO... reconcile with sections / blocks... several of these attributes
+# could apply to the block/section
+
+# ALSO consider whether to re-introduce lines as a structure
+
+class Segment(calliope.FragmentLine):
+    """
+    A horizontal segment of music. Has goodies for larger sections like
+    rehearsal marks, etc.
+    """
+
     child_types = (calliope.Phrase, calliope.Cell, calliope.Event,)
-    select_property = "lines"
+    select_property = "segments"
+    tempo_text = None
+    tempo_units_per_minute=None
+    tempo_duration=(1,4) # only used if tempo_units_per_minute also specified
+    tempo_command = None
+    rehearsal_mark_number = None
+    compress_full_bar_rests = None # TO DO... maybe this should be handled somewhere else? (currently it's being repeated where not necessary... at the beginning of every line)
+    accidental_style = "modern-cautionary" # TO DO... necessary?
 
     # TO DO: would be awesome to implement these!
     # auto_split_rests = True
@@ -72,6 +88,43 @@ class Line(calliope.SegmentMixin, calliope.EventMachine):
                 measure_duration_tally = abjad.Duration(0)
                 measure_has_only_rests = True
                 measure_rests_to_replace = []
+
+    def process_music(self, music, **kwargs):
+        super().process_music(self, music, **kwargs)
+        
+        if len(music) > 0:
+            music_start = music[0]
+            
+            if self.rehearsal_mark_number:
+                mark = abjad.RehearsalMark(number=self.rehearsal_mark_number)
+                abjad.attach(mark, music_start)
+            # NOTE... True adds command to compress, False adds compand to expand, None does nothing
+            
+            if self.compress_full_bar_rests == True:
+                rests_command =  abjad.LilyPondLiteral(r"\compressFullBarRests", "before")
+                abjad.attach(rests_command, music_start)
+
+            elif self.compress_full_bar_rests == False:
+                rests_command =  abjad.LilyPondLiteral(r"\expandFullBarRests", "before")
+                abjad.attach(rests_command, music_start)
+
+            # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
+            if self.tempo_text or self.tempo_units_per_minute:
+                if self.tempo_units_per_minute:
+                    tempo_reference_duration = Duration(self.tempo_duration)
+                else:
+                    tempo_reference_duration = None
+                tempo = abjad.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
+                abjad.attach(tempo, music_start)
+
+            elif self.tempo_command:
+                tempo_command =  abjad.LilyPondLiteral(r"\tempo \markup \fontsize #3 { %s }" % self.tempo_command, "before")
+                # print(tempo_command)
+                abjad.attach(tempo_command, music_start)
+
+            if self.accidental_style:
+                accidental_style_command = abjad.LilyPondLiteral(r"\accidentalStyle " + self.accidental_style, "before")
+                abjad.attach(accidental_style_command, music_start)
 
     def process_rhythm_music(self, music, **kwargs):
         super().process_rhythm_music(music, **kwargs)

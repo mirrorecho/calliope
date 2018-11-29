@@ -1,4 +1,5 @@
 # core
+from calliope.core.settings import *
 from calliope.core.base_mixin import BaseMixin
 from calliope.core.illustrate_me import illustrate_me
 from calliope.core.rhythm import by_logical_tie_group_rests
@@ -9,22 +10,25 @@ from calliope.core.tag_set import TagSet
 
 # bubbles
 from calliope.bubbles.bubble import Bubble
-from calliope.bubbles.fragment import Fragment, SegmentMixin, Segment, MultiFragment, SimulFragment
-from calliope.bubbles.fragment_ametric import Ametric, AmetricStart
+# from calliope.bubbles.fragment import Fragment, SegmentMixin, Segment, MultiFragment, SimulFragment
+# from calliope.bubbles.fragment_ametric import Ametric, AmetricStart
 from calliope.bubbles.staff import (Voice, Staff, RhythmicStaff, 
             StaffGroup, Piano, Harp, StaffWithVoices, InstrumentStaffGroup)
 from calliope.bubbles.score import Score, AutoScore
 from calliope.bubbles.sequence import MatchSequence
 
 # machines
-from calliope.machines.machine import BaseMachine, Machine, EventMachine
+from calliope.machines.machine import Machine
+from calliope.machines.fragment import Fragment
+from calliope.machines.fragment_line import FragmentLine
 # ... note the order, inner to outer, is important...
 from calliope.machines.logical_tie import LogicalTie
-from calliope.machines.event import Event, RestEvent
-from calliope.machines.cell import Cell, ContainerCell, CustomCell #, TupletCell 
+from calliope.machines.event import Event
+from calliope.machines.cell import Cell #, ContainerCell, CustomCell #, TupletCell 
 from calliope.machines.phrase import Phrase
-from calliope.machines.line import Line
-from calliope.machines.block import Block, EventBlock, CellBlock, PhraseBlock, LineBlock
+from calliope.machines.segment import Segment
+# from calliope.machines.line import Line # 
+# from calliope.machines.block import Block, EventBlock, CellBlock, PhraseBlock, LineBlock
 
 # machine factories
 from calliope.factories.factory import Factory

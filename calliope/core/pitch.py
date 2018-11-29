@@ -11,8 +11,10 @@ import abjad
 #     # elif respell == "auto":
 #     #     print("AUTO RESPELL NOT SUPPORTED YET...")
 
+# TO DO... still messy... refactor
 # TO DO... could also pass note as pitch object
-def get_pitch_number(pitch_object):
+# TO DO... cast as float?
+def get_pitch_number_or_list(pitch_object):
     if isinstance(pitch_object, int):
         return pitch_object
     elif isinstance(pitch_object, str):
@@ -22,6 +24,42 @@ def get_pitch_number(pitch_object):
     elif isinstance(pitch_object, (list, tuple)):
         return [get_pitch_number(p) for p in pitch_object]
     # TO DO... error handling here?
+
+# TO DO... still messy... refactor
+def set_pitch(music_logical_tie, pitch_thingy, respell=None):
+    pitch_number = get_pitch_number(pitch_thingy)
+    if pitch_number:
+        if isinstance(pitch_number, (list, tuple)):
+            if respell=="flats":
+                named_pitches = [abjad.NamedPitch(pitch_number)._respell_with_flats() for p in pitch_number]
+            elif respell=="sharps":
+                named_pitches = [abjad.NamedPitch(pitch_number)._respell_with_sharps() for p in pitch_number]
+            else:
+                named_pitches = [abjad.NamedPitch(p) for p in pitch_number]
+            # NOTE, decided to implement here (as opposed to in harmony machine), because want chords to be able to be implemented generally
+            for note in music_logical_tie:
+                chord = abjad.Chord()
+                chord.note_heads = named_pitches
+                chord.written_duration = copy.deepcopy(note.written_duration)
+                m = abjad.mutate([note])
+                m.replace(chord)
+        else:
+            # print("MEOW")
+            # TO DO: these respell methods look to be private///
+            # invetigate further or change!!!!!
+            # ALSO TO DO... BUG WITH cf or bs OCTAVES! (workaround is to always convert to # first)
+            if respell=="flats":
+                named_pitch = abjad.NamedPitch(pitch_number)._respell_with_flats()
+            elif respell=="sharps":
+                named_pitch = abjad.NamedPitch(pitch_number)._respell_with_sharps()
+            else:
+                named_pitch = abjad.NamedPitch(pitch_number)
+            for note in music_logical_tie:
+                note.written_pitch = named_pitch
+    else:
+        print("WARNING, not a pitch: ", pitch_thingy)
+
+
 
 # TO DO: used? KISS?
 def get_pitch_hz(pitch):
