@@ -1,8 +1,4 @@
-# -*- encoding: utf-8 -*-
-import math, copy, abjad
-from abjadext import rmakers
-from abjad import rhythmtrees
-import calliope
+import abjad, calliope
 
 # TO DO... how/whether to use this????
 # class LeafData(calliope.TagSet, calliope.Tree):
@@ -28,7 +24,8 @@ class Machine(calliope.Bubble, calliope.TagSet):
         if isinstance(self, calliope.Factory):
             self.factory = self
         
-        super().__init__(*args, **kwargs)
+        calliope.Bubble.__init__(self, *args, **kwargs)
+        calliope.TagSet.__init__(self)
 
         for transform in self.get_transforms():
             transform(self)

@@ -87,6 +87,4 @@ class Bubble(calliope.Tree):
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
 
-# bubbles can contain bubbles:
-Bubble.child_types = (Bubble,)
 

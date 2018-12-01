@@ -1,12 +1,41 @@
-import abjad, calliope
+import abjad, abjadext, calliope
 
-class MyCell(calliope.Cell):
-    pitches = (0,2,4)
-    rhythm = (3,3,2)
 
-c = MyCell()
+class MyScore(calliope.Score):
+    class MyStaffA(calliope.Staff):
+        class MyCell(calliope.Cell):
+            set_pitches = (0,2,4)
+            set_rhythm = (3,3,2)
+    class MyStaffB(MyStaffA): pass
 
-c.illustrate_me()
+# print(calliope.Event._parent_types)
+# print(calliope.Cell._parent_types)
+# print(calliope.Phrase._parent_types)
+# print(calliope.Segment._parent_types)
+# print(calliope.Score.get_descendant_types())
+# print(calliope.StaffGroup._parent_types)
+# print(calliope.Event.get_ancestor_types())
+# print(calliope.Bubble._parent_types)
+
+s = MyScore()
+
+print(calliope.Phrase.events)
+
+
+# s2 = calliope.Score()
+
+# print(s._parent_types is s2._parent_types)
+
+
+
+# s.staves[1].append(calliope.Cell(rhythm=(2,2), pitches=(5,4)))
+
+# # c = calliope.Cell(
+# #     pitches=(0,2,6),
+# #     rhythm=(3,3,2)
+# #     )
+
+# s.illustrate_me()
 
 
 # class MyScore(calliope.Score):

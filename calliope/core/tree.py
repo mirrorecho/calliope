@@ -6,41 +6,13 @@ import calliope
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(uqbar.containers.UniqueTreeContainer))
 
-class SelectableMixin(calliope.BaseMixin):
-    def get_nodes(self):
-        # TO DO... delay creating the list?
-        my_nodes = [self]
-        my_nodes.extend(self.depth_first())
-        return my_nodes
-
-    @property
-    def nodes(self):
-        return calliope.Selection(
-            select_from=self.get_nodes()
-            )        
-
-    def select_by_type(self, *args):
-        return calliope.Selection(
-            select_from=self.get_nodes(), 
-            type_args=args
-            )
-
-    @property
-    def select(self):
-        return calliope.Selection(select_from=self.children)
-
-    @classmethod
-    def set_select_property(cls, name, select_type):
-        setattr(cls, name, property(lambda x: x.select_by_type(select_type)))
-
-    def print_comments(self):
-        return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)
-
-
-class Tree(SelectableMixin, uqbar.containers.UniqueTreeContainer):
-    child_types = ()
-    select_property = None
+class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
+    child_types = () # TO DO, consider indicating private
+    select_property = None # TO DO, consider indicating private
     set_name = None
+
+    _parent_types = ()
+
     
     # # KISS!
     # parent_type = None 
@@ -54,6 +26,66 @@ class Tree(SelectableMixin, uqbar.containers.UniqueTreeContainer):
         for node_name in type(self).class_sequence(): 
             node = getattr(self, node_name)
             self[node_name] = node
+
+    # TO DO: consider setting as new attribute (for performance)
+    @classmethod
+    def get_ancestor_types(cls, ancestors=() ):
+        for parent in cls._parent_types:
+            if parent not in ancestors:
+                ancestors += (parent,)
+                parent_ancestors = parent.get_ancestor_types(ancestors)
+                ancestors += tuple([p for p in parent_ancestors if p not in ancestors])
+        return ancestors
+
+    # TO DO: consider setting as new attribute (for performance)
+    @classmethod
+    def get_descendant_types(cls, descendants=() ):
+        for child in cls.child_types:
+            if child not in descendants:
+                descendants += (child,)
+                child_descendants = child.get_descendant_types(descendants)
+                descendants += tuple([c for c in child_descendants if c not in descendants])
+        return descendants
+
+    @classmethod
+    def _set_parent_types(cls):
+        """
+        Called on tree root class to set parent_types
+        """
+        for child in cls.child_types:
+            if cls not in child._parent_types:
+                child._parent_types += (cls,)
+                child._set_parent_types()
+
+
+    @classmethod
+    def startup(cls):        
+        """
+        Called on tree root class to set various attributes
+        """
+        cls._set_parent_types()
+
+        for c in (cls,) + cls.get_descendant_types():
+            # TO DO: consider setting _descendant_types and _ancestor_types here
+            for child_type in c.child_types:
+                c.set_tree_select_property(
+                    child_type.select_property,
+                    lambda x: x.select_by_type(child_type)
+                    )
+
+    @classmethod
+    def set_tree_select_property(cls, name, callable):
+        """
+        creates new properties on Tree classes that return selections. Adds the same properties to 
+        the Tree's "ancestor" classes so that all matching descendants can be selected
+        """
+        # selections have all select properties
+        setattr(calliope.Selection, name, property(callable))
+
+        for set_on_cls in (cls,) + cls.get_ancestor_types():
+
+            setattr(set_on_cls, name, property(callable))            
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(args) # args sets children here...

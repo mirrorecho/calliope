@@ -1,12 +1,13 @@
 # core
 from calliope.core.settings import *
 from calliope.core.base_mixin import BaseMixin
-from calliope.core.illustrate_me import illustrate_me
+from calliope.core.selectable_mixin import SelectableMixin
+from calliope.core.tree import Tree
+from calliope.core.selection import Selection
 from calliope.core.rhythm import by_logical_tie_group_rests
-# from calliope.core.pitch import respell
-from calliope.core.tree import SelectableMixin, Tree
-from calliope.core.selection import MachineSelectableMixin, Selection
+from calliope.core.pitch import set_pitch
 from calliope.core.tag_set import TagSet
+from calliope.core.illustrate_me import illustrate_me
 
 # bubbles
 from calliope.bubbles.bubble import Bubble

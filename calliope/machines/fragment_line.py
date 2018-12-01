@@ -1,5 +1,5 @@
-import abjad
-import calliope
+import abjad, calliope
+from abjadext import rmakers
 
 class FragmentLine(calliope.Fragment):
     is_simultaneous = False
@@ -87,7 +87,7 @@ class FragmentLine(calliope.Fragment):
                 while meter_ticker < logical_tie_ticker + abs(ticks):
 
                     while meter_ticker + node_ticks(current_node) > logical_tie_ticker + abs(ticks) \
-                            and isinstance(current_node, rhythmtrees.RhythmTreeContainer):
+                            and isinstance(current_node, abjad.rhythmtrees.RhythmTreeContainer):
                         current_node = current_node[0]
 
                     durations.append(current_node.duration.pair)
@@ -119,6 +119,7 @@ class FragmentLine(calliope.Fragment):
 
             if parent_item and node.must_have_children and len(node)==0:
                 parent_item.remove(node)
+                remove_empty_ancestors(parent_item)
 
             elif isinstance(node, calliope.LogicalTie):
                 if last_rest is not None and node.rest:
@@ -134,11 +135,6 @@ class FragmentLine(calliope.Fragment):
                     parent_item.remove(node)
 
             # now, remove empty parents ands grandparents
-            remove_empty_ancestors(parent_item)
-
-    def get_signed_ticks_list(self):
-        """ inherited classes should override """ 
-        return []
 
 
     def get_rhythm_music(self, **kwargs):
@@ -170,7 +166,7 @@ class FragmentLine(calliope.Fragment):
             # extra_counts_per_division=extra_counts_per_division, # for testing only...
         )
 
-        leaf_selections = talea_rmaker([abjad.Duration(d) for d in self.get_metrical_durations()])
+        leaf_selections = talea_rmaker([abjad.Duration(d) for d in metrical_durations])
         return self.container_type(components=leaf_selections, **kwargs)
 
     def process_rhythm_music(self, music, **kwargs):
@@ -180,8 +176,9 @@ class FragmentLine(calliope.Fragment):
         leaf_count=0
 
         # TO DO: consider check for unequal length of musical_logical_ties/self.logical_ties_or_container?
-        # e.g. look at abjad.Sequence        
-        pairs = zip(music_logical_ties, self.logical_ties_or_container)
+        # e.g. look at abjad.Sequence 
+        # TO DO: use logical_ties_or_container (for custom cels)??
+        pairs = zip(music_logical_ties, self.logical_ties)
 
         for music_logical_tie, data_logical_tie in pairs:
 
@@ -193,9 +190,9 @@ class FragmentLine(calliope.Fragment):
 
             if not data_logical_tie.rest:
 
-                my_pitch = data_logical_tie.pitch or event.pitch
+                my_pitch = data_logical_tie.pitch or data_logical_tie.parent.pitch
                 my_respell = data_logical_tie.get_respell()
-                calliope.pitch.set_pitch(music_logical_tie, my_pitch, my_respell)
+                calliope.set_pitch(music_logical_tie, my_pitch, my_respell)
 
 
             # TO DO: these loops could be cleaner...

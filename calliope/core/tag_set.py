@@ -47,9 +47,9 @@ class TagSet(object):
     for item in dynamics_inventory | hairpins_inventory | set( (r"\!",) ):
         spanner_closures[item] = hairpins_inventory
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.tags = set()
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
     def get_attachment(self, tag_name):
         if tag_name in self.articulations_inventory:
@@ -129,6 +129,7 @@ class TagSet(object):
         return self
 
     def combine_tags(self, new_set, old_set):
+        print("--", type(self), new_set, old_set)
         # note, can't do simple union since that could dupe dynamics or hairpins, so need to call set_tag method on each one
         # .... here, new_set values override old_set values for hairpins and dynamics
         combined_set = set(old_set) # makes a copy
@@ -146,10 +147,13 @@ class TagSet(object):
         return self.my_index == 0 
 
     def get_ancestor_tags(self):
-        if self.parent and self.use_ancestor_attachments and hasattr(self.parent, "tags"):
-            return self.combine_tags(self.parent.tags, self.parent.get_ancestor_tags())
-        else:
-            return set()
+        # print("YOYO", type(self), type(self.parent))
+        if self.parent and isinstance(self.parent, calliope.Machine) and self.use_ancestor_attachments:
+            parent_tags = getattr(self.parent, "tags", None)
+            parent_ancestor_tags = self.parent.get_ancestor_tags()
+            if parent_tags and parent_ancestor_tags:
+                return self.combine_tags(parent_tags, parent_ancestor_tags)
+        return set()
 
     def get_all_tags(self):
         return self.combine_tags(self.tags, self.get_ancestor_tags())

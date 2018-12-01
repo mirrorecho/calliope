@@ -25,9 +25,9 @@ class MachineSelectableMixin(object):
     def non_rest_events(self):
         return self.select_by_type(calliope.Event).exclude(rest=True)
 
-    @property
-    def logical_ties_or_container(self):
-        return self.select_by_type(calliope.LogicalTie, calliope.ContainerCell)
+    # @property
+    # def logical_ties_or_container(self):
+    #     return self.select_by_type(calliope.LogicalTie, calliope.ContainerCell)
 
 
 

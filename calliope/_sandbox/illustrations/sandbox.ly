@@ -12,37 +12,41 @@
 \score {
     \new Score
     <<
-        \context StaffGroup = "Violins"
-        <<
-            \context Staff = "Violin1Staff"
-            \with
+        \context Staff = "MyStaffA"
+        \with
+        {
+            \consists Horizontal_bracket_engraver
+        }
+        {
             {
-                \consists Horizontal_bracket_engraver
+                c'2
+                ~
+                c'4
+                d'4
+                ~
+                d'2
+                e'2
+            }
+        }
+        \context Staff = "MyStaffB"
+        \with
+        {
+            \consists Horizontal_bracket_engraver
+        }
+        {
+            {
+                c'2
+                ~
+                c'4
+                d'4
+                ~
+                d'2
+                e'2
             }
             {
-                {
-                    {
-                        c'4
-                        d'4
-                        ef'4
-                        f'4
-                        ~
-                        f'1
-                    }
-                }
+                f'2
+                e'2
             }
-            \context Staff = "Violin2Staff"
-            \with
-            {
-                \consists Horizontal_bracket_engraver
-            }
-            {
-                {
-                    c'1
-                    b2
-                    b2
-                }
-            }
-        >>
+        }
     >>
 }

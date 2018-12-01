@@ -103,7 +103,7 @@ class StaffGroup(calliope.Bubble):
 
     def show(self):
         self.show_pdf()
-StaffGroup.child_types = (Staff, StaffGroup)
+StaffGroup.child_types = (StaffGroup, Staff)
 
 class Piano(StaffGroup):
     class Piano1(Staff): pass

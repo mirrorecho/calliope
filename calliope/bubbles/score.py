@@ -7,7 +7,7 @@ class Score(calliope.Bubble):
     # so it needs to be set to be set to None here
     is_simultaneous = None
     container_type=abjad.Score
-    child_types=(calliope.Staff, calliope.StaffGroup)
+    child_types=(calliope.StaffGroup, calliope.Staff)
     # TO DO... the following are no longer used... keep them?
     hide_empty = False 
     title = ""

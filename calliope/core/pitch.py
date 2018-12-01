@@ -14,7 +14,7 @@ import abjad
 # TO DO... still messy... refactor
 # TO DO... could also pass note as pitch object
 # TO DO... cast as float?
-def get_pitch_number_or_list(pitch_object):
+def get_pitch_number(pitch_object):
     if isinstance(pitch_object, int):
         return pitch_object
     elif isinstance(pitch_object, str):
@@ -28,7 +28,7 @@ def get_pitch_number_or_list(pitch_object):
 # TO DO... still messy... refactor
 def set_pitch(music_logical_tie, pitch_thingy, respell=None):
     pitch_number = get_pitch_number(pitch_thingy)
-    if pitch_number:
+    if pitch_number is not None:
         if isinstance(pitch_number, (list, tuple)):
             if respell=="flats":
                 named_pitches = [abjad.NamedPitch(pitch_number)._respell_with_flats() for p in pitch_number]
