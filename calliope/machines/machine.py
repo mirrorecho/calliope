@@ -1,12 +1,6 @@
 import abjad, calliope
 
-# TO DO... how/whether to use this????
-# class LeafData(calliope.TagSet, calliope.Tree):
-#     original_duration = 0
-#     ticks = 0
-#     rest = False
 
-# TO DO... figure out how to deal with older MachineSelectableMixin properties
 class Machine(calliope.Bubble, calliope.TagSet):
     """
     Base class for machines

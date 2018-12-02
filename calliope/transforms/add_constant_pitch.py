@@ -12,7 +12,7 @@ class AddConstantPitch(calliope.Transform):
 
     def transform(self, selectable, **kwargs):
         new_child = selectable[0](name=str(selectable.name) + "constant_pitch_" + str(self.pitch))
-        for event in new_child.non_rest_events:
+        for event in new_child.note_events:
             event.pitch = self.pitch
 
         selectable.append(new_child)

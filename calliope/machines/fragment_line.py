@@ -173,7 +173,7 @@ class FragmentLine(calliope.Fragment):
 
         open_spanners = {}
         music_logical_ties = calliope.by_logical_tie_group_rests(music)
-        leaf_count=0
+        leaf_index=0
 
         # TO DO: consider check for unequal length of musical_logical_ties/self.logical_ties_or_container?
         # e.g. look at abjad.Sequence 
@@ -201,7 +201,7 @@ class FragmentLine(calliope.Fragment):
                 for p in spanners_to_close:
                     spanner = data_logical_tie.get_attachment(p)
                     start_index = open_spanners[p]
-                    stop_index = music_leaf_index + 1
+                    stop_index = leaf_index + 1
                     if isinstance(spanner, abjad.Slur):
                         # slurs go to the end of the logical tie, not the beginning
                         stop_index += len(music_logical_tie) - 1
@@ -212,25 +212,25 @@ class FragmentLine(calliope.Fragment):
             # eratic exception that's confusing since it would depend on the arbitrary order of looping through the set)
             for tag_name in data_logical_tie.get_all_tags():
                 if tag_name in calliope.TagSet.start_spanners_inventory:
-                    open_spanners[tag_name]=music_leaf_index
+                    open_spanners[tag_name]=leaf_index
                 else:
                     attachment = data_logical_tie.get_attachment(tag_name)
                     if attachment:
                         if callable(attachment):
                             # used for coloring, maybe other stuff in the future
                             # TO DO: may not be working correctly... need to set up test
-                            stop_index = music_leaf_index + len(music_logical_tie)
-                            attachment(music[music_leaf_index:stop_index])
+                            stop_index = leaf_index + len(music_logical_tie)
+                            attachment(music[leaf_index:stop_index])
                         else:
                             # stem tremolos should be attached to every leaf in logical tie...
                             if isinstance(attachment, abjad.StemTremolo):
-                                stop_index = music_leaf_index + len(music_logical_tie)
-                                for leaf in music[music_leaf_index:stop_index]:
+                                stop_index = leaf_index + len(music_logical_tie)
+                                for leaf in music[leaf_index:stop_index]:
                                     abjad.attach(attachment, leaf)
                             else:
-                                abjad.attach(attachment, music[music_leaf_index])
+                                abjad.attach(attachment, music[leaf_index])
 
-            leaf_count += len(music_logical_tie)
+            leaf_index += len(music_logical_tie)
 
     def process_music(self, music, **kwargs):
         super().process_music(music, **kwargs)

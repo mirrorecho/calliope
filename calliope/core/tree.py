@@ -13,13 +13,6 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
 
     _parent_types = ()
 
-    
-    # # KISS!
-    # parent_type = None 
-    # original_index = None 
-    # original_depthwise_index = None # TO DO... consider making these IndexedData objects at the parent level?
-
-
     # can be overriden to set children based on other/special logic
     # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places
     def set_children_from_class(self, **kwargs):
@@ -59,7 +52,7 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
 
 
     @classmethod
-    def startup(cls):        
+    def startup_root(cls):        
         """
         Called on tree root class to set various attributes
         """
@@ -68,9 +61,11 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
         for c in (cls,) + cls.get_descendant_types():
             # TO DO: consider setting _descendant_types and _ancestor_types here
             for child_type in c.child_types:
-                c.set_tree_select_property(
+                # TO DO: set_tree_select_property DOES NOT WORK HERE... 
+                # only set_tree_by_type_property ... something with the lamda ??????
+                c.set_tree_by_type_property(
                     child_type.select_property,
-                    lambda x: x.select_by_type(child_type)
+                    child_type,
                     )
 
     @classmethod
@@ -83,8 +78,18 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
         setattr(calliope.Selection, name, property(callable))
 
         for set_on_cls in (cls,) + cls.get_ancestor_types():
+            # print(set_on_cls, name, c)
+            setattr(set_on_cls, name, property(callable))
+            # setattr(set_on_cls, name + "_YO", c.__name__)
+            # setattr(set_on_cls, name + "_YA", property(lambda x: x.select_by_type(c)))
 
-            setattr(set_on_cls, name, property(callable))            
+
+    @classmethod
+    def set_tree_by_type_property(cls, name, select_type):
+        cls.set_tree_select_property(
+            name,
+            lambda x: x.select_by_type(select_type),
+            )
 
 
     def __init__(self, *args, **kwargs):
@@ -93,8 +98,8 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
             self.name = self.set_name
         self.setup(**kwargs)
         self.set_children_from_class(**kwargs)
-        if not self.child_types:
-            self.child_types = (Tree,)
+        # if not self.child_types:
+        #     self.child_types = (Tree,)
 
 
     def __call__(self, name=None, **kwargs):

@@ -3,10 +3,19 @@ import abjad, abjadext, calliope
 
 class MyScore(calliope.Score):
     class MyStaffA(calliope.Staff):
-        class MyCell(calliope.Cell):
-            set_pitches = (0,2,4)
+        class MyCell(calliope.Cell): 
+            set_pitches = (None,2,4)
             set_rhythm = (3,3,2)
-    class MyStaffB(MyStaffA): pass
+            # class MyCellSub(calliope.Cell): 
+            #     set_pitches = (5,2,4)
+            #     set_rhythm = (1,1,1)
+        class MyCell2(calliope.Cell): 
+            set_pitches = (6,2,4)
+            set_rhythm = (3,3,2)
+    class MyStaffB(MyStaffA): 
+        class MyCell2(calliope.Cell): 
+            set_pitches = (6,2,4)
+            set_rhythm = (2,2,4)
 
 # print(calliope.Event._parent_types)
 # print(calliope.Cell._parent_types)
@@ -17,9 +26,30 @@ class MyScore(calliope.Score):
 # print(calliope.Event.get_ancestor_types())
 # print(calliope.Bubble._parent_types)
 
+print(calliope.SELECTION_COUNTER)
+
 s = MyScore()
 
-print(calliope.Phrase.events)
+print(calliope.SELECTION_COUNTER)
+
+print("------------------------------------------")
+
+
+s.staves[1].cells[1].logical_ties[-1].tag(">")
+
+print(calliope.SELECTION_COUNTER)
+
+s.illustrate_me()
+
+
+# print(s.staves_YO)
+# print(s.staves_YA)
+
+# print(s.staves[0].select_cells)
+
+# print(s.note_events)
+
+
 
 
 # s2 = calliope.Score()
@@ -170,7 +200,7 @@ print(calliope.Phrase.events)
 # closely_score = CloselyScore()
 
 # phrase_a = PhraseA()
-# phrase_a.non_rest_events(pitch=0).setattrs(rest=True)
+# phrase_a.note_events(pitch=0).setattrs(rest=True)
 
 # arrange_block = Arrange(phrase_block)
 # arrange_block(closely_score, Violin=0, Cello=1)
@@ -290,10 +320,10 @@ LogicalTie
 # for l in p.leaves:
 #     print(l)
 
-# p.cells[0,1].non_rest_events.tag(".", ">")
-# p.events[2,3].non_rest_events.untag(">")
+# p.cells[0,1].note_events.tag(".", ">")
+# p.events[2,3].note_events.untag(">")
 
-# p.non_rest_events[1].pitch = 22
+# p.note_events[1].pitch = 22
 
 # TO DO: why do the below behave differently?... should address:
 # calliope.illustrate_me(bubble=pb)
@@ -395,7 +425,7 @@ LogicalTie
 
 #     class AccentMe(calliope.Transform):
 #         def transform(self, selectable, **kwargs):
-#             selectable.non_rest_events.tag(">")
+#             selectable.note_events.tag(">")
 
 # p = PhraseA()
 # selection = p.events(pitch__gt=0)

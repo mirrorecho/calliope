@@ -2,36 +2,8 @@ import abjad
 import calliope
 import uqbar
 
-class MachineSelectableMixin(object):
 
-    # TO CONSIDER
-    # able to set pitches / rhythm at this level (as opposed to machine)
-
-    # TO CONSIDER
-    # @property
-    # def beats(self):
-    #     return self._beats
-
-    # @property
-    # def measures(self):
-    #     return None
-
-    # TO DO: where should the logic for these live???
-    @property
-    def select_cells(self):
-        return Selection(select_from=self.children, type_args=(calliope.Cell,))
-
-    @property
-    def non_rest_events(self):
-        return self.select_by_type(calliope.Event).exclude(rest=True)
-
-    # @property
-    # def logical_ties_or_container(self):
-    #     return self.select_by_type(calliope.LogicalTie, calliope.ContainerCell)
-
-
-
-class Selection(MachineSelectableMixin, calliope.SelectableMixin):
+class Selection(calliope.SelectableMixin):
     select_from = ()
     select_args = None # iterable of names or indices of items
     filter_kwargs = None # dictionary of attribute names/values to match
@@ -113,6 +85,8 @@ class Selection(MachineSelectableMixin, calliope.SelectableMixin):
 
     def item_ok(self, index, item):
         
+        calliope.SELECTION_COUNTER += 1
+
         if not (self.type_args or self.select_args or self.range_args or self.filter_kwargs):
             return True
 

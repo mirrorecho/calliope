@@ -12,6 +12,21 @@ class Score(calliope.Bubble):
     hide_empty = False 
     title = ""
 
+    @classmethod
+    def startup_root(cls):
+        calliope.Staff.child_types = (calliope.Segment, calliope.Cell) # TO DO ... FIX TREE hierarchy
+
+        super().startup_root()
+
+        calliope.Cell.set_tree_select_property("note_events", 
+            lambda x: x.select_by_type(calliope.Event).exclude(rest=True)
+            ) 
+
+        calliope.Cell.set_tree_select_property( "select_cells",
+            lambda x: calliope.Selection(select_from=x.children, type_args=(calliope.Cell,))
+            )
+
+
     def process_music(self, music, **kwargs):
         super().process_music(music, **kwargs)
         self.info("finished creating abjad music container object for the score")

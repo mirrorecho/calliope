@@ -136,7 +136,7 @@ c1["p5"]["Tenor"].events[4].respell = "flats"
 
 for pb in c1:
     for p in pb:
-        p.non_rest_events[-1].tag(">")
+        p.note_events[-1].tag(">")
 
 
 repeats = 8

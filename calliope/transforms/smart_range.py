@@ -19,7 +19,7 @@ class SmartRange(calliope.Transform):
 
         my_range = abjad.PitchRange.from_pitches(*self.smart_range)
         
-        non_rest_list = machine.non_rest_events.as_list()
+        non_rest_list = machine.note_events.as_list()
 
         for previous_event, event in pairwise([non_rest_list[0]] + non_rest_list):
             pitches_in_range = [p.number for p in my_range.voice_pitch_class(event.pitch)]

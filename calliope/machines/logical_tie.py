@@ -1,5 +1,11 @@
 import calliope
 
+# TO DO... how/whether to use this????
+# class LeafData(calliope.TagSet, calliope.Tree):
+#     original_duration = 0
+#     ticks = 0
+#     rest = False
+
 class LogicalTie(calliope.Machine):
     # original_duration = 0 # TO DO: USE THIS?
     is_simultaneous = False

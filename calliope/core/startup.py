@@ -25,6 +25,3 @@ import calliope
 
 def startup():
     # set_select_properties(calliope.Bubble)
-    calliope.Staff.child_types = (calliope.Segment, calliope.Cell) # TO DO ... FIX TREE hierarchy
-    calliope.Score.startup()
-    

@@ -12,5 +12,5 @@ class Arrange(calliope.Transform):
             selectable.select
 
     def transform(self, selectable, **kwargs):
-        for event in selectable.non_rest_events:
+        for event in selectable.note_events:
             event.transpose(self.interval)

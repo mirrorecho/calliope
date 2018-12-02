@@ -31,6 +31,8 @@ from calliope.machines.segment import Segment
 # from calliope.machines.line import Line # 
 # from calliope.machines.block import Block, EventBlock, CellBlock, PhraseBlock, LineBlock
 
+Score.startup_root()
+
 # machine factories
 from calliope.factories.factory import Factory
 from calliope.factories.copy_events import CopyEventsFactory
@@ -62,5 +64,7 @@ from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 from calliope.libraries import meters
 from calliope.libraries.pitch_sequence import PitchSequence
 
-from calliope.core.startup import startup
-startup()
+SELECTION_COUNTER = 0
+
+# from calliope.core.startup import startup
+# startup()
