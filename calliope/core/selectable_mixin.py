@@ -1,23 +1,21 @@
 import calliope
 
 class SelectableMixin(calliope.BaseMixin):
-    def get_nodes(self):
-        # TO DO... delay creating the list?
-        my_nodes = [self]
-        my_nodes.extend(self.depth_first())
-        return my_nodes
+    
 
-    @property
-    def nodes(self):
-        return calliope.Selection(
-            select_from=self.get_nodes()
-            )        
+    def recurse_by_type(self, my_type):
+        for sub_item in self:
+            if isinstance(sub_item, my_type):
+                yield sub_item
+            if isinstance(sub_item, my_type.get_ancestor_types()):
+                for grandchild in sub_item.recurse_by_type(my_type):
+                    yield grandchild
 
-    def select_by_type(self, *args):
+    def select_by_type(self, my_type):
         # print(args)
         return calliope.Selection(
-            select_from=self.get_nodes(), 
-            type_args=args
+            select_from=self.recurse_by_type(my_type), 
+            # type_args=args
             )
 
     @property

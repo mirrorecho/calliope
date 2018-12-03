@@ -28,7 +28,6 @@ class Selection(calliope.SelectableMixin):
         return_str += "#    ]"
         return return_str
 
-
     # TO DO... consider if useful:
     # @property
     # def innermost_selection(self):
@@ -37,9 +36,9 @@ class Selection(calliope.SelectableMixin):
     #     else:
     #         return self
 
-    def cache(self):
-        # TO DO: implement cache?
-        self.warn("cache method not implemented yet")
+    # TO DO: implement cache?
+    # def cache(self):        
+    #     self.warn("cache method not implemented yet")
 
     def exclude(self, *args, **kwargs):
         select_args = []
@@ -52,6 +51,7 @@ class Selection(calliope.SelectableMixin):
     # def reset_selection(self):
     #     self._length = None
 
+    # TO DO: should this be added to selectable mixin?
     def insert(self, index, new_item):
         item = self[index]
         item.parent.insert(item.my_index, new_item) 
@@ -142,6 +142,7 @@ class Selection(calliope.SelectableMixin):
 
             if isinstance(arg, int):
                 my_index = get_index(arg)
+                print("INDEX", my_index)
                 return next(x for i, x in enumerate(self) if i==my_index)
             elif isinstance(arg, str):
                 return next(x for x in self if x.name==arg)

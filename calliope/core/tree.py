@@ -1,12 +1,15 @@
 import inspect
 import copy
+import itertools
+
 import abjad
-import uqbar
 import calliope
 
-TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(uqbar.containers.UniqueTreeContainer))
+from .uqbar_tree_fork import UniqueTreeContainer
 
-class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
+TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(UniqueTreeContainer))
+
+class Tree(calliope.SelectableMixin, UniqueTreeContainer):
     child_types = () # TO DO, consider indicating private
     select_property = None # TO DO, consider indicating private
     set_name = None
@@ -110,37 +113,67 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
             setattr(return_node, name, value)
         return return_node
 
-    def __setitem__(self, arg, node):
-        if inspect.isclass(node):
-            node = node()
-        if type(arg) is slice:
-            # needed for base UniqueTreeContainer implementation:
-            uqbar.containers.UniqueTreeContainer.__setitem__(self, arg, node)
-        elif not isinstance(node, self.child_types):
+    def __setitem__(self, i, expr):
+        if inspect.isclass(expr):
+            expr = expr()
+        print(expr)
+        if not isinstance(expr, self.child_types):
             # print(self.child_types)
             # print(node)
-            self.warn("attempted to add child but not an allowed child type - attribute/child not added", node)
-        else:
-            if type(arg) is int:
-                # if setting based on integer index or slice, use abjad's tree container default behavior
-                uqbar.containers.UniqueTreeContainer.__setitem__(self, arg, node)
-            else:
-                node.name = arg # just as a precaution
-                
-                # TO DO... assume we don't want to deal with this... but consider it
-                # setattr(self, arg, node)
-                new_child = True
+            self.warn("attempted to add child but not an allowed child type - attribute/child not added", expr)
+        elif isinstance(i, (int,str)):
+            # THIS WAS IN UQBAR BUT NOT USED:
+            # expr = self._prepare_setitem_single(expr)
+            assert isinstance(expr, self._node_class)
+            old = self[i]
+            if expr in self.parentage:
+                raise ValueError('Cannot set parent node as child.')
+            old._set_parent(None)
+            expr._set_parent(self)
+            self._children.insert(i, expr)
+        # elif isinstance(i, str):
 
-                for i, b in enumerate(self.children):
-                    if b.name == arg:
-                        uqbar.containers.UniqueTreeContainer.__setitem__(self, i, node)
-                        new_child = False
-                        break
-                if new_child:
-                    uqbar.containers.UniqueTreeContainer.__setitem__(self,
-                        slice(len(self), len(self)),
-                        [node]
-                        )
+        else:
+            # THIS WAS IN UQBAR BUT NOT USED:
+            # expr = self._prepare_setitem_multiple(expr)
+            if isinstance(expr, calliope.Tree):
+                # Prevent mutating while iterating by copying.
+                expr = expr[:]
+            assert all(isinstance(x, self._node_class) for x in expr)
+            if i.start == i.stop and i.start is not None \
+                and i.stop is not None and i.start <= -len(self):
+                start, stop = 0, 0
+            else:
+                start, stop, stride = i.indices(len(self))
+            old = self[start:stop]
+            parentage = self.parentage
+            if any(node in parentage for node in expr):
+                raise ValueError('Cannot set parent node as child.')
+            for node in old:
+                node._set_parent(None)
+            for node in expr:
+                node._set_parent(self)
+
+            # TO DO: is this all necessary???????
+            # is able to add new children by name... seems wonky!
+
+            # node.name = arg # just as a precaution
+            # new_child = True
+            # for i, b in enumerate(self.children):
+            #     if b.name == arg:
+            #         UniqueTreeContainer.__setitem__(self, i, node)
+            #         new_child = False
+            #         break
+            # if new_child:
+            #     UniqueTreeContainer.__setitem__(self,
+            #         slice(len(self), len(self)),
+            #         [node]
+            #         )
+
+
+            self._children.__setitem__(slice(start, start), expr)
+
+        self._mark_entire_tree_for_later_update()
 
     @classmethod
     def class_sequence(cls, child_types=() ):
@@ -206,6 +239,34 @@ class Tree(calliope.SelectableMixin, uqbar.containers.UniqueTreeContainer):
     def select_with(self, selection):
         selection.innermost_selection.select_from = self
         return selection
+
+    ### ---------------------------------------- ###
+    ### ---------------------------------------- ###
+    ### moved from uqbar.UniqueTreeContainer:
+    ### ---------------------------------------- ###
+    def recurse(self):
+        for child in self:
+            yield child
+            if isinstance(child, calliope.Tree):
+                for grandchild in child.recurse():
+                    yield grandchild
+    
+    def depth_first(self, top_down=True):
+        for child in tuple(self): # TO DO: why casting as tuple here?
+            if top_down:
+                yield child
+            if isinstance(child, calliope.Tree):
+                yield from child.depth_first(top_down=top_down)
+            if not top_down:
+                yield child
+
+
+    ### ---------------------------------------- ###
+    ### ---------------------------------------- ###
+    ### new implementations based on move from uqbar
+    ### ---------------------------------------- ###    
+    
+
 
 
     # OK TO REMEVE?
