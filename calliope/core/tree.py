@@ -2,19 +2,46 @@ import inspect
 import copy
 import itertools
 
-import abjad
 import calliope
 
-from .uqbar_tree_fork import UniqueTreeContainer
+from .tree_node import TreeNode
 
-TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(UniqueTreeContainer))
+TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(TreeNode))
 
-class Tree(calliope.SelectableMixin, UniqueTreeContainer):
+
+### ---------------------------------------------------------------------------- ###
+### ---------------------------------------------------------------------------- ###
+# INSPIRED BY: https://github.com/josiah-wolf-oberholtzer/uqbar/blob/master/uqbar/containers/UniqueTreeContainer.py
+### ---------------------------------------------------------------------------- ###
+
+class Tree(calliope.SelectableMixin, TreeNode):
     child_types = () # TO DO, consider indicating private
     select_property = None # TO DO, consider indicating private
     set_name = None
 
-    _parent_types = ()
+    _descendant_types = ()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(args) # args sets children here...
+        self._children = []
+        self._named_children = {}
+
+        if len(args) > 0 and isinstance(args[0], str):
+            my_name = args[0]
+            args = args[1:]
+        else:
+            my_name = self.set_name
+       
+        TreeNode.__init__(self, name=my_name)
+
+        if args:
+            self[:] = args
+
+        self.setup(**kwargs)
+        self.set_children_from_class(**kwargs)
+
+        # if not self.child_types:
+        #     self.child_types = (Tree,)
 
     # can be overriden to set children based on other/special logic
     # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places
@@ -23,35 +50,34 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
             node = getattr(self, node_name)
             self[node_name] = node
 
-    # TO DO: consider setting as new attribute (for performance)
-    @classmethod
-    def get_ancestor_types(cls, ancestors=() ):
-        for parent in cls._parent_types:
-            if parent not in ancestors:
-                ancestors += (parent,)
-                parent_ancestors = parent.get_ancestor_types(ancestors)
-                ancestors += tuple([p for p in parent_ancestors if p not in ancestors])
-        return ancestors
-
-    # TO DO: consider setting as new attribute (for performance)
-    @classmethod
-    def get_descendant_types(cls, descendants=() ):
-        for child in cls.child_types:
-            if child not in descendants:
-                descendants += (child,)
-                child_descendants = child.get_descendant_types(descendants)
-                descendants += tuple([c for c in child_descendants if c not in descendants])
-        return descendants
+    # # TO DO: consider setting as new attribute (for performance)
+    # @classmethod
+    # def get_descendant_types(cls, descendants=() ):
+    #     for child in cls.child_types:
+    #         if child not in descendants:
+    #             descendants += (child,)
+    #             child_descendants = child.get_descendant_types(descendants)
+    #             descendants += tuple([c for c in child_descendants if c not in descendants])
+    #     return descendants
 
     @classmethod
-    def _set_parent_types(cls):
+    def _set_parent_and_ancestor_types(cls, ancestor_types=()):
         """
-        Called on tree root class to set parent_types
+        Called on tree root class to set _parent_types on all descendant types
         """
-        for child in cls.child_types:
-            if cls not in child._parent_types:
-                child._parent_types += (cls,)
-                child._set_parent_types()
+        if cls not in ancestor_types:
+            ancestor_types += (cls,)
+        
+        for child_type in cls.child_types:
+            if cls not in child_type._parent_types:
+                child_type._parent_types += (cls,)
+                child_type._ancestor_types += tuple(
+                    [t for t in ancestor_types if t not in child_type._ancestor_types]
+                    )
+                for ancestor_type in ancestor_types:
+                    if child_type not in ancestor_type._descendant_types:
+                        ancestor_type._descendant_types += (child_type,)
+                child_type._set_parent_and_ancestor_types(ancestor_types)
 
 
     @classmethod
@@ -59,9 +85,9 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
         """
         Called on tree root class to set various attributes
         """
-        cls._set_parent_types()
+        cls._set_parent_and_ancestor_types()
 
-        for c in (cls,) + cls.get_descendant_types():
+        for c in (cls,) + cls._descendant_types:
             # TO DO: consider setting _descendant_types and _ancestor_types here
             for child_type in c.child_types:
                 # TO DO: set_tree_select_property DOES NOT WORK HERE... 
@@ -80,7 +106,7 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
         # selections have all select properties
         setattr(calliope.Selection, name, property(callable))
 
-        for set_on_cls in (cls,) + cls.get_ancestor_types():
+        for set_on_cls in (cls,) + cls._ancestor_types:
             # print(set_on_cls, name, c)
             setattr(set_on_cls, name, property(callable))
             # setattr(set_on_cls, name + "_YO", c.__name__)
@@ -95,16 +121,6 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
             )
 
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(args) # args sets children here...
-        if self.set_name:
-            self.name = self.set_name
-        self.setup(**kwargs)
-        self.set_children_from_class(**kwargs)
-        # if not self.child_types:
-        #     self.child_types = (Tree,)
-
-
     def __call__(self, name=None, **kwargs):
         return_node = copy.deepcopy(self)
         if name:
@@ -113,49 +129,72 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
             setattr(return_node, name, value)
         return return_node
 
-    def __setitem__(self, i, expr):
+    def __setitem__(self, key, expr):
         if inspect.isclass(expr):
             expr = expr()
-        print(expr)
-        if not isinstance(expr, self.child_types):
-            # print(self.child_types)
-            # print(node)
-            self.warn("attempted to add child but not an allowed child type - attribute/child not added", expr)
-        elif isinstance(i, (int,str)):
-            # THIS WAS IN UQBAR BUT NOT USED:
-            # expr = self._prepare_setitem_single(expr)
-            assert isinstance(expr, self._node_class)
-            old = self[i]
-            if expr in self.parentage:
-                raise ValueError('Cannot set parent node as child.')
-            old._set_parent(None)
-            expr._set_parent(self)
-            self._children.insert(i, expr)
-        # elif isinstance(i, str):
+        # print(expr)
+        if isinstance(key, (int,str)):
 
-        else:
-            # THIS WAS IN UQBAR BUT NOT USED:
+            if not isinstance(expr, self.child_types):
+                # print(self.child_types)
+                # print(node)
+                self.warn("attempted to add child but not an allowed child type - child not added", expr)
+
+            else:
+
+                # THIS WAS IN UQBAR BUT HOOK WITH NOTHING (NOT USED):
+                # expr = self._prepare_setitem_multiple(expr)
+                               
+                if expr in self.parentage:
+                    raise ValueError('Cannot set parent node as child.')
+
+                new_child = True
+
+                if isinstance(key, str):
+                    my_index = next((i for i, c in enumerate(self.children) if c.name==key), None)
+                    if my_index is None:
+                        expr.name = key #just as a precaution
+                        self.append(expr)
+                else:
+                    my_index = key
+
+                if my_index is not None:
+                    old = self[my_index]
+                    old._set_parent(None)
+
+                    expr._set_parent(self)
+                    self._children.insert(key, expr)
+
+
+        elif isinstance(key, slice):
+            
+            # THIS WAS IN UQBAR BUT HOOK WITH NOTHING (NOT USED):
             # expr = self._prepare_setitem_multiple(expr)
+            
             if isinstance(expr, calliope.Tree):
                 # Prevent mutating while iterating by copying.
                 expr = expr[:]
-            assert all(isinstance(x, self._node_class) for x in expr)
-            if i.start == i.stop and i.start is not None \
-                and i.stop is not None and i.start <= -len(self):
+            
+            # TO DO: consider more forgiving warning here instead of assert?
+            assert all(isinstance(x, self.child_types) for x in expr) 
+            
+            if key.start == key.stop and key.start is not None \
+                and key.stop is not None and key.start <= -len(self):
                 start, stop = 0, 0
             else:
-                start, stop, stride = i.indices(len(self))
+                start, stop, stride = key.indices(len(self))
+            
             old = self[start:stop]
             parentage = self.parentage
+            
             if any(node in parentage for node in expr):
                 raise ValueError('Cannot set parent node as child.')
+            
             for node in old:
                 node._set_parent(None)
+            
             for node in expr:
                 node._set_parent(self)
-
-            # TO DO: is this all necessary???????
-            # is able to add new children by name... seems wonky!
 
             # node.name = arg # just as a precaution
             # new_child = True
@@ -174,6 +213,12 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
             self._children.__setitem__(slice(start, start), expr)
 
         self._mark_entire_tree_for_later_update()
+
+
+    # TO DO: is this duplicative?
+    @property
+    def child_names(self):
+        return [c.name for c in self]
 
     @classmethod
     def class_sequence(cls, child_types=() ):
@@ -228,12 +273,6 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
         """
         return self.root.depthwise_inventory[self.depth].index(self)
 
-    # TO DO... is this every used?
-    def copy(self):
-        return copy.deepcopy(self)
-        # for child in self.children:
-        #     new_self.append(child.copy())
-
     # TO DO... CONSIDER THIS FOR 'ABSTRACT' SELECTIONS
     # not currently working...
     def select_with(self, selection):
@@ -244,6 +283,103 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
     ### ---------------------------------------- ###
     ### moved from uqbar.UniqueTreeContainer:
     ### ---------------------------------------- ###
+
+    def __contains__(self, expr):
+        if isinstance(expr, str):
+            return expr in self._named_children
+        for x in self._children:
+            if x is expr:
+                return True
+        return False
+
+    def __delitem__(self, i):
+        if isinstance(i, str):
+            children = tuple(self._named_children[i])
+            for child in children:
+                parent = child.parent
+                del(parent[parent.index(child)])
+            return
+        if isinstance(i, int):
+            if i < 0:
+                i = len(self) + i
+            i = slice(i, i + 1)
+        self.__setitem__(i, [])
+        self._mark_entire_tree_for_later_update()
+
+    def __getitem__(self, expr):
+        if isinstance(expr, (int, slice)):
+            return self._children[expr]
+        elif isinstance(expr, str):
+            result = sorted(
+                self._named_children[expr],
+                key=lambda x: x.graph_order,
+                )
+            if len(result) == 1:
+                return result[0]
+            return result
+        raise ValueError(expr)
+
+    def __iter__(self):
+        for child in self._children:
+            yield child
+
+    def __len__(self):
+        return len(self._children)
+
+    def _cache_named_children(self):
+        name_dictionary = super(Tree, self)._cache_named_children()
+        if hasattr(self, '_named_children'):
+            for name, children in self._named_children.items():
+                name_dictionary[name] = copy.copy(children)
+        return name_dictionary
+
+    ### PRIVATE PROPERTIES ###
+
+    ### PUBLIC METHODS ###
+
+    def append(self, expr):
+        ## TO DO: ????
+        self.__setitem__(
+            slice(len(self), len(self)),
+            [expr]
+            )
+
+    def extend(self, expr):
+        self.__setitem__(
+            slice(len(self), len(self)),
+            expr
+            )
+
+    def index(self, expr):
+        for i, child in enumerate(self._children):
+            if child is expr:
+                return i
+        else:
+            message = '{!r} not in {!r}.'
+            message = message.format(expr, self)
+            raise ValueError(message)
+
+    def insert(self, i, expr):
+        self.__setitem__(
+            slice(i, i),
+            [expr]
+            )
+
+    def pop(self, i=-1):
+        node = self[i]
+        del(self[i])
+        return node
+
+    def remove(self, node):
+        i = self.index(node)
+        del(self[i])
+
+    ### PUBLIC PROPERTIES ###
+
+    @property
+    def children(self):
+        return tuple(self._children)
+
     def recurse(self):
         for child in self:
             yield child
@@ -259,6 +395,9 @@ class Tree(calliope.SelectableMixin, UniqueTreeContainer):
                 yield from child.depth_first(top_down=top_down)
             if not top_down:
                 yield child
+
+
+
 
 
     ### ---------------------------------------- ###

@@ -2,6 +2,7 @@ import os
 import abjad
 import calliope
 
+# TO DO: consider... should this be a mixin????
 class Bubble(calliope.Tree):
     """
     A factory for an abjad container.

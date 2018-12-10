@@ -7,7 +7,7 @@ class SelectableMixin(calliope.BaseMixin):
         for sub_item in self:
             if isinstance(sub_item, my_type):
                 yield sub_item
-            if isinstance(sub_item, my_type.get_ancestor_types()):
+            if isinstance(sub_item, my_type._ancestor_types):
                 for grandchild in sub_item.recurse_by_type(my_type):
                     yield grandchild
 

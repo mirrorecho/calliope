@@ -40,23 +40,23 @@ class Week(TreeBranch):
     class Thursday(Day): pass
     class Friday(Day): pass
 
-t = TreeRoot(
-    TreeTrunk(
-        Week(name="week0_branch",
+t = TreeRoot("year_end",
+    TreeTrunk("december_trunk",
+        Week("week0_branch",
             ),
-        Week(name="week1_branch",
+        Week("week1_branch",
             ),
-        Week(name="week2_branch",
+        Week("week2_branch",
             ),
-        Week(name="week3_branch",
+        Week("week3_branch",
             ),
-        name="december_trunk",
         ),
-    name="year_end",
     )
 
 print(calliope.SELECTION_COUNTER)
-print(t.branches[:1])
+print(t.branches[1].name)
+print(Week._ancestor_types)
+print(TreeRoot._descendant_types)
 print(calliope.SELECTION_COUNTER)
 
 
