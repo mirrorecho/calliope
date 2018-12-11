@@ -35,11 +35,11 @@ print(calliope.SELECTION_COUNTER)
 print("------------------------------------------")
 
 
-s.staves[1].cells[1].logical_ties[-1].tag(">")
+s.staves[1].cells[0,1].logical_ties[-1].tag(">")
 
 print(calliope.SELECTION_COUNTER)
 
-s.illustrate_me()
+s.cells[0].illustrate_me()
 
 
 # print(s.staves_YO)

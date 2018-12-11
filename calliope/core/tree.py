@@ -50,20 +50,11 @@ class Tree(calliope.SelectableMixin, TreeNode):
             node = getattr(self, node_name)
             self[node_name] = node
 
-    # # TO DO: consider setting as new attribute (for performance)
-    # @classmethod
-    # def get_descendant_types(cls, descendants=() ):
-    #     for child in cls.child_types:
-    #         if child not in descendants:
-    #             descendants += (child,)
-    #             child_descendants = child.get_descendant_types(descendants)
-    #             descendants += tuple([c for c in child_descendants if c not in descendants])
-    #     return descendants
 
     @classmethod
-    def _set_parent_and_ancestor_types(cls, ancestor_types=()):
+    def _set_relation_types(cls, ancestor_types=()):
         """
-        Called on tree root class to set _parent_types on all descendant types
+        Called to set _parent_types, _ancestor_types, and _descendant_types
         """
         if cls not in ancestor_types:
             ancestor_types += (cls,)
@@ -77,7 +68,7 @@ class Tree(calliope.SelectableMixin, TreeNode):
                 for ancestor_type in ancestor_types:
                     if child_type not in ancestor_type._descendant_types:
                         ancestor_type._descendant_types += (child_type,)
-                child_type._set_parent_and_ancestor_types(ancestor_types)
+                child_type._set_relation_types(ancestor_types)
 
 
     @classmethod
@@ -85,7 +76,7 @@ class Tree(calliope.SelectableMixin, TreeNode):
         """
         Called on tree root class to set various attributes
         """
-        cls._set_parent_and_ancestor_types()
+        cls._set_relation_types()
 
         for c in (cls,) + cls._descendant_types:
             # TO DO: consider setting _descendant_types and _ancestor_types here
@@ -380,39 +371,12 @@ class Tree(calliope.SelectableMixin, TreeNode):
     def children(self):
         return tuple(self._children)
 
-    def recurse(self):
-        for child in self:
-            yield child
-            if isinstance(child, calliope.Tree):
-                for grandchild in child.recurse():
-                    yield grandchild
-    
-    def depth_first(self, top_down=True):
-        for child in tuple(self): # TO DO: why casting as tuple here?
-            if top_down:
-                yield child
-            if isinstance(child, calliope.Tree):
-                yield from child.depth_first(top_down=top_down)
-            if not top_down:
-                yield child
-
-
-
-
 
     ### ---------------------------------------- ###
     ### ---------------------------------------- ###
     ### new implementations based on move from uqbar
     ### ---------------------------------------- ###    
     
-
-
-
-    # OK TO REMEVE?
-    # def by_type(self, prototype):
-    #     nodes = list(self.depth_first())
-    #     return [e for e in nodes if isinstance(e, prototype) ]
-
 
     # KISS! 
     # def fuse(self, count):

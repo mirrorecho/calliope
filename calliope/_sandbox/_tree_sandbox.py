@@ -54,9 +54,25 @@ t = TreeRoot("year_end",
     )
 
 print(calliope.SELECTION_COUNTER)
-print(t.branches[1].name)
-print(Week._ancestor_types)
-print(TreeRoot._descendant_types)
+
+b = t.branches
+# print(len(b))
+# print(calliope.SELECTION_COUNTER)
+# print(b[-1])
+
+print(calliope.SELECTION_COUNTER)
+
+b2 = b(0,2,3)
+b3 = b2.depth_first(top_down=False)
+
+for bb in b3:
+    print(bb)
+
+
+print(len(b2))
+print(b2)
+print(len(b2))
+
 print(calliope.SELECTION_COUNTER)
 
 

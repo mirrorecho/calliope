@@ -22,9 +22,10 @@ class Score(calliope.Bubble):
             lambda x: x.select_by_type(calliope.Event).exclude(rest=True)
             ) 
 
-        calliope.Cell.set_tree_select_property( "select_cells",
-            lambda x: calliope.Selection(select_from=x.children, type_args=(calliope.Cell,))
-            )
+        # TO DO: needed?
+        # calliope.Cell.set_tree_select_property( "select_cells",
+        #     lambda x: calliope.Selection(select_from=x.children, type_args=(calliope.Cell,))
+        #     )
 
 
     def process_music(self, music, **kwargs):

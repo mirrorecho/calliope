@@ -8,7 +8,6 @@ class Selection(calliope.SelectableMixin):
     select_args = None # iterable of names or indices of items
     filter_kwargs = None # dictionary of attribute names/values to match
     range_args = None # iterable of ranges of indices
-    type_args = None # iterable of types to match
 
     # _length = None # cached length?
 
@@ -56,13 +55,6 @@ class Selection(calliope.SelectableMixin):
         item = self[index]
         item.parent.insert(item.my_index, new_item) 
 
-    # @property
-    # def select_universe(self):
-    #     # TO DO: is this right???
-    #     for item in self:
-    #         for child in item:
-    #             yield child
-
     def get_nodes_generator(self):
         # TO DO... does this work OK????
         # TO DO... does this delay creating the list?
@@ -87,12 +79,9 @@ class Selection(calliope.SelectableMixin):
         
         calliope.SELECTION_COUNTER += 1
 
-        if not (self.type_args or self.select_args or self.range_args or self.filter_kwargs):
+        if not (self.select_args or self.range_args or self.filter_kwargs):
             return True
 
-        if self.type_args and isinstance(item, self.type_args):
-            return True
-        
         if self.select_args or self.range_args:
             if self.select_args: 
                 if index in self.select_args or item.name in self.select_args:
@@ -142,7 +131,6 @@ class Selection(calliope.SelectableMixin):
 
             if isinstance(arg, int):
                 my_index = get_index(arg)
-                print("INDEX", my_index)
                 return next(x for i, x in enumerate(self) if i==my_index)
             elif isinstance(arg, str):
                 return next(x for x in self if x.name==arg)
@@ -186,17 +174,11 @@ class Selection(calliope.SelectableMixin):
     def fuse(self):
         self.warn("fuse is not implemented yet!")
 
-    def split_rhythm(self, *args, **kwargs):
-        self.warn("split_rhythm is not implemented yet!")
-
     def copy(self, *args, **kwargs):
         return Selection([item(*args, **kwargs) for item in self])
 
     def copy_tree(self, with_rests=False, *args, **kwargs):
         self.warn("copy_tree is not implemented yet!")
-
-    def as_list(self):
-        return list(self)
 
     def __iter__(self):
         # self.info("calling iter")
