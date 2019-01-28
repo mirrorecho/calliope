@@ -1,7 +1,7 @@
 import abjad, calliope
 from abjadext import rmakers
 
-class FragmentLine(calliope.Fragment):
+class FragmentRow(calliope.Fragment):
     is_simultaneous = False
     metrical_durations = None
     use_child_metrical_durations = False
@@ -124,7 +124,7 @@ class FragmentLine(calliope.Fragment):
             elif isinstance(node, calliope.LogicalTie):
                 if last_rest is not None and node.rest:
                     last_rest.ticks += node.ticks
-                    parent_item.remove(logical_tie)
+                    parent_item.remove(node)
                 elif node.rest:
                     last_rest = node
                 else:
@@ -267,18 +267,34 @@ class FragmentLine(calliope.Fragment):
         self.process_rhythm_music(music=my_music, **kwargs)
         return my_music
 
+    # WARNING ... MUST BE RE-IMPLEMENTED FOR EVENTS...
     def add_bookend_rests(self, beats_before=0, beats_after=0):
-        if beats_before > 0:
-            first_event = self.logical_ties[0].parent
-            first_event.insert(0, calliope.LogicalTie(rest=True, beats=beats_before))
-        if beats_after > 0:
-            last_event = self.logical_ties[-1].parent
-            last_event.append(calliope.LogicalTie(rest=True, beats=beats_after))
+        if beats_before:
+            self.insert(0, calliope.Event(rest=True, beats=beats_before))
+        if beats_after:
+            self.append(calliope.Event(rest=True, beats=beats_after))
+
+    # THIS IMPLEMENTATION ADDS EVENTS WITHIN SAME NODES AS FIRST/LAST EVENT
+    # def add_bookend_rests(self, beats_before=0, beats_after=0):
+    #     if beats_before > 0:
+    #         first_event_parent = self.events[0].parent
+    #         first_event_parent.insert(0, calliope.Event(rest=True, beats=beats_before))
+    #     if beats_after > 0:
+    #         last_event_parent = self.events[-1].parent
+    #         last_event_parent.append(calliope.Event(rest=True, beats=beats_after))
 
     # TO DO: consider making this cyclic???
+    # USED? REMOVE? KISS?
+    # SHOULD THIS BE AT THE LEVEL OF LOGICAL TIE, OF EVENT, LIKE ABOVE?
     def remove_bookend_rests(self):
         if self.logical_ties:
             if self.logical_ties[0].rest:
                 self.logical_ties[0].parent.pop(0)
             if self.logical_ties[-1].rest:
                 self.logical_ties[-1].parent.pop(-1)
+
+    # TO DO: consider implementing for any span tag?
+    def slur(self):
+        self.first_non_rest.tag("(")
+        self.last_non_rest.tag(")")
+

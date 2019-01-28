@@ -129,7 +129,6 @@ class TagSet(object):
         return self
 
     def combine_tags(self, new_set, old_set):
-        print("--", type(self), new_set, old_set)
         # note, can't do simple union since that could dupe dynamics or hairpins, so need to call set_tag method on each one
         # .... here, new_set values override old_set values for hairpins and dynamics
         combined_set = set(old_set) # makes a copy
@@ -149,10 +148,9 @@ class TagSet(object):
     def get_ancestor_tags(self):
         # print("YOYO", type(self), type(self.parent))
         if self.parent and isinstance(self.parent, calliope.Machine) and self.use_ancestor_attachments:
-            parent_tags = getattr(self.parent, "tags", None)
+            parent_tags = getattr(self.parent, "tags", set())
             parent_ancestor_tags = self.parent.get_ancestor_tags()
-            if parent_tags and parent_ancestor_tags:
-                return self.combine_tags(parent_tags, parent_ancestor_tags)
+            return self.combine_tags(parent_tags, parent_ancestor_tags)
         return set()
 
     def get_all_tags(self):

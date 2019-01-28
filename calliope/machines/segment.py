@@ -6,13 +6,13 @@ import calliope
 
 # ALSO consider whether to re-introduce lines as a structure
 
-class Segment(calliope.FragmentLine):
+class Segment(calliope.FragmentRow):
     """
     A horizontal segment of music. Has goodies for larger sections like
     rehearsal marks, etc.
     """
 
-    child_types = (calliope.Phrase, calliope.Cell, calliope.Event,)
+    child_types = (calliope.Line, calliope.Phrase, calliope.Cell, calliope.Event,)
     select_property = "segments"
     tempo_text = None
     tempo_units_per_minute=None

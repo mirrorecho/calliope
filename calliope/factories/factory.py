@@ -4,7 +4,7 @@ class Factory(calliope.BaseMixin):
     branch_type = calliope.Cell
 
     def __init__(self, *args, **kwargs):
-        if isinstance(self, calliope.BaseMachine):
+        if isinstance(self, calliope.Machine):
             super().__init__(*args, **kwargs)
         else:
             self.setup(*args, **kwargs)
@@ -24,6 +24,22 @@ class Factory(calliope.BaseMixin):
 
     def fabricate(self, machine, *args, **kwargs):
         machine.extend(self.get_branches(*args, **kwargs))
+
+class FromSelectableFactory(Factory):
+    selectable = None
+
+    def __init__(self, selectable=None, *args, **kwargs):
+        self.selectable = selectable or self.selectable
+        if isinstance(self, calliope.Machine):
+            super().__init__(*args, **kwargs)
+        else:
+            self.setup(*args, **kwargs)
+
+    def get_branch(self, node, *args, **kwargs):
+        return n(*args, **kwargs)
+
+    def get_branches(self, *args, **kwargs):
+        return [self.get_branch(n, *args, **kwargs) for n in self.selectable]
 
 class EventBranchFactory(Factory):
     branch_type = calliope.Event

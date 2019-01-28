@@ -32,7 +32,7 @@ class Staff(calliope.Bubble):
         self.show_pdf()
 
 class RhythmicStaff(Staff):
-    context_name="RhythmicStaff"
+    lilypond_type="RhythmicStaff"
     clef="percussion"
 
 # TO DO: rethink this...
@@ -106,18 +106,20 @@ class StaffGroup(calliope.Bubble):
 StaffGroup.child_types = (StaffGroup, Staff)
 
 class Piano(StaffGroup):
-    class Piano1(Staff): pass
+    class Piano1(Staff): 
+        instrument=abjad.Piano()
     class Piano2(Staff):
+        instrument=abjad.Piano()
         clef = "bass"
-    context_name = "PianoStaff"
-    instrument=abjad.Piano()
+    lilypond_type='PianoStaff'
 
 class Harp(StaffGroup):
-    class Harp1(Staff): pass
+    class Harp1(Staff): 
+        instrument=abjad.Harp()
     class Harp2(Staff):
+        instrument=abjad.Harp()
         clef = "bass"
-    context_name = "PianoStaff"
-    instrument=abjad.Harp()
+    lilypond_type='PianoStaff'
 
 class StaffWithVoices(Staff):
     is_simultaneous = True

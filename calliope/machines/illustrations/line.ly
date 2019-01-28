@@ -11,33 +11,22 @@
 
 \score {
     {
-        \accidentalStyle modern-cautionary
-        bf8
-        [
-        a8
-        ]
-        ef'4
-        d'8
-        [
-        cs'8
-        ]
-        fs'8
-        [
-        f'8
-        ]
-        b'4
-        bf'8
-        [
-        bf'8
-        ]
-        ef''8
-        [
-        cs''8
-        ]
-        af''4
-        fs''8
-        [
-        fs''8
-        ]
+        a4
+        ds'4
+        e'4
+        ds'4
+        cs'4
+        a4
+        ds'4
+        e'4
+        ds'4
+        b4
+        a4
+        fs4
+        g4
+        fs'4
+        e'4
+        a4
+        b4
     }
 }

@@ -30,6 +30,7 @@ class SelectableMixin(calliope.BaseMixin):
             if isinstance(item, my_type._ancestor_types):
                 for sub_item in item.recurse_by_type(my_type):
                     yield sub_item
+    
     def select_by_type(self, my_type):
         return calliope.Selection(
             select_from=list(self.recurse_by_type(my_type)), # TO DO: is converting to a list here expensive?

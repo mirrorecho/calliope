@@ -1,7 +1,7 @@
 Bubble
 
     container_type = abjad.Container
-    context_name = None
+    lilypond_type== None
     is_simultaneous=True
     music_contents = None
     stylesheets = () # TO DO, best place for this?
@@ -59,7 +59,7 @@ Fragment # (anthing that applies to machines that contain other machines)
 FragmentBlock
 
 
-FragmentLine
+FragmentRow
     
 
 Section

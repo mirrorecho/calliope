@@ -62,16 +62,7 @@ b = t.branches
 
 print(calliope.SELECTION_COUNTER)
 
-b2 = b(0,2,3)
-b3 = b2.depth_first(top_down=False)
-
-for bb in b3:
-    print(bb)
-
-
-print(len(b2))
-print(b2)
-print(len(b2))
+print(t.branches[:2].twigs["monday","tuesday", "thursday"])
 
 print(calliope.SELECTION_COUNTER)
 

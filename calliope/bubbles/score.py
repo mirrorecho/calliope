@@ -14,7 +14,7 @@ class Score(calliope.Bubble):
 
     @classmethod
     def startup_root(cls):
-        calliope.Staff.child_types = (calliope.Segment, calliope.Cell) # TO DO ... FIX TREE hierarchy
+        calliope.Staff.child_types = (calliope.Segment, calliope.Line, calliope.Cell, calliope.Event) 
 
         super().startup_root()
 

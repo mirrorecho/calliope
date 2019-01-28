@@ -21,20 +21,21 @@ from calliope.bubbles.sequence import MatchSequence
 # machines
 from calliope.machines.machine import Machine
 from calliope.machines.fragment import Fragment
-from calliope.machines.fragment_line import FragmentLine
+from calliope.machines.fragment_row import FragmentRow
 # ... note the order, inner to outer, is important...
 from calliope.machines.logical_tie import LogicalTie
 from calliope.machines.event import Event
 from calliope.machines.cell import Cell #, ContainerCell, CustomCell #, TupletCell 
 from calliope.machines.phrase import Phrase
+from calliope.machines.line import Line
 from calliope.machines.segment import Segment
-# from calliope.machines.line import Line # 
-# from calliope.machines.block import Block, EventBlock, CellBlock, PhraseBlock, LineBlock
+from calliope.machines.fragment_block import FragmentBlock, EventBlock, CellBlock, PhraseBlock, LineBlock, SegmentBlock
 
 Score.startup_root()
 
 # machine factories
-from calliope.factories.factory import Factory
+from calliope.factories.factory import Factory, FromSelectableFactory, EventBranchFactory
+from calliope.factories.chords_from_selectable import ChordsFromSelectable
 from calliope.factories.copy_events import CopyEventsFactory
 from calliope.factories.stack_pitches import StackPitches
 

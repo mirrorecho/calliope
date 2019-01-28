@@ -1,4 +1,4 @@
-from copy import deepcopy
+import copy
 import abjad
 
 # # TO DO: used? KISS?
@@ -7,7 +7,7 @@ import abjad
 #         abjad.mutate(music).respell_with_flats()
 #     elif respell == "sharps":
 #         abjad.mutate(music).respell_with_sharps()
-#         # print("RESPELLING WITH SHARPS")
+#         # print("RESPELLING WITH SHARPS")`
 #     # elif respell == "auto":
 #     #     print("AUTO RESPELL NOT SUPPORTED YET...")
 
@@ -31,9 +31,9 @@ def set_pitch(music_logical_tie, pitch_thingy, respell=None):
     if pitch_number is not None:
         if isinstance(pitch_number, (list, tuple)):
             if respell=="flats":
-                named_pitches = [abjad.NamedPitch(pitch_number)._respell_with_flats() for p in pitch_number]
+                named_pitches = [abjad.NamedPitch(p)._respell_with_flats() for p in pitch_number]
             elif respell=="sharps":
-                named_pitches = [abjad.NamedPitch(pitch_number)._respell_with_sharps() for p in pitch_number]
+                named_pitches = [abjad.NamedPitch(p)._respell_with_sharps() for p in pitch_number]
             else:
                 named_pitches = [abjad.NamedPitch(p) for p in pitch_number]
             # NOTE, decided to implement here (as opposed to in harmony machine), because want chords to be able to be implemented generally
@@ -72,6 +72,17 @@ def pitches_from_intervals(intervals, start_pitch=0):
     """
     start_pitch_number = get_pitch_number(start_pitch)
     return [get_pitch_number(sum(intervals[:x+1])) + start_pitch_number for x in range(len(intervals))]
+
+
+def transpose(pitch_thingy, interval):
+    if thing.pitch is not None:
+        if isinstance( thing.pitch, (list, tuple) ):
+            for i, pitch in thing.pitch:
+                thing.pitch[i] = abjad.NamedPitch(thing.pitch[i]).transpose(interval)
+        else:
+            thing.pitch = abjad.NamedPitch(thing.pitch).transpose(interval)
+
+
 
 # # TO DO: used? KISS?
 # def remove_pitch_repetitions(pitch_row):

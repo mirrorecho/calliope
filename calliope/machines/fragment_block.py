@@ -7,7 +7,7 @@ class FragmentBlock(calliope.Fragment):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        set_attributes_on_child_lines(
+        self.set_attributes_on_child_lines(
             "meter", 
             "defined_length", 
             "bookend_rests",
@@ -19,7 +19,7 @@ class FragmentBlock(calliope.Fragment):
 
     def set_attributes_on_child_lines(self, *args):
         for name in args:
-            value = getattr(self, attr, None)
+            value = getattr(self, name, None)
             if value:
                 for child_line in self:
                     setattr(child_line, name, value)
@@ -51,6 +51,9 @@ class CellBlock(FragmentBlock):
 
 class PhraseBlock(FragmentBlock):
     child_types = (calliope.Phrase,)
+
+class LineBlock(FragmentBlock):
+    child_types = (calliope.Line,)
 
 class SegmentBlock(FragmentBlock):
     # TO DO... implement this better... 

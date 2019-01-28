@@ -1,7 +1,7 @@
 import abjad
 import calliope
 
-class Event(calliope.FragmentLine):
+class Event(calliope.FragmentRow):
     child_types = (calliope.LogicalTie,)
     select_property = "events"
     print_kwargs = ("beats", "pitch")
@@ -14,13 +14,24 @@ class Event(calliope.FragmentLine):
         beats = kwargs.pop("beats", None) or self.set_beats
         tie_name = kwargs.pop("tie_name", "tie") or self.tie_name
         super().__init__(*args, **kwargs)
+        rest = kwargs.pop("rest", False)
         if beats:
             # TO DO MAYBE: None indicating rest is a little confusing here (since at the LogicalTie level None for pitch means to use the Event pitch)
             self.pitch = kwargs.get("pitch", None) or self.pitch
-            rest = self.pitch is None
+            rest = self.pitch is None or rest
 
             self[tie_name] = calliope.LogicalTie(name=tie_name, beats=beats, rest=rest, *args, **kwargs)
 
+    @property
+    def pitches(self):
+        return [self.pitch]
+
+    @pitches.setter
+    def pitches(self, values):
+        if values:
+            self.pitch = values[0]
+
+    # TO DO: used????
     @property
     def first_primary_tie(self):
         return next(x for x in self if x.is_primary)

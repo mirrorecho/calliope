@@ -2,20 +2,146 @@ import abjad, abjadext, calliope
 
 
 class MyScore(calliope.Score):
-    class MyStaffA(calliope.Staff):
-        class MyCell(calliope.Cell): 
-            set_pitches = (None,2,4)
-            set_rhythm = (3,3,2)
-            # class MyCellSub(calliope.Cell): 
-            #     set_pitches = (5,2,4)
-            #     set_rhythm = (1,1,1)
-        class MyCell2(calliope.Cell): 
-            set_pitches = (6,2,4)
-            set_rhythm = (3,3,2)
-    class MyStaffB(MyStaffA): 
-        class MyCell2(calliope.Cell): 
-            set_pitches = (6,2,4)
-            set_rhythm = (2,2,4)
+
+    class CelloStaff(calliope.Staff):
+        instrument=abjad.Cello(
+            name="Cello", short_name="Vc.")
+
+    class PianoStaff(calliope.Piano): pass
+
+
+s = MyScore()
+
+
+# class MyLine(calliope.Line):
+class Phrase1(calliope.Phrase):
+    class CellA(calliope.Cell):
+        dub_rhythm = (1,3)
+        dub_pitches = (-3,3)
+
+    class CellB(calliope.Cell):
+        dub_rhythm = (1,2,5)
+        dub_pitches = (4,3,1)
+
+
+class Phrase2(Phrase1):
+    class CellB(Phrase1.CellB):
+        set_pitches = (4,3,-1)
+
+
+class Phrase3(calliope.Phrase):
+    class CellA(calliope.Cell):
+        set_rhythm = (1,3)
+        set_pitches = (-3,-6)
+
+    class CellB(calliope.Cell):
+        set_rhythm = (2,4)
+        set_pitches = (-5,6)
+
+
+class Phrase4(Phrase3):    
+    class CellA(Phrase3.CellA):
+        set_pitches = (4,-3)
+
+    class CellB(Phrase3.CellB):
+        set_pitches = (-3,-1)
+
+
+class MyLine(calliope.Line):
+    respell = "sharps"
+    class Phrase1(Phrase1): pass
+    class Phrase2(Phrase2):
+        bookend_rests = (1,0)
+    class Phrase3(Phrase3): pass
+        # bookend_rests = (2,0)
+    class Phrase4(Phrase4): pass
+
+l = MyLine()
+
+class LineChords(calliope.ChordsFromSelectable, calliope.Line):
+    selectable = l.cells
+    respell = "sharps"
+
+l_chords = LineChords()
+
+lb = calliope.LineBlock(
+        l,
+        l_chords,
+    )
+lb.add_bookend_rests(3,0)
+
+
+e = lb[0].cells[0]
+print(sorted(e.pitch_class_set))
+
+
+import itertools
+pitch_list = [x[0] for x in itertools.groupby(l.pitches) if x[0]]
+# pitch_list_2 
+
+phrase_straight = calliope.Phrase(
+    pitches = pitch_list,
+    rhythm = (1,) * len(pitch_list),
+    respell="sharps"
+    )
+
+line_straight = calliope.Line(
+    phrase_straight,
+    phrase_straight()
+    )
+
+line_straight_2 = line_straight()
+line_straight_2.add_bookend_rests(2,0)
+
+line_straight_3 = line_straight()
+line_straight_3.add_bookend_rests(4,0)
+
+calliope.LineBlock(
+    line_straight(transpose=12),
+    line_straight_2,
+    line_straight_3,
+    # line_straight(bookend_rests=(1,0)) # TO DO... why won't this work???
+    ).illustrate_me()
+
+
+
+# lb.illustrate_me()
+
+# def fifths_away(pitch_number, from_pitch=0):
+#     return ((pitch_number-from_pitch) * 7) % 12
+
+# class ChordChomp(calliope.Transform):
+#     def transform(self, selectable):
+#         for event in selectable.note_events:
+#             pitches = event.pi
+
+
+# print(fifths_away(7,2))
+
+# l.illustrate_me()
+
+# s["cello_staff"].append(calliope.Cell(pitches=[0,2], rhythm=[3,5]))
+
+# s.staves["piano1"].append(calliope.Cell(pitches=[0,2], rhythm=[3,5]))
+# s.staves["piano2"].append(calliope.Cell(pitches=[0,2], rhythm=[3,5]))
+
+# s.illustrate_me()
+
+
+    # class MyStaffA(calliope.Staff):
+    #     class MyCell(calliope.Cell): 
+    #         set_pitches = (None,2,4)
+    #         set_rhythm = (3,3,2)
+    #         # class MyCellSub(calliope.Cell): 
+    #         #     set_pitches = (5,2,4)
+    #         #     set_rhythm = (1,1,1)
+    #     class MyCell2(calliope.Cell): 
+    #         set_pitches = (6,2,4)
+    #         set_rhythm = (3,3,2)
+    # class MyStaffB(MyStaffA): 
+    #     class MyCell2(calliope.Cell): 
+    #         set_pitches = (6,2,4)
+    #         set_rhythm = (2,2,4)
 
 # print(calliope.Event._parent_types)
 # print(calliope.Cell._parent_types)
@@ -26,21 +152,29 @@ class MyScore(calliope.Score):
 # print(calliope.Event.get_ancestor_types())
 # print(calliope.Bubble._parent_types)
 
-print(calliope.SELECTION_COUNTER)
+# print(calliope.SELECTION_COUNTER, "START")
 
-s = MyScore()
+# s = MyScore()
 
-print(calliope.SELECTION_COUNTER)
+# print(calliope.SELECTION_COUNTER, "AFTER CREATING SCORE OBJECT")
 
-print("------------------------------------------")
+# # s.staves(0,1).events[3].tag(">")
 
+# s.staves[1].events[1,3].tag(">")
 
-s.staves[1].cells[0,1].logical_ties[-1].tag(">")
+print(calliope.SELECTION_COUNTER, "AFTER TAGGING ACCENT")
 
-print(calliope.SELECTION_COUNTER)
+# # c3 = calliope.Cell("my_cell3", pitches=(0,2), rhythm=(2,2))
 
-s.cells[0].illustrate_me()
+# print(calliope.SELECTION_COUNTER, "AFTER CREATING NEW CELL")
 
+# s["my_staff_a"].append(c3)
+
+# print(calliope.SELECTION_COUNTER, "AFTER ADDING NEW CELL")
+
+# s.illustrate_me()
+
+# print(calliope.SELECTION_COUNTER, "AFTER ILLUSTRATING")
 
 # print(s.staves_YO)
 # print(s.staves_YA)
@@ -49,14 +183,9 @@ s.cells[0].illustrate_me()
 
 # print(s.note_events)
 
-
-
-
 # s2 = calliope.Score()
 
 # print(s._parent_types is s2._parent_types)
-
-
 
 # s.staves[1].append(calliope.Cell(rhythm=(2,2), pitches=(5,4)))
 
@@ -66,7 +195,6 @@ s.cells[0].illustrate_me()
 # #     )
 
 # s.illustrate_me()
-
 
 # class MyScore(calliope.Score):
 #     class Violins(calliope.StaffGroup):
@@ -86,7 +214,6 @@ s.cells[0].illustrate_me()
 #                 is_simultaneous=False
 #                 music_contents="c'1 b2 b2"
 
-
 # # MyScore().illustrate_me()
 # s = MyScore()
 # print(s.cells)
@@ -104,11 +231,7 @@ s.cells[0].illustrate_me()
 
 # print(s.staves)
 
-
-
-
 # s.illustrate_me()
-
 
 # class MyTwig(calliope.Tree):
 #     child_types = ()

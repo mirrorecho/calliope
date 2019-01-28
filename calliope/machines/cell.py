@@ -1,6 +1,6 @@
 import calliope
 
-class Cell(calliope.FragmentLine):
+class Cell(calliope.FragmentRow):
     print_kwargs = ("rhythm", "pitches")
     select_property = "cells"
 

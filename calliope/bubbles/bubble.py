@@ -8,7 +8,7 @@ class Bubble(calliope.Tree):
     A factory for an abjad container.
     """
     container_type=abjad.Container
-    context_name=None
+    lilypond_type=None
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
     music_contents = None
@@ -18,8 +18,8 @@ class Bubble(calliope.Tree):
     def music_container(self, *args, **kwargs):
         if self.is_simultaneous is not None:
             kwargs["is_simultaneous"] = self.is_simultaneous
-        if self.context_name is not None:
-            kwargs["context_name"] = self.context_name
+        if self.lilypond_type:
+            kwargs["lilypond_type"] = self.lilypond_type
         if self.name:
             kwargs["name"] = self.name
         return self.container_type(*args, **kwargs)
