@@ -1,6 +1,6 @@
 # core
 from calliope.core.settings import *
-from calliope.core.base_mixin import BaseMixin
+from calliope.core.calliope_base import CalliopeBase
 from calliope.core.selectable_mixin import SelectableMixin
 from calliope.core.tree import Tree
 from calliope.core.selection import Selection

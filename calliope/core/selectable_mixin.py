@@ -1,6 +1,6 @@
 import calliope
 
-class SelectableMixin(calliope.BaseMixin):
+class SelectableMixin:
     
     # TO DO: necessary? problematic?
     @property

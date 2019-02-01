@@ -1,13 +1,8 @@
 import abjad
 import calliope
 
-class Transform(calliope.BaseMixin):
+class Transform(calliope.CalliopeBase):
     mask = False
-
-    def __init__(self, **kwargs):
-        # print(args)
-        super().__init__(**kwargs) 
-        self.setup(**kwargs)
 
     def __call__(self, selectable, **kwargs):
         if not self.mask:

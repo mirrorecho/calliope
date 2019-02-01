@@ -1,13 +1,7 @@
 import calliope
 
-class Factory(calliope.BaseMixin):
+class Factory(calliope.CalliopeBase):
     branch_type = calliope.Cell
-
-    def __init__(self, *args, **kwargs):
-        if isinstance(self, calliope.Machine):
-            super().__init__(*args, **kwargs)
-        else:
-            self.setup(*args, **kwargs)
 
     def get_branches_kwargs(self, *args, **kwargs):
         # should return an iterable of dictionaries
@@ -26,14 +20,11 @@ class Factory(calliope.BaseMixin):
         machine.extend(self.get_branches(*args, **kwargs))
 
 class FromSelectableFactory(Factory):
-    selectable = None
+    selectable = None # TO CONSIDER: should this be sub_selectable?
 
     def __init__(self, selectable=None, *args, **kwargs):
         self.selectable = selectable or self.selectable
-        if isinstance(self, calliope.Machine):
-            super().__init__(*args, **kwargs)
-        else:
-            self.setup(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_branch(self, node, *args, **kwargs):
         return n(*args, **kwargs)
@@ -55,15 +46,9 @@ class EventBranchFactory(Factory):
         my_pitches = self.get_pitches(rhythm_length=len(my_rhythm))
         return [dict(beats=b, pitch=p) for b,p in zip(my_rhythm, my_pitches)]
 
-# class Factory(calliope.BaseMixin):
+# class Factory(calliope.CalliopeBase):
 #     factory_rhythm = ()
 #     factory_pitches = ()
-
-#     def __init__(self, *args, **kwargs):
-#         if isinstance(self, calliope.BaseMachine):
-#             super().__init__(*args, **kwargs)
-#         else:
-#             self.setup(*args, **kwargs)
 
 #     def get_rhythm(self):
 #         return self.factory_rhythm

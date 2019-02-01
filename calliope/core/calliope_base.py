@@ -1,14 +1,17 @@
 import os, inspect
 
 
-class BaseMixin(object):
+class CalliopeBase(object):
     print_kwargs = ()
 
-    # NOTE: __init__ should NOT be here, because other base classes will need to have __init__ called for them instead
-
-    def setup(self, **kwargs): 
+    # TO DO: CONSIDER... remove args here?
+    def __init__(self, *args, **kwargs): 
 
         # TO DO: consider implementing set_... to auto-set properties based on class attributes
+
+        for dub_attr in filter(lambda x: x[:4]=="dub_", dir(self)):
+            print("YO MAMA", dub_attr)
+            setattr(self, dub_attr[4:], getattr(self.__class__, dub_attr))
 
         for name, value in kwargs.items():
             setattr(self, name, value)

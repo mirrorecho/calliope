@@ -14,21 +14,19 @@ class Fragment(calliope.Machine):
     bar_line = None # TO DO: keep?
 
     # TO DO: consider whether these attributes should only apply to FragmentRow
-    set_rhythm = ()
-    set_pitches = ()
     pitches_skip_rests = False
 
     print_kwargs = ("beats",)    # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
     transpose = 0
 
+    
+    # dub_rhythm = ()
+    # dub_pitches = ()
+
+
     def __init__(self, *args, **kwargs):
-        rhythm = kwargs.pop("rhythm", ()) or self.set_rhythm
-        pitches = kwargs.pop("pitches", ()) or self.set_pitches
         pitches_skip_rests = kwargs.pop("pitches_skip_rests", self.pitches_skip_rests)
         super().__init__(*args, **kwargs)
-
-        if rhythm:
-            self.rhythm = rhythm
 
         if self.transpose:
             pitches = [p + self.transpose for p in pitches]
@@ -41,6 +39,7 @@ class Fragment(calliope.Machine):
                         pitches.insert(i, None)
             self.pitches = pitches
 
+        # TO DO, make this 
         if self.bookend_rests:
             self.add_bookend_rests(*self.bookend_rests)
 

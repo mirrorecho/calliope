@@ -1,3 +1,4 @@
+import calliope
 import collections
 import copy
 import typing
@@ -8,7 +9,7 @@ import typing
 ### ---------------------------------------------------------------------------- ###
 
 
-class TreeNode:
+class TreeNode(calliope.CalliopeBase):
     """
     A node in a "unique" tree.
     Unique tree nodes may have at most one parent and may appear only once in
@@ -25,9 +26,10 @@ class TreeNode:
 
     ### INITIALIZER ###
 
-    def __init__(self, name: str=None) -> None:
+    def __init__(self, name: str=None, *args, **kwargs) -> None:
         self._name = name
         self._parent = None
+        super().__init__(*args, **kwargs)
 
     ### PRIVATE METHODS ###
 

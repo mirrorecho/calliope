@@ -3,7 +3,7 @@ import calliope
 import uqbar
 
 
-class Selection(calliope.SelectableMixin):
+class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
     select_from = ()
     select_args = None # iterable of names or indices of items
     filter_kwargs = None # dictionary of attribute names/values to match
@@ -12,10 +12,9 @@ class Selection(calliope.SelectableMixin):
     # _length = None # cached length?
 
     def __init__(self, select_from=(), select_root=None, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.select_from = select_from
         self.select_root = select_root or getattr(select_from, "select_root", None)
-        self.setup(**kwargs)
 
     def print_comments(self):
         my_len = len(self)

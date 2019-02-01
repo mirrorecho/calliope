@@ -3,7 +3,7 @@ import calliope
 
 # TO DO- consider: why live in libraries?
 
-class PitchSequence(calliope.BaseMixin):
+class PitchSequence(calliope.CalliopeBase):
     # TO DO: implement as either numbers or abjad pitch objects
     intervals = ()
     keep_in_range = None # set to tupe with start pitch, stop pitch
@@ -71,7 +71,8 @@ class PitchSequence(calliope.BaseMixin):
 
     def __init__(self, *intervals, **kwargs):
         self.intervals = intervals
-        self.setup(**kwargs)
+        super().__init__(**kwargs)
+
 
     def __getitem__(self, arg):
         if isinstance(arg, int):

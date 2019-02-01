@@ -2,12 +2,9 @@ import calliope
 
 # TO DO... some way to window/overlap to tally up longer things effectively?
 
-class TallyBase(calliope.BaseMixin):
+class TallyBase(calliope.CalliopeBase):
     row_weights = None # could be used to make the tally count more at given spots
     column_weights = None # could be used to make the tally count more at given spots
-
-    def __init__(self, *args, **kwargs):
-        self.setup(*args, **kwargs)
 
     def tally_row(self, grid, r):
         pass

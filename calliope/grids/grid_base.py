@@ -29,11 +29,6 @@ class GridBase(calliope.Factory):
 
     def __init__(self, *args, **kwargs):
 
-        # TO DO... need?        
-        # if "get_start_data" in kwargs:
-        #     self.get_start_data = types.MethodType( kwargs.pop("get_start_data"), self )
-
-        # self.setup(**kwargs)
         super().__init__(*args, **kwargs)
         
         self.tally_apps = list(args)

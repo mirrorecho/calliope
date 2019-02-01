@@ -22,31 +22,22 @@ def camel_to_snake(s):
 class Tree(calliope.SelectableMixin, TreeNode):
     child_types = () # TO DO, consider indicating private
     select_property = None # TO DO, consider indicating private
-    set_name = None
 
     _descendant_types = ()
 
     def __init__(self, *args, **kwargs):
-        super().__init__(args) # args sets children here...
         self._children = []
         self._named_children = {}
+        
+        super().__init__(**kwargs) # args sets children here...
 
         if len(args) > 0 and isinstance(args[0], str):
-            my_name = args[0]
-            args = args[1:]
-        else:
-            my_name = self.set_name
+            self.name = args.pop(0)
        
-        TreeNode.__init__(self, name=my_name)
-
         if args:
             self[:] = args
 
-        self.setup(**kwargs)
         self.set_children_from_class(**kwargs)
-
-        # if not self.child_types:
-        #     self.child_types = (Tree,)
 
     # can be overriden to set children based on other/special logic
     # TO DO: consider merging with CopyChildrenBubble.set_children used in a couple places

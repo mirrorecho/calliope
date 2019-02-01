@@ -7,20 +7,22 @@ class Event(calliope.FragmentRow):
     print_kwargs = ("beats", "pitch")
 
     pitch = 0 # this could be set to a list/tuple to indicate a chord
-    set_beats = None
+
+    event_beats = None
+    tie_name = None
 
     # TO DO: remove tie_name / beats ?
     def __init__(self, *args, **kwargs):
-        beats = kwargs.pop("beats", None) or self.set_beats
-        tie_name = kwargs.pop("tie_name", "tie") or self.tie_name
-        super().__init__(*args, **kwargs)
+        beats = kwargs.pop("beats", None) or self.event_beats
+        tie_name = kwargs.pop("tie_name", None) or self.tie_name or "tie"
         rest = kwargs.pop("rest", False)
+        super().__init__(*args, **kwargs)
         if beats:
             # TO DO MAYBE: None indicating rest is a little confusing here (since at the LogicalTie level None for pitch means to use the Event pitch)
             self.pitch = kwargs.get("pitch", None) or self.pitch
             rest = self.pitch is None or rest
 
-            self[tie_name] = calliope.LogicalTie(name=tie_name, beats=beats, rest=rest, *args, **kwargs)
+            self.append(calliope.LogicalTie(name=tie_name, beats=beats, rest=rest))
 
     @property
     def pitches(self):

@@ -26,25 +26,25 @@ class Phrase1(calliope.Phrase):
 
 class Phrase2(Phrase1):
     class CellB(Phrase1.CellB):
-        set_pitches = (4,3,-1)
+        dub_pitches = (4,3,-1)
 
 
 class Phrase3(calliope.Phrase):
     class CellA(calliope.Cell):
-        set_rhythm = (1,3)
-        set_pitches = (-3,-6)
+        dub_rhythm = (1,3)
+        dub_pitches = (-3,-6)
 
     class CellB(calliope.Cell):
-        set_rhythm = (2,4)
-        set_pitches = (-5,6)
+        dub_rhythm = (2,4)
+        dub_pitches = (-5,6)
 
 
 class Phrase4(Phrase3):    
     class CellA(Phrase3.CellA):
-        set_pitches = (4,-3)
+        dub_pitches = (4,-3)
 
     class CellB(Phrase3.CellB):
-        set_pitches = (-3,-1)
+        dub_pitches = (-3,-1)
 
 
 class MyLine(calliope.Line):
