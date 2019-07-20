@@ -188,3 +188,8 @@ class TreeNode(calliope.CalliopeBase):
         if not proper_parentage:
             return None
         return proper_parentage[-1]
+
+    def getattr_first_ancestors(self, name):
+        return getattr(self, name, None) or (
+            self.parent.getattr_first_ancestors(name) if self.parent and self.my_index == 0 else None
+            )

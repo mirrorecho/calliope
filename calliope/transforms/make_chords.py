@@ -2,10 +2,13 @@ import abjad
 import calliope
 
 class MakeChords(calliope.Transform):
+    """
+    makes chords out of pitches within a melodic line
+    """
     indices = ()
 
     def transform_nodes(self, machine):
-        # TO DO: NOTE: can blow up with rests
+        # TO DO: NOTE: can blow up `with rests
         return_events = []
         for i in self.indices:
             if type(i) is int:

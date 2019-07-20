@@ -11,34 +11,50 @@
 
 \score {
     {
-        <a ds' e'>1
+        a4
+        e'4
         ~
-        <a ds' e'>2
+        e'2
+        e'4
+        ds'4
         ~
-        <a ds' e'>4
-        <cs' ds' e'>4
+        ds'4
+        cs'4
         ~
-        <cs' ds' e'>1
+        cs'1
+        r4
+        a4
+        e'2
         ~
-        <cs' ds' e'>2
-        <a ds' e'>2
+        e'4
+        e'4
+        ds'2
+        b1
         ~
-        <a ds' e'>2
+        b4
+        a4
+        fs2
         ~
-        <a ds' e'>4
-        <b ds' e'>4
+        fs4
+        g4
         ~
-        <b ds' e'>1
+        g4
+        fs'4
         ~
-        <b ds' e'>2
-        <fs a>2
+        fs'2
         ~
-        <fs a>1
-        <g fs'>1
+        fs'4
+        e'4
+        a2
         ~
-        <g fs'>2
-        <a e'>2
+        a4
+        a4
         ~
-        <a e'>2
+        a4
+        b4
+        ~
+        b2
+        ~
+        b4
     }
 }

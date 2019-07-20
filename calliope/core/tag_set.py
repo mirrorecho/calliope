@@ -95,7 +95,7 @@ class TagSet(object):
 
     def set_tag(self, my_set, *args):
         for arg in args:
-            if arg[:5] == "data:":
+            if arg[:5] == "attr:":
                 my_set.add(str(getattr(self, arg[5:])))
             else:
                 # overwrite existing dynamics, hairpins, clefs, and bars:

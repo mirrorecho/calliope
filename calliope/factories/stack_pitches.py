@@ -1,6 +1,7 @@
 import abjad
 import calliope
 
+# TO DO: FIX DUPE CLASS NAME (with transform)!!!
 class StackPitches(calliope.Factory):
     intervals = ( (0,12), (0,7) )
 

@@ -44,7 +44,7 @@ class LogicalTie(calliope.Machine):
     def use_ancestor_attachments(self):
         # TO DO: reconsider?
         """
-        If a rest(s) precede the first note in this logical tie's event,
+        If rest(s) precede the first note in this logical tie's event,
         this causes ancestor attachments to always be attached to that first note 
         (as opposed to rest). If the entire event is a rest, then attach to the
         first rest.
@@ -70,6 +70,8 @@ class LogicalTie(calliope.Machine):
     @property
     def ticks_after(self):
         return self.ticks_before + self.ticks
+
+
 
     def music(self, **kwargs):
         self.warn("Calling music on logical tie not supported. Returning parent event's music instead")

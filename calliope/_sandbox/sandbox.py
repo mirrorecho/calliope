@@ -16,92 +16,102 @@ s = MyScore()
 # class MyLine(calliope.Line):
 class Phrase1(calliope.Phrase):
     class CellA(calliope.Cell):
-        dub_rhythm = (1,3)
-        dub_pitches = (-3,3)
+        init_rhythm = (1,3)
+        init_pitches = (-3,4)
 
     class CellB(calliope.Cell):
-        dub_rhythm = (1,2,5)
-        dub_pitches = (4,3,1)
+        init_rhythm = (1,2,5)
+        init_pitches = (4,3,1)
 
 
 class Phrase2(Phrase1):
     class CellB(Phrase1.CellB):
-        dub_pitches = (4,3,-1)
+        init_pitches = (4,3,-1)
 
 
 class Phrase3(calliope.Phrase):
     class CellA(calliope.Cell):
-        dub_rhythm = (1,3)
-        dub_pitches = (-3,-6)
+        init_rhythm = (1,3)
+        init_pitches = (-3,-6)
 
     class CellB(calliope.Cell):
-        dub_rhythm = (2,4)
-        dub_pitches = (-5,6)
+        init_rhythm = (2,4)
+        init_pitches = (-5,6)
 
 
 class Phrase4(Phrase3):    
     class CellA(Phrase3.CellA):
-        dub_pitches = (4,-3)
+        init_pitches = (4,-3)
 
     class CellB(Phrase3.CellB):
-        dub_pitches = (-3,-1)
+        init_pitches = (-3,-1)
 
 
 class MyLine(calliope.Line):
     respell = "sharps"
     class Phrase1(Phrase1): pass
     class Phrase2(Phrase2):
-        bookend_rests = (1,0)
+        init_bookend_rests = (1,0)
     class Phrase3(Phrase3): pass
         # bookend_rests = (2,0)
     class Phrase4(Phrase4): pass
 
+class MyLine2(calliope.Line):
+    class Phrase1(Phrase1): 
+        init_transpose = 5
+
+# print(MyLine.Phrase4.CellB())
+
+
 l = MyLine()
+# print(l.rhythm)
 
-class LineChords(calliope.ChordsFromSelectable, calliope.Line):
-    selectable = l.cells
-    respell = "sharps"
+l.illustrate_me()
 
-l_chords = LineChords()
+# class LineChords(calliope.ChordsFromSelectable, calliope.Line):
+#     selectable = l.cells
+#     respell = "sharps"
 
-lb = calliope.LineBlock(
-        l,
-        l_chords,
-    )
-lb.add_bookend_rests(3,0)
+# l_chords = LineChords()
 
-
-e = lb[0].cells[0]
-print(sorted(e.pitch_class_set))
+# lb = calliope.LineBlock(
+#         l,
+#         l_chords,
+#     )
+# lb.add_bookend_rests(3,0)
 
 
-import itertools
-pitch_list = [x[0] for x in itertools.groupby(l.pitches) if x[0]]
-# pitch_list_2 
+# e = lb[0].cells[0]
+# print(sorted(e.pitch_class_set))
 
-phrase_straight = calliope.Phrase(
-    pitches = pitch_list,
-    rhythm = (1,) * len(pitch_list),
-    respell="sharps"
-    )
 
-line_straight = calliope.Line(
-    phrase_straight,
-    phrase_straight()
-    )
+# import itertools
+# pitch_list = [x[0] for x in itertools.groupby(l.pitches) if x[0]]
+# # pitch_list_2 
 
-line_straight_2 = line_straight()
-line_straight_2.add_bookend_rests(2,0)
+# phrase_straight = calliope.Phrase(
+#     pitches = pitch_list,
+#     rhythm = (1,) * len(pitch_list),
+#     respell="sharps"
+#     )
 
-line_straight_3 = line_straight()
-line_straight_3.add_bookend_rests(4,0)
+# line_straight = calliope.Line(
+#     phrase_straight,
+#     phrase_straight()
+#     )
 
-calliope.LineBlock(
-    line_straight(transpose=12),
-    line_straight_2,
-    line_straight_3,
-    # line_straight(bookend_rests=(1,0)) # TO DO... why won't this work???
-    ).illustrate_me()
+# line_straight_2 = line_straight()
+# line_straight_2.add_bookend_rests(2,0)
+
+# line_straight_3 = line_straight()
+# line_straight_3.add_bookend_rests(4,0)
+
+# calliope.LineBlock(
+#     line_straight(transpose=12),
+#     line_straight_2,
+#     line_straight_3,
+#     # line_straight(bookend_rests=(1,0)) # TO DO... why won't this work???
+#     ).illustrate_me()
 
 
 
@@ -162,7 +172,7 @@ calliope.LineBlock(
 
 # s.staves[1].events[1,3].tag(">")
 
-print(calliope.SELECTION_COUNTER, "AFTER TAGGING ACCENT")
+# print(calliope.SELECTION_COUNTER, "AFTER TAGGING ACCENT")
 
 # # c3 = calliope.Cell("my_cell3", pitches=(0,2), rhythm=(2,2))
 

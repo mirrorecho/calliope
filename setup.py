@@ -1,6 +1,7 @@
 from distutils.core import setup
 
 install_requires = [
+    'uqbar==0.3.2', # TO DO EVENTUALLY: remove (fixes issue with uqbar 0.4?)
     'abjad[development,ipython]>=3.0',
     'abjad-ext-rmakers>=3.0',
     'pandas>=0.23',

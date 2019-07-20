@@ -38,7 +38,7 @@ class Machine(calliope.Bubble, calliope.TagSet):
         my_transforms.extend(self.transforms)
         return my_transforms
                                                             
-    # TO DO... apply this same idea more generally for fragments in side of 
+    # TO DO... apply this same idea more generally for fragments inside of 
     # blocks for things like time_signature
     # TO DO... CONSIDER AS TAG INSTEAD?
     def get_respell(self):

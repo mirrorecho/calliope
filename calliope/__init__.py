@@ -44,12 +44,13 @@ from calliope.transforms.transform import Transform
 from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths
 from calliope.transforms.add_constant_pitch import AddConstantPitch
 from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells
+from calliope.transforms.stack_pitches import StackPitches
+from calliope.transforms.smart_range import SmartRange
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 
 # from calliope.machines.transforms.sorting import SortByPitch, SortByDuration 
 # from calliope.machines.transforms.tagging import Tagging, Slur, BracketByType, BracketCells
-# from calliope.machines.transforms.smart_range import SmartRange
 # from calliope.machines.transforms.pitches_through_grid import PitchesThroughGrid
 
 # grids

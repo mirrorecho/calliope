@@ -3,18 +3,31 @@ import os, inspect
 
 class CalliopeBase(object):
     print_kwargs = ()
+    sort_init_attrs = ()
 
     # TO DO: CONSIDER... remove args here?
     def __init__(self, *args, **kwargs): 
+        init_kwargs = {
+            init_attr[5:]:getattr(self.__class__, init_attr) 
+            for init_attr in filter(lambda x: x[:5]=="init_", dir(self.__class__))
+        }
+        init_kwargs.update(kwargs)
 
-        # TO DO: consider implementing set_... to auto-set properties based on class attributes
+        init_attrs = self.sort_init_attrs + tuple(set(init_kwargs.keys()) - set(self.sort_init_attrs))
 
-        for dub_attr in filter(lambda x: x[:4]=="dub_", dir(self)):
-            print("YO MAMA", dub_attr)
-            setattr(self, dub_attr[4:], getattr(self.__class__, dub_attr))
+        for attr in init_attrs:
+            value = self.kwargs_or_attr(attr, **init_kwargs)
+            set_method = getattr(self, "_init_set_" + attr, None)
 
-        for name, value in kwargs.items():
-            setattr(self, name, value)
+            if set_method:
+                set_method(value, **kwargs)
+            else:
+                setattr(self, attr, value)
+
+    def kwargs_or_attr(self, attr, **kwargs):
+        return kwargs.get(attr, 
+            getattr(self, attr, None)
+            )
 
     def get_module_info(self):
         """Returns a tuple with the path and name for the module in which this bubble class is defined"""

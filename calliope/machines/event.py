@@ -6,6 +6,7 @@ class Event(calliope.FragmentRow):
     select_property = "events"
     print_kwargs = ("beats", "pitch")
 
+    # TO DO MAYBE: force numeric value??
     pitch = 0 # this could be set to a list/tuple to indicate a chord
 
     event_beats = None

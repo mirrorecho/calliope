@@ -85,4 +85,6 @@ docs/_build/
 target/
 
 *.sublime-workspace
+*.sublime-project
 *.DS_Store
+

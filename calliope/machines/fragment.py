@@ -8,8 +8,7 @@ class Fragment(calliope.Machine):
     """
     meter = None
     defined_length = None # pre-determined length in beats, will pad rests at end if needed
-    bookend_rests = ()
-    time_signature = None
+    time_signature = None # TO DO MAYBE consider making time signature a property with a setter
     pickup = None # must be able to be represented as a single note with no dots
     bar_line = None # TO DO: keep?
 
@@ -17,31 +16,31 @@ class Fragment(calliope.Machine):
     pitches_skip_rests = False
 
     print_kwargs = ("beats",)    # TO CONSIDER... SEPARATE ABOVE EVENT FROM EVENT ITSELF
-    transpose = 0
-
     
-    # dub_rhythm = ()
-    # dub_pitches = ()
+    # TO DO MAYBE, only makes sense as an init_
+    _transposition = 0 
+    sort_init_attrs = ("rhythm", "transpose", "pitches")
 
 
-    def __init__(self, *args, **kwargs):
-        pitches_skip_rests = kwargs.pop("pitches_skip_rests", self.pitches_skip_rests)
-        super().__init__(*args, **kwargs)
+    # init_rhythm = ()
+    # init_pitches = ()
+    # init_bookend_rests = ()
 
-        if self.transpose:
-            pitches = [p + self.transpose for p in pitches]
+    # TO DO MAYBE: keep transposition away from the class attribute level?
+    # (other than a transpose method)
 
-        if pitches:
-            if pitches_skip_rests:
-                pitches = list(pitches)
-                for i,e in enumerate(self.events):
-                    if e.rest and i <= len(pitches):
-                        pitches.insert(i, None)
-            self.pitches = pitches
+    # TO DO MAYBE: make bookend_rests a property with a setter method
+    def _init_set_bookend_rests(self, bookend_rests=(), **kwargs):
+        self.add_bookend_rests(*bookend_rests)
 
-        # TO DO, make this 
-        if self.bookend_rests:
-            self.add_bookend_rests(*self.bookend_rests)
+    def _init_set_transpose(self, transpose=0, **kwargs):
+        self._transposition = transpose
+
+    def _init_set_pitches(self, pitches=(), **kwargs):
+        transposition = self.kwargs_or_attr("_transposition", **kwargs)
+        if transposition:
+            pitches = [p + transposition for p in pitches]
+        self.pitches = pitches
 
     @property
     def rest(self):
@@ -76,7 +75,13 @@ class Fragment(calliope.Machine):
 
     @pitches.setter
     def pitches(self, values):
+        if self.pitches_skip_rests:
+            for i,e in enumerate(self.events):
+                if e.rest and i <= len(values):
+                    values.insert(i, None)
+
         my_length = len(self.events)
+
         for i, v in enumerate(values[:my_length]):
             self.events[i].pitch = v
             self.events[i].rest = v is None

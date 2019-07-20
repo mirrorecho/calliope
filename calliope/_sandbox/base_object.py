@@ -7,7 +7,7 @@ class CalliopeBase(object):
 
         # TO DO: consider implementing set_... to auto-set properties based on class attributes
 
-        for dub_attr in filter(lambda x: x[:4]=="dub_", dir(self)):
+        for dub_attr in filter(lambda x: x[:5]=="init_", dir(self)):
             setattr(self, dub_attr[4:], getattr(self.__class__, dub_attr))
 
         for name, value in kwargs.items():
@@ -40,9 +40,15 @@ class Lobster(CalliopeBase):
 
 
 class MaineLobster(Lobster):
-    dubset_rating = 3
-    dub_legs = 5
+    init_rating = 3
+    init_legs = 5
 
+class AlaskanLobster(MaineLobster):
+    init_rating = 1
+    pass
 
-m = MaineLobster()
-print(m.rating)
+l = Lobster()
+m = MaineLobster(rating=4)
+a = AlaskanLobster(rating=0)
+print(l.rating, m.rating, a.rating)
+

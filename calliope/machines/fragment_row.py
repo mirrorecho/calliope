@@ -166,6 +166,7 @@ class FragmentRow(calliope.Fragment):
             # extra_counts_per_division=extra_counts_per_division, # for testing only...
         )
 
+        print("YO", metrical_durations)
         leaf_selections = talea_rmaker([abjad.Duration(d) for d in metrical_durations])
         return self.container_type(components=leaf_selections, **kwargs)
 
@@ -187,6 +188,18 @@ class FragmentRow(calliope.Fragment):
             #     custom_music = data_logical_tie.music()
             #     m = abjad.mutate(music_logical_tie)
             #     m.replace(custom_music)
+
+            # TO DO: any way to make this more generic?
+            time_signature = data_logical_tie.getattr_first_ancestors("time_signature")
+            if time_signature:
+                # TO DO: don't repeat this all the time?
+                time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
+                abjad.attach(time_command_numeric, music_logical_tie[0])
+
+                time_command =  abjad.LilyPondLiteral(r"\time " + str(time_signature[0]) + "/" + str(time_signature[1]), "before")
+                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
+                # time_command = abjad.TimeSignature( self.time_signature )
+                abjad.attach(time_command, music_logical_tie[0])
 
             if not data_logical_tie.rest:
 
@@ -241,15 +254,15 @@ class FragmentRow(calliope.Fragment):
             # if self.respell:
             #     calliope.respell(music, self.respell)
 
-            if self.time_signature:
-                # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?
-                time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
-                abjad.attach(time_command_numeric, music_start)
+            # if self.time_signature:
+            #     # TO DO... is the numeric comm*ad necessary... maybe just include it at the score level?
+            #     time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
+            #     abjad.attach(time_command_numeric, music_start)
 
-                time_command =  abjad.LilyPondLiteral(r"\time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
-                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
-                # time_command = abjad.TimeSignature( self.time_signature )
-                abjad.attach(time_command, music_start)
+            #     time_command =  abjad.LilyPondLiteral(r"\time " + str(self.time_signature[0]) + "/" + str(self.time_signature[1]), "before")
+            #     # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
+            #     # time_command = abjad.TimeSignature( self.time_signature )
+            #     abjad.attach(time_command, music_start)
 
             if self.pickup:
                 partial_value = int((1 / self.pickup) * calliope.MACHINE_BEATS_PER_WHOLE)
