@@ -75,7 +75,8 @@ class TagSet(object):
         elif tag_name == "8va":
             return abjad.OctavationSpanner(start=1)
         elif tag_name == "{":
-            return abjad.HorizontalBracketSpanner(markup="YO") # TO DO - CONSIDER... add markup?
+            # NOTE: this doesn't work... why?
+            return abjad.HorizontalBracket() # TO DO - CONSIDER... add markup?
             # return abjad.Slur()
         elif tag_name in self.bar_lines_inventory:
             return abjad.BarLine(tag_name)

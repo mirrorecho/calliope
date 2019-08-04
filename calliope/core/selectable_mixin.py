@@ -40,6 +40,14 @@ class SelectableMixin:
     def select(self):
         return calliope.Selection(select_from=self.children)
 
+    def transformed(self, *args):
+        """
+        transforms and then returns self (in place transform)
+        args must be calliope.Transform objects
+        """
+        for trans in args:
+            trans(self)
+        return self
 
     def print_comments(self):
         return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)

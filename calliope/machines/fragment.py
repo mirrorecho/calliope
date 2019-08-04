@@ -30,16 +30,17 @@ class Fragment(calliope.Machine):
     # (other than a transpose method)
 
     # TO DO MAYBE: make bookend_rests a property with a setter method
-    def _init_set_bookend_rests(self, bookend_rests=(), **kwargs):
+    def _init_set_bookend_rests(self, bookend_rests=()):
         self.add_bookend_rests(*bookend_rests)
 
-    def _init_set_transpose(self, transpose=0, **kwargs):
+    def _init_set_transpose(self, transpose=0):
         self._transposition = transpose
 
-    def _init_set_pitches(self, pitches=(), **kwargs):
-        transposition = self.kwargs_or_attr("_transposition", **kwargs)
-        if transposition:
-            pitches = [p + transposition for p in pitches]
+    def _init_set_pitches(self, pitches=()):
+        # # TO DO: DEAL WIT TRANSPOSITION
+        # transposition = self.kwargs_or_attr("_transposition", **kwargs)
+        # if transposition:
+        #     pitches = [p + transposition for p in pitches]
         self.pitches = pitches
 
     @property
@@ -117,16 +118,35 @@ class Fragment(calliope.Machine):
             if not l.rest:
                 return l
 
-    # TO DO: test... still works? used?
-    # def transpose(self, interval):
-    #     for thing in self.by_type(calliope.Event, calliope.LogicalTie):
-    #         # TO DO... handle tuples
-    #         if thing.pitch is not None:
-    #             if isinstance( thing.pitch, (list, tuple) ):
-    #                 for i, pitch in thing.pitch:
-    #                     thing.pitch[i] = abjad.NamedPitch(thing.pitch[i]).transpose(interval)
-    #             else:
-    #                 thing.pitch = abjad.NamedPitch(thing.pitch).transpose(interval)
+    def transpose(self, interval):
+        def transpose_thingy(thingy, interval):
+            if isinstance( thingy.pitch, (list, tuple) ):
+                for i, pitch in thingy.pitch:
+                    thingy.pitch[i] = abjad.NamedPitch(thingy.pitch[i]).transpose(interval)
+            else:
+                thingy.pitch = abjad.NamedPitch(thingy.pitch).transpose(interval)
+
+        for n in self.note_events:
+            transpose_thingy(n, interval)
+
+        for l in self.logical_ties.exclude(pitch=None):
+            transpose_thingy(l, interval)
+
+
+    def ticks_before(self, ancestor_branch):
+        running_count = 0
+        my_first_logical_tie = self.logical_ties[0]
+        for l in ancestor_branch.logical_ties:
+            if l is my_first_logical_tie:
+                return running_count
+            running_count += l.ticks
+        return running_count
+
+    def beats_before(self, ancestor_branch):
+        ticks_before = self.ticks_before(ancestor_branch)
+        return ticks_before / calliope.MACHINE_TICKS_PER_BEAT
+
+
 
 
     # TO DO: ticks_before and ticks_after ever used? KISS?

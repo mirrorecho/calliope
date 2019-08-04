@@ -56,20 +56,20 @@ class LogicalTie(calliope.Machine):
         return self is self.parent.first_non_rest
 
     # TO DO: used? or KISS?
-    @property
-    def ticks_before(self):
-        running_count = 0
-        # TO DO: shouldn't go to root for blocks!
-        for l in self.root.logical_ties_or_container:
-            if l is self:
-                return running_count
-            running_count += l.ticks
-        return running_count
+    # @property
+    # def ticks_before(self):
+    #     running_count = 0
+    #     # TO DO: shouldn't go to root for blocks!
+    #     for l in self.root.logical_ties_or_container:
+    #         if l is self:
+    #             return running_count
+    #         running_count += l.ticks
+    #     return running_count
 
     # TO DO: used? or KISS?
-    @property
-    def ticks_after(self):
-        return self.ticks_before + self.ticks
+    # @property
+    # def ticks_after(self):
+    #     return self.ticks_before + self.ticks
 
 
 

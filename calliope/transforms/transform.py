@@ -14,6 +14,7 @@ class Transform(calliope.CalliopeBase):
         """
         pass
 
+
     # TO DO: useful, or KISS?
     # @classmethod
     # def make(cls, callable, **kwargs):

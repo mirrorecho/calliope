@@ -27,7 +27,7 @@ class FromSelectableFactory(Factory):
         super().__init__(*args, **kwargs)
 
     def get_branch(self, node, *args, **kwargs):
-        return n(*args, **kwargs)
+        return node(*args, **kwargs)
 
     def get_branches(self, *args, **kwargs):
         return [self.get_branch(n, *args, **kwargs) for n in self.selectable]

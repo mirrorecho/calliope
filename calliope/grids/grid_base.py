@@ -46,9 +46,9 @@ class GridBase(calliope.Factory):
         if start_data is None:
             start_data = self.get_start_data()
             start_data.name = self.name        
-        if reset or self.start_data is None or self.data is None:
+        if reset or self.start_data is None or self.start_data.empty or self.data is None or self.data.empty:
             self.start_data = start_data
-            if data is None:
+            if data is None or data.empty:
                 data = start_data.copy()   
             self.data = data
         elif not self.start_data.equals(start_data):

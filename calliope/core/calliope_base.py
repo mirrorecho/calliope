@@ -20,7 +20,7 @@ class CalliopeBase(object):
             set_method = getattr(self, "_init_set_" + attr, None)
 
             if set_method:
-                set_method(value, **kwargs)
+                set_method(value)
             else:
                 setattr(self, attr, value)
 

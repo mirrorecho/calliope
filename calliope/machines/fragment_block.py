@@ -3,6 +3,7 @@ import calliope
 
 class FragmentBlock(calliope.Fragment):
     is_simultaneous = True
+    sort_init_attrs = ("transpose",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,15 +51,15 @@ class CellBlock(FragmentBlock):
     child_types = (calliope.Cell,)
 
 class PhraseBlock(FragmentBlock):
-    child_types = (calliope.Phrase,)
+    child_types = (calliope.Phrase, calliope.Cell,)
 
 class LineBlock(FragmentBlock):
-    child_types = (calliope.Line,)
+    child_types = (calliope.Line, calliope.Phrase, calliope.Cell,)
 
 class SegmentBlock(FragmentBlock):
     # TO DO... implement this better... 
     # TO DO... consider a Section class here with more section-specific stuff
-    child_types = (calliope.Segment,)
+    child_types = (calliope.Segment, calliope.Line, calliope.Phrase, calliope.Cell,)
     # is_simultaneous = True
 
 # TO DO: consider... add LogicalTieBlock? (really just a chord?)
