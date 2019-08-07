@@ -26,6 +26,15 @@ class Event(calliope.FragmentRow):
             self.append(calliope.LogicalTie(name=tie_name, beats=beats, rest=rest))
 
     @property
+    def pitch_class(self):
+        if self.pitch is None:
+            return None
+        elif isinstance(self.pitch, (list, tuple)):
+            return [p % 12 for p in self.pitch]
+        else:
+            return self.pitch % 12
+
+    @property
     def pitches(self):
         return [self.pitch]
 

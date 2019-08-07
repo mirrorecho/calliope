@@ -2,6 +2,10 @@ import abjad
 import calliope
 
 class Transform(calliope.CalliopeBase):
+    """
+    bass class for all transforms
+    """
+
     mask = False
 
     def __call__(self, selectable, **kwargs):

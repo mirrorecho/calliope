@@ -1,72 +1,78 @@
 import abjad, abjadext, calliope
 
+c = calliope.Cell(rhythm=(1,2,3,4), pitches=(0,2,4,2))
 
-class MyScore(calliope.Score):
+s = calliope.Selection()[0,1]
 
-    class CelloStaff(calliope.Staff):
-        instrument=abjad.Cello(
-            name="Cello", short_name="Vc.")
-
-    class PianoStaff(calliope.Piano): pass
+c.illustrate_me()
 
 
-s = MyScore()
+# class MyScore(calliope.Score):
+
+#     class CelloStaff(calliope.Staff):
+#         instrument=abjad.Cello(
+#             name="Cello", short_name="Vc.")
+
+#     class PianoStaff(calliope.Piano): pass
+
+
+# s = MyScore()
+
+
+# # class MyLine(calliope.Line):
+# class Phrase1(calliope.Phrase):
+#     class CellA(calliope.Cell):
+#         init_rhythm = (1,3)
+#         init_pitches = (-3,4)
+
+#     class CellB(calliope.Cell):
+#         init_rhythm = (1,2,5)
+#         init_pitches = (4,3,1)
+
+
+# class Phrase2(Phrase1):
+#     class CellB(Phrase1.CellB):
+#         init_pitches = (4,3,-1)
+
+
+# class Phrase3(calliope.Phrase):
+#     class CellA(calliope.Cell):
+#         init_rhythm = (1,3)
+#         init_pitches = (-3,-6)
+
+#     class CellB(calliope.Cell):
+#         init_rhythm = (2,4)
+#         init_pitches = (-5,6)
+
+
+# class Phrase4(Phrase3):    
+#     class CellA(Phrase3.CellA):
+#         init_pitches = (4,-3)
+
+#     class CellB(Phrase3.CellB):
+#         init_pitches = (-3,-1)
 
 
 # class MyLine(calliope.Line):
-class Phrase1(calliope.Phrase):
-    class CellA(calliope.Cell):
-        init_rhythm = (1,3)
-        init_pitches = (-3,4)
+#     respell = "sharps"
+#     class Phrase1(Phrase1): pass
+#     class Phrase2(Phrase2):
+#         init_bookend_rests = (1,0)
+#     class Phrase3(Phrase3): pass
+#         # bookend_rests = (2,0)
+#     class Phrase4(Phrase4): pass
 
-    class CellB(calliope.Cell):
-        init_rhythm = (1,2,5)
-        init_pitches = (4,3,1)
+# class MyLine2(calliope.Line):
+#     class Phrase1(Phrase1): 
+#         init_transpose = 5
 
-
-class Phrase2(Phrase1):
-    class CellB(Phrase1.CellB):
-        init_pitches = (4,3,-1)
-
-
-class Phrase3(calliope.Phrase):
-    class CellA(calliope.Cell):
-        init_rhythm = (1,3)
-        init_pitches = (-3,-6)
-
-    class CellB(calliope.Cell):
-        init_rhythm = (2,4)
-        init_pitches = (-5,6)
+# # print(MyLine.Phrase4.CellB())
 
 
-class Phrase4(Phrase3):    
-    class CellA(Phrase3.CellA):
-        init_pitches = (4,-3)
+# l = MyLine()
+# # print(l.rhythm)
 
-    class CellB(Phrase3.CellB):
-        init_pitches = (-3,-1)
-
-
-class MyLine(calliope.Line):
-    respell = "sharps"
-    class Phrase1(Phrase1): pass
-    class Phrase2(Phrase2):
-        init_bookend_rests = (1,0)
-    class Phrase3(Phrase3): pass
-        # bookend_rests = (2,0)
-    class Phrase4(Phrase4): pass
-
-class MyLine2(calliope.Line):
-    class Phrase1(Phrase1): 
-        init_transpose = 5
-
-# print(MyLine.Phrase4.CellB())
-
-
-l = MyLine()
-# print(l.rhythm)
-
-l.illustrate_me()
+# l.illustrate_me()
 
 # class LineChords(calliope.ChordsFromSelectable, calliope.Line):
 #     selectable = l.cells

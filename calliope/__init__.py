@@ -3,7 +3,7 @@ from calliope.core.settings import *
 from calliope.core.calliope_base import CalliopeBase
 from calliope.core.selectable_mixin import SelectableMixin
 from calliope.core.tree import Tree
-from calliope.core.selection import Selection
+from calliope.core.selection import Selection, ExcludeSelection
 from calliope.core.rhythm import by_logical_tie_group_rests
 from calliope.core.pitch import set_pitch
 from calliope.core.tag_set import TagSet
@@ -46,6 +46,9 @@ from calliope.transforms.add_constant_pitch import AddConstantPitch
 from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells
 from calliope.transforms.stack_pitches import StackPitches
 from calliope.transforms.smart_range import SmartRange
+from calliope.transforms.crop_chords import CropChords
+from calliope.transforms.pulse_events import PulseEvents
+from calliope.transforms.poke import Poke
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 

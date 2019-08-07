@@ -166,7 +166,7 @@ class FragmentRow(calliope.Fragment):
             # extra_counts_per_division=extra_counts_per_division, # for testing only...
         )
 
-        print("YO", metrical_durations)
+        # print("YO", metrical_durations)
         leaf_selections = talea_rmaker([abjad.Duration(d) for d in metrical_durations])
         return self.container_type(components=leaf_selections, **kwargs)
 

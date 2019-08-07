@@ -14,15 +14,30 @@ class Staff(calliope.Bubble):
     clef = None
     select_property = "staves"
 
-    def process_music(self, music, **kwargs):
-        
+    def process_music(self, music, **kwargs):       
+       
         # needed for horizontal brackets:
         music.consists_commands.append('Horizontal_bracket_engraver')
         music_leaves = abjad.select(music).leaves()
+        
         if len(music_leaves) > 0:
             music_start = music_leaves[0]
-            if self.instrument and len(music) > 0:
+
+            if self.instrument and len(music_leaves) > 0:
+
+                # TO DO: this is not enough to show the instrument name.. WHY???!!
                 abjad.attach(self.instrument, music_start)
+
+                instrument_command = abjad.LilyPondLiteral(
+                    r"\set Staff.instrumentName = " + format(self.instrument.markup), 
+                    "before")
+                abjad.attach(instrument_command, music_start)
+
+                short_instrument_command =  abjad.LilyPondLiteral(
+                    r"\set Staff.shortInstrumentName = " + format(self.instrument.short_markup), 
+                    "before")
+                abjad.attach(short_instrument_command, music_start)
+
             if self.clef:
                 clef_obj = abjad.Clef(self.clef)
                 abjad.attach(clef_obj, music_start)

@@ -1,6 +1,7 @@
 import abjad
 import calliope
 
+
 class PitchesThroughGrid(calliope.Transform):
     tally_apps = ()
     version = None

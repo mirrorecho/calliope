@@ -14,7 +14,7 @@ class Score(calliope.Bubble):
 
     @classmethod
     def startup_root(cls):
-        calliope.Staff.child_types = (calliope.Segment, calliope.Line, calliope.Cell, calliope.Event) 
+        calliope.Staff.child_types = (calliope.Segment, calliope.Line, calliope.Phrase, calliope.Cell, calliope.Event) 
 
         super().startup_root()
 
@@ -33,6 +33,7 @@ class Score(calliope.Bubble):
 
 
     def process_music(self, music, **kwargs):
+
         super().process_music(music, **kwargs)
         self.info("finished creating abjad music container object for the score")
 

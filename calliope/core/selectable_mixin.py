@@ -36,6 +36,7 @@ class SelectableMixin:
             select_from=list(self.recurse_by_type(my_type)), # TO DO: is converting to a list here expensive?
             )
 
+    # TO DO: this could handle an abstract selection
     @property
     def select(self):
         return calliope.Selection(select_from=self.children)
