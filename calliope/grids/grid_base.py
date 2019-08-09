@@ -10,9 +10,9 @@ import pandas as pd
 import abjad
 import calliope
 
-class GridBase(calliope.Factory):
-    row_machine_type = calliope.Segment
-    item_machine_type = calliope.Event
+class GridBase(calliope.CalliopeBase):
+    # row_machine_type = calliope.Segment
+    # item_machine_type = calliope.Event
 
     output_directory = None
     save_attrs = ("data", "start_data")
@@ -28,21 +28,20 @@ class GridBase(calliope.Factory):
     name = None
 
     def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
-        
         self.tally_apps = list(args)
 
         if self.auto_load:
             self.load()
 
-        self.init_data()
+        self.setup_data()
 
+        super().__init__(*args, **kwargs)
+       
     def get_start_data(self):
         return pd.DataFrame()
 
     # TO DO.. necessary? remove?
-    def init_data(self, start_data=None, data=None, reset=False):
+    def setup_data(self, start_data=None, data=None, reset=False):
         if start_data is None:
             start_data = self.get_start_data()
             start_data.name = self.name        
@@ -81,25 +80,26 @@ class GridBase(calliope.Factory):
     # def illustrate_me(self):
     #     self.to_bubble().illustrate_me(directory=self.output_directory)
 
+    # TO DO: is this still applicable
     def illustrate_start(self):
         show_copy = self.copy_me(reset=True)
         show_copy.name += "_start"
         show_copy.illustrate_me()
 
-    def fabricate(self, machine, *args, **kwargs):
-        machine.extend(
-            self.data.apply(lambda row: self.row_to_machine(row), axis=1)
-            )
+    # def fabricate(self, machine, *args, **kwargs):
+    #     machine.extend(
+    #         self.data.apply(lambda row: self.row_to_machine(row), axis=1)
+    #         )
         # TO DO: needed?
         # machine.name = "%s_%s" % (self.name, self.__class__.__name__)
 
-    def row_to_machine(self, row):
-        return (self.row_machine_type)(
-            *row.apply(self.item_to_machine)
-            )
+    # def row_to_machine(self, row):
+    #     return (self.row_machine_type)(
+    #         *row.apply(self.item_to_machine)
+    #         )
 
-    def item_to_machine(self, item):
-        return (self.item_machine_type)(item)
+    # def item_to_machine(self, item):
+    #     return (self.item_machine_type)(item)
 
     def get_output_file_path(self, save_attr):
         return self.get_output_path(
@@ -128,7 +128,7 @@ class GridBase(calliope.Factory):
     def copy_me(self, reset=False):
         my_copy = copy.copy(self)
         data = self.start_data.copy() if reset else self.data.copy()
-        my_copy.init_data(start_data=self.start_data, data=data, reset=True)
+        my_copy.setup_data(start_data=self.start_data, data=data, reset=True)
         return my_copy
 
     def reset_tally(self):
@@ -268,6 +268,11 @@ class GridBase(calliope.Factory):
         else:
             return best_copy
 
+    def update_rearranged(self):
+        """
+        hook for what to do if things rearranged
+        """
+
     def rearrange_me(self):
         best_copy = self.get_rearranged()
         if best_copy is not self:
@@ -275,6 +280,7 @@ class GridBase(calliope.Factory):
             self.data = best_copy.data
             self.tallies = best_copy.tallies # TO DO: even necessary?
             self.tally_total = best_copy.tally_total
+            self.update_rearranged()
 
     def tally_loop(self, times=9):
 
@@ -302,21 +308,21 @@ class GridBase(calliope.Factory):
             root.destroy()
 
         k=input("""
-    ENTER:
-        't' start re-tallying, 
-        'v' to change version,
-        'l' to (re)load from file, 
-        'd' to reset data (getting start data again),
-        'r' to re-randomize, 
-        'r' to re-randomize, 
-        'co' to change octave of a single value
-        'cs' to manually swap 2
-        's' to save, 
-        'p' to show pdf, 
-        'o' to show pdf of original start data, 
-        '/' to show data output path, 
-        'q' to quit
-    """)
+            ENTER:
+                't' start re-tallying, 
+                'v' to change version,
+                'l' to (re)load from file, 
+                'd' to reset data (getting start data again),
+                'r' to re-randomize, 
+                'r' to re-randomize, 
+                'co' to change octave of a single value
+                'cs' to manually swap 2
+                's' to save, 
+                'p' to show pdf, 
+                'o' to show pdf of original start data, 
+                '/' to show data output path, 
+                'q' to quit
+            """)
 
         if k == "t":
             
@@ -340,16 +346,18 @@ class GridBase(calliope.Factory):
             # print("Loaded ")
             self.tally_me()
             self.info("total tally:" + str(self.tally_tosttal))
+            self.update_rearranged()
             self.tally_loop(times)
 
         elif k == "d":
-            self.init_data(reset=True)
+            self.setup_data(reset=True)
             self.tally_loop(times)
 
         elif k == "r":
             self.randomize_all_columns()
             self.tally_me()
             self.info("randomized all columns... new tally is: " + str(self.tally_total))
+            self.update_rearranged()
             self.tally_loop(times)
 
         elif k == "s":
@@ -385,6 +393,7 @@ class GridBase(calliope.Factory):
                     self.warn("(invalid entry)")
             except:
                 self.warn("(invalid entry)")
+            self.update_rearranged()
             self.tally_loop(times)
 
         # TO DO AND WARNING... this ONLY applies to pitch grids
@@ -410,6 +419,7 @@ class GridBase(calliope.Factory):
                     self.warn("(invalid entry)")
             except:
                 self.warn("(invalid entry)")
+            self.update_rearranged()
             self.tally_loop(times)
 
         elif k == "o":

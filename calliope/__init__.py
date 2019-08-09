@@ -33,11 +33,14 @@ from calliope.machines.fragment_block import FragmentBlock, EventBlock, CellBloc
 
 Score.startup_root()
 
-# machine factories
-from calliope.factories.factory import Factory, FromSelectableFactory, EventBranchFactory
-from calliope.factories.chords_from_selectable import ChordsFromSelectable
-from calliope.factories.copy_events import CopyEventsFactory
-from calliope.factories.stack_pitches import StackPitches
+# grids
+from calliope.grids.grid_base import GridBase
+from calliope.grids.tally_base import TallyBase
+from calliope.grids.pitches.pitch_grid import PitchGrid
+from calliope.grids.pitches.tally_circle_of_fifths_range import TallyCircleOfFifthsRange
+from calliope.grids.pitches.tally_melodic_intervals import TallyMelodicIntervals
+from calliope.grids.pitches.tally_parallel_intervals import TallyParallelIntervals
+from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 
 # machine transforms
 from calliope.transforms.transform import Transform
@@ -56,20 +59,17 @@ from calliope.transforms.poke import Poke
 # from calliope.machines.transforms.tagging import Tagging, Slur, BracketByType, BracketCells
 # from calliope.machines.transforms.pitches_through_grid import PitchesThroughGrid
 
-# grids
-from calliope.grids.grid_base import GridBase
-from calliope.grids.tally_base import TallyBase
-from calliope.grids.pitches.pitch_grid import PitchGrid
-from calliope.grids.pitches.tally_circle_of_fifths_range import TallyCircleOfFifthsRange
-from calliope.grids.pitches.tally_melodic_intervals import TallyMelodicIntervals
-from calliope.grids.pitches.tally_parallel_intervals import TallyParallelIntervals
-from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
+# machine factories
+from calliope.factories.factory import Factory, FromSelectableFactory, EventBranchFactory
+from calliope.factories.chords_from_selectable import ChordsFromSelectable
+from calliope.factories.copy_events import CopyEventsFactory
+# from calliope.factories.stack_pitches import StackPitches # TO DO: this is a dupe
+from calliope.factories.pitches_through_grid import PitchesThroughGrid
 
 # libraries
 from calliope.libraries import meters
 from calliope.libraries.pitch_sequence import PitchSequence
 
+# TO DO... ?
 SELECTION_COUNTER = 0
 
-# from calliope.core.startup import startup
-# startup()

@@ -9,6 +9,23 @@ class PitchGrid(calliope.GridBase):
     # auto_move_into_ranges = False # TO DO... use this?
 
     def move_into_ranges(self):
+
+    # TO DO MAYBE: use this instead????
+    #     def pairwise(iterable):
+    #         it = iter(iterable)
+    #         a = next(it, None)
+    #         for b in it:
+    #             yield (a, b)
+    #             a = b
+
+    #     non_rest_list = list(selectable.note_events)
+
+    #     # TO DO: make work for chords!
+    #     for i, (previous_event, event) in enumerate(pairwise([non_rest_list[0]] + non_rest_list)):
+    #         my_range = abjad.PitchRange.from_pitches(*self.smart_range)
+    #         pitches_in_range = [p.number for p in my_range.voice_pitch_class(event.pitch)]
+    #         event.pitch = min(pitches_in_range, key=lambda x: abs(x-previous_event.pitch) )
+
         if self.pitch_ranges is not None:
             num_rows, num_cols = self.pitch_ranges.shape
             for r in self.range_rows:

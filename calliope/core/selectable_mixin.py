@@ -44,7 +44,7 @@ class SelectableMixin:
     def transformed(self, *args):
         """
         transforms and then returns self (in place transform)
-        args must be calliope.Transform objects
+        args should be calliope.Transform objects
         """
         for trans in args:
             trans(self)
