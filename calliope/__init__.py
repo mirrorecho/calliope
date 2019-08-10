@@ -46,12 +46,13 @@ from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 from calliope.transforms.transform import Transform
 from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths
 from calliope.transforms.add_constant_pitch import AddConstantPitch
-from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells
+from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells, PhrasePhrases
 from calliope.transforms.stack_pitches import StackPitches
 from calliope.transforms.smart_range import SmartRange
 from calliope.transforms.crop_chords import CropChords
 from calliope.transforms.pulse_events import PulseEvents
 from calliope.transforms.poke import Poke
+from calliope.transforms.label import Label
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 

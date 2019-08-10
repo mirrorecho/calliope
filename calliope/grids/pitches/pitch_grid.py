@@ -8,7 +8,30 @@ class PitchGrid(calliope.GridBase):
     pitch_ranges = None
     # auto_move_into_ranges = False # TO DO... use this?
 
-    def move_into_ranges(self):
+    def move_into_ranges(self, pitch_try_number):
+        sorted_column_indices = self.column_indices_by_tally() 
+
+        if self.pitch_ranges is not None:
+            num_rows, num_cols = self.pitch_ranges.shape
+            for r in self.range_rows:
+                for c in self.range_cols:
+                    
+                    current_pitch = self.data.iat[r, c]
+
+                    pitch_range = abjad.PitchRange.from_pitches(
+                        *self.pitch_ranges.iat[r % num_rows, c % num_cols]
+                        )
+
+                    # resets 
+                    if (current_pitch not in pitch_range
+                        or pitch_try_number < 3
+                        or c in sorted_column_indices[int(num_cols/3)]):
+                        
+                        new_pitch = random.choice(pitch_range.voice_pitch_class(current_pitch)).number
+                        self.data.iat[r, c] = new_pitch
+
+        else:
+            self.warn("Tried moving pitches into ranges, but pitch_ranges is None")
 
     # TO DO MAYBE: use this instead????
     #     def pairwise(iterable):
@@ -26,25 +49,15 @@ class PitchGrid(calliope.GridBase):
     #         pitches_in_range = [p.number for p in my_range.voice_pitch_class(event.pitch)]
     #         event.pitch = min(pitches_in_range, key=lambda x: abs(x-previous_event.pitch) )
 
-        if self.pitch_ranges is not None:
-            num_rows, num_cols = self.pitch_ranges.shape
-            for r in self.range_rows:
-                for c in self.range_cols:
 
-                    pitch_range = abjad.PitchRange.from_pitches(
-                        *self.pitch_ranges.iat[r % num_rows, c % num_cols]
-                        )
-
-                    # TO DO: consider... always move to new random choice? Or only move if pitch not already in range?
-                    my_pitch = random.choice(pitch_range.voice_pitch_class(self.data.iat[r, c])).number
-                    # print(my_pitch)
-                    self.data.iat[r, c] = my_pitch
-        else:
-            self.warn("Tried moving pitches into ranges, but pitch_ranges is None")
- 
 
     def rearrange_try(self, depth):
         super().rearrange_try(depth)
+
+        pitch_try_number = random.randrange(0+depth,8+depth)
+
+        if self.pitch_ranges is not None:
+            self.move_into_ranges(pitch_try_number)
 
         # if self.auto_move_into_ranges:
 
@@ -67,10 +80,6 @@ class PitchGrid(calliope.GridBase):
             #                 self.data.iat[l, c] -= 12
             #             elif (self.data.iat[l, c+1] + self.data.iat[l, c-1]) - (self.data.iat[l, c] * 2) > 12 and random.randrange(2) == 1:
             #                 self.data.iat[l, c] += 12
-
-        if self.pitch_ranges is not None:
-            self.move_into_ranges()
-            # print(self.data)
 
     def item_to_machine(self, item):
         return calliope.Event(pitch=item, beats=1)

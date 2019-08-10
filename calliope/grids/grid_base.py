@@ -25,9 +25,13 @@ class GridBase(calliope.CalliopeBase):
 
     tallies = None # to be set to instance of a DataFrame
     auto_load = True
-    name = None
+    init_name = None
+    filename = None
 
     def __init__(self, *args, **kwargs):
+        my_name = self.init_name or kwargs.get("name", None)
+        self.filename = my_name
+
         self.tally_apps = list(args)
 
         if self.auto_load:
@@ -36,7 +40,11 @@ class GridBase(calliope.CalliopeBase):
         self.setup_data()
 
         super().__init__(*args, **kwargs)
-       
+
+        self.name = my_name
+        self.data.name = my_name
+        self.start_data.name = my_name
+      
     def get_start_data(self):
         return pd.DataFrame()
 
@@ -44,7 +52,7 @@ class GridBase(calliope.CalliopeBase):
     def setup_data(self, start_data=None, data=None, reset=False):
         if start_data is None:
             start_data = self.get_start_data()
-            start_data.name = self.name        
+ 
         if reset or self.start_data is None or self.start_data.empty or self.data is None or self.data.empty:
             self.start_data = start_data
             if data is None or data.empty:
@@ -105,6 +113,7 @@ class GridBase(calliope.CalliopeBase):
         return self.get_output_path(
             directory=self.output_directory, 
             sub_directory = "data",
+            filename = self.filename,
             filename_suffix = "%s.%s" % (save_attr, self.version) 
             ) + ".json"
 
@@ -206,7 +215,8 @@ class GridBase(calliope.CalliopeBase):
         # more eratic/dramatic ones will be attempted...
         sorted_column_indices = self.column_indices_by_tally()
         if try_type_number == 0:
-            # completely randomize some random column and swap 2 in worst and 2nd worst columns (not weighed)
+            # completely randomize 2 random columns and swap 2 in worst and 2nd worst columns (not weighed)
+            self.randomize_column(random.randrange(self.data.shape[1]))
             self.randomize_column(random.randrange(self.data.shape[1]))
             self.column_swap2(sorted_column_indices[0])
             self.column_swap2(sorted_column_indices[1])

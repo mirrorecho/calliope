@@ -20,3 +20,9 @@ class BracketCells(SpanByType):
 
 class SlurCells(SpanByType):
     by_type = calliope.Cell
+
+
+class PhrasePhrases(SpanByType):
+    by_type = calliope.Phrase
+    start_span = "(("
+    stop_span = "))"

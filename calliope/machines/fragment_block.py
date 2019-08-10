@@ -38,6 +38,36 @@ class FragmentBlock(calliope.Fragment):
     def ticks(self):
         return max([c.ticks for c in self])
 
+    def to_block_list(self):
+        my_length = len(self)
+        return [
+            node.block_type(
+                *[self[i][j]() for i in range(my_length)],
+                name = self[0][j].name + "_block",
+            ) for j, node in enumerate(self[0])
+            ]
+
+    @classmethod
+    def from_block_list(cls, block_list):
+        my_length = len(block_list[0])
+        child_type = cls.child_types[0]
+        child_rows = []
+
+        for i in range(my_length):
+            child_row = child_type()
+            for block in block_list:
+                child_row.append(block[i]())
+            child_rows.append(child_row)
+
+        return cls(*child_rows)
+
+        # TO DO... this would be more elegant, but has an issue...
+        # return cls(
+        #     *[cls.child_types[0](
+        #         *[node() for block in block_list for node in block[i] ]
+        #         ) for i in range(my_length)]
+        #     )
+
 
 # TO DO: consider... can blocks contain blocks?
 
@@ -62,4 +92,17 @@ class SegmentBlock(FragmentBlock):
     child_types = (calliope.Segment, calliope.Line, calliope.Phrase, calliope.Cell,)
     # is_simultaneous = True
 
-# TO DO: consider... add LogicalTieBlock? (really just a chord?)
+# maybe this should go on Score.startup_root ...?
+setattr(calliope.Segment, "block_type", SegmentBlock)
+setattr(calliope.Line, "block_type", LineBlock)
+setattr(calliope.Phrase, "block_type", PhraseBlock)
+setattr(calliope.Cell, "block_type", CellBlock)
+setattr(calliope.Event, "block_type", EventBlock)
+
+SegmentBlock.startup_root()
+LineBlock.startup_root()
+PhraseBlock.startup_root()
+CellBlock.startup_root()
+EventBlock.startup_root()
+
+
