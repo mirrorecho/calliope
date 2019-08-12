@@ -9,7 +9,7 @@ class Label(calliope.Transform):
         for i, n in enumerate(selectable):
             for attr in self.attrs:
                 value = i if attr == "selection_index" else getattr(n,attr,None)
-                print(n, attr, value)
+                # print(n, attr, value)
                 if value is not None:
                     n.tag(str(value))
 
