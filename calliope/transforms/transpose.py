@@ -7,9 +7,12 @@ class Transpose(calliope.Transform):
 
     def transform(self, selectable, **kwargs):
         for event in selectable.note_events:
-            # TO DO: deal with this!!!!!!!!!!!!!!
-            print("I DON'T WORK!!!!!!")
-            # event.transpose(self.interval)
+            my_pitch = event.pitch
+            if isinstance(my_pitch, (list, tuple)):
+                event.pitch = [p + self.interval for p in my_pitch]
+            else:
+                event.pitch += self.interval
+
 
 class Displace(calliope.Transform):
     interval = 12

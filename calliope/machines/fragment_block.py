@@ -43,7 +43,7 @@ class FragmentBlock(calliope.Fragment):
         return [
             node.block_type(
                 *[self[i][j]() for i in range(my_length)],
-                name = self[0][j].name + "_block",
+                name = (self[0][j].name if self[0][j].name else self[0][j].__class__.__name__.lower()) +  "_block" + str(j),
             ) for j, node in enumerate(self[0])
             ]
 
