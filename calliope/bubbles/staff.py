@@ -40,7 +40,10 @@ class Staff(calliope.Bubble):
 
             if self.clef:
                 clef_obj = abjad.Clef(self.clef)
-                abjad.attach(clef_obj, music_start)
+                try:
+                    abjad.attach(clef_obj, music_start)
+                except:
+                    print("BOO ATTACHING STAFF")
         super().process_music(music, **kwargs)
 
     def show(self):

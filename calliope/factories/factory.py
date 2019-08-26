@@ -1,5 +1,6 @@
 import calliope
 
+# TO DO: keep base factory SIMPLE... only needs to implement fabricate
 class Factory(calliope.CalliopeBase):
     branch_type = calliope.Cell
 

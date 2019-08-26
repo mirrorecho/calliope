@@ -90,10 +90,12 @@ class Segment(calliope.FragmentRow):
                 measure_rests_to_replace = []
 
     def process_music(self, music, **kwargs):
-        super().process_music(self, music, **kwargs)
+        super().process_music(music, **kwargs)
         
-        if len(music) > 0:
-            music_start = music[0]
+        leaves = abjad.select(music).leaves()
+
+        if len(leaves) > 0:
+            music_start = leaves[0]
             
             if self.rehearsal_mark_number:
                 mark = abjad.RehearsalMark(number=self.rehearsal_mark_number)
