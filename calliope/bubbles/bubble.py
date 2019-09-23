@@ -56,28 +56,25 @@ class Bubble(calliope.Tree):
         return lilypond_file
 
     def illustrate_me(self, 
-            score_type = None,
             as_pdf = True, 
             open_pdf = True, 
             as_midi = False,
             **kwargs
         ):
-        # NOTE... this is odd... within sublimetext using the virtual envionment package on a mac ONLY, 
+
+        # NOTE... this is odd... with sublimetext using the virtual envionment package on a mac ONLY, 
         # lilypond executable is not found properly (something to do with os.environ not finding the right PATH info)
-        # ... adding this here as a band-aid:
+        # ... adding this here as a bandaid:
         mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
         if os.path.exists(mac_default_lilypond_path):
             from abjad import abjad_configuration
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
-        
-        bubble_to_illustrate = self if not score_type else score_type(self)
-        # print(bubble_to_illustrate.ly())
 
-        ly_file = bubble_to_illustrate.get_lilypond_file()
+        ly_file = self.get_lilypond_file()
         my_persistance_agent = abjad.persist( ly_file )
 
         path = self.get_output_path(**kwargs)
-        print("%s.ly" % path)
+        # print("%s.ly" % path)
 
         if as_pdf:
             pdf_filename = "%s.pdf" % path

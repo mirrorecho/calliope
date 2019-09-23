@@ -7,6 +7,7 @@ class Cell(calliope.FragmentRow):
 Cell.child_types = (Cell, calliope.Event)
 
 
+
 # TO DO... resurrect all this below???
 
 # class ContainerCell(Cell):

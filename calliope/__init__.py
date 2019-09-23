@@ -7,7 +7,8 @@ from calliope.core.selection import Selection, ExcludeSelection
 from calliope.core.rhythm import by_logical_tie_group_rests
 from calliope.core.pitch import set_pitch
 from calliope.core.tag_set import TagSet
-from calliope.core.illustrate_me import illustrate_me
+from calliope.core.illustrate import illustrate, illustrate_me
+from calliope.core.to_snake_case import to_snake_case
 
 # bubbles
 from calliope.bubbles.bubble import Bubble
@@ -15,7 +16,7 @@ from calliope.bubbles.bubble import Bubble
 # from calliope.bubbles.fragment_ametric import Ametric, AmetricStart
 from calliope.bubbles.staff import (Voice, Staff, RhythmicStaff, 
             StaffGroup, Piano, Harp, StaffWithVoices, InstrumentStaffGroup)
-from calliope.bubbles.score import Score, AutoScore
+from calliope.bubbles.score import Score #, AutoScore
 from calliope.bubbles.sequence import MatchSequence
 
 # machines
@@ -65,6 +66,7 @@ from calliope.factories.factory import Factory, FromSelectableFactory, EventBran
 from calliope.factories.chords_from_selectable import ChordsFromSelectable
 from calliope.factories.copy_events import CopyEventsFactory
 # from calliope.factories.stack_pitches import StackPitches # TO DO: this is a dupe
+from calliope.factories.composite_row import CompositeRow, CompositeCell, CompositeLine
 from calliope.factories.pitches_through_grid import PitchesThroughGrid
 
 # libraries

@@ -1,5 +1,7 @@
 import os, inspect
 
+import calliope
+
 
 class CalliopeBase(object):
     print_kwargs = ()
@@ -24,6 +26,10 @@ class CalliopeBase(object):
             else:
                 setattr(self, attr, value)
 
+    @classmethod
+    def class_snake_name(cls):
+        return calliope.to_snake_case(cls.__name__)
+
     def kwargs_or_attr(self, attr, **kwargs):
         return kwargs.get(attr, 
             getattr(self, attr, None)
@@ -42,16 +48,22 @@ class CalliopeBase(object):
             **kwargs
             ):
 
+        calling_info = inspect.stack()[-1] 
+        calling_module_file = calling_info[1]
+        calling_module_directory = os.path.dirname(calling_module_file)
+        calling_module_name = os.path.split(calling_module_file)[1].split(".")[0]
+
         if not directory or not filename:
             module_directory, module_name = self.get_module_info()
         
-        directory = directory or module_directory
+        directory = directory or calling_module_directory or module_directory
         full_directory = os.path.join(directory, sub_directory)
         if not os.path.exists(full_directory):
             os.makedirs(full_directory)
 
+        # TO DO: this could be more elegant
         if not filename:
-            filename = module_name
+            filename = "_".join([calling_module_name, self.class_snake_name()])
             my_name = getattr(self, "name", "")
             if my_name:
                 filename = "_".join([filename, str.lower(my_name)])

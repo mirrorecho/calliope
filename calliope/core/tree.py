@@ -1,6 +1,5 @@
 import inspect
 import copy
-import re
 # import itertools # may consider using
 
 import calliope
@@ -9,9 +8,7 @@ from .tree_node import TreeNode
 
 TREE_CONTAINER_MRO_COUNT = len(inspect.getmro(TreeNode))
 
-# SEE COMMENT AT: https://gist.github.com/jaytaylor/3660565
-def camel_to_snake(s):
-    return re.sub("([A-Z])", "_\\1", s).lower().lstrip("_")
+
 
 
 ### ---------------------------------------------------------------------------- ###
@@ -44,7 +41,7 @@ class Tree(calliope.SelectableMixin, TreeNode):
     def set_children_from_class(self, **kwargs):
         for node_name in type(self).class_sequence(): 
             node = getattr(self, node_name)
-            self[camel_to_snake(node_name)] = node
+            self[calliope.to_snake_case(node_name)] = node
 
 
     @classmethod

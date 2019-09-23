@@ -14,7 +14,6 @@ class LogicalTie(calliope.Machine):
     pitch = None # if None, defaults to Event's pitch
     rest = False
 
-    # TO DO: used? or KISS?
     is_primary = True # True if this logical tie is a primary one for it's parent event
 
     can_have_children = True

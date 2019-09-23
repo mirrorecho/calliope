@@ -43,7 +43,6 @@ class Event(calliope.FragmentRow):
         if values:
             self.pitch = values[0]
 
-    # TO DO: used????
     @property
     def first_primary_tie(self):
         return next(x for x in self if x.is_primary)
