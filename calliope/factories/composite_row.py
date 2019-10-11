@@ -22,7 +22,6 @@ class CompositeRow(calliope.FromSelectableFactory):
 
                 ticks_counter += e.ticks
         
-
         # create a list of copies events in the dict,
         # ordered by start time and with duration adjusted 
 
@@ -43,6 +42,34 @@ class CompositeRow(calliope.FromSelectableFactory):
 
         # return the events list as the branches
         return events_list
+
+
+class SplayRow(calliope.FromSelectableFactory):
+    """
+    Creates a new block by "splaying" events in a row 
+    (alternately assigning across the block's rows)
+    """
+
+    branch_type = None # will be set based on the selectable
+    num_rows = 3
+
+    def __init__(self, *args, **kwargs):
+        self.branch_type = self.child_types[0]
+        super().__init__(*args, **kwargs)
+
+
+    def get_branch(self, index, *args, **kwargs):
+        print(self.branch_type, self.selectable)
+
+        return self.branch_type(
+            calliope.Poke(selection=self.selectable(lambda sel, i, e: i % self.num_rows==index))(
+                    self.selectable
+                )
+            )
+
+    def get_branches(self, *args, **kwargs):
+        return [self.get_branch(i, *args, **kwargs) for i in range(self.num_rows)]
+
 
 
 class CompositeCell(CompositeRow, calliope.Cell): pass

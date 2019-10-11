@@ -18,6 +18,7 @@ class Machine(calliope.Bubble, calliope.TagSet):
         if isinstance(self, calliope.Factory):
             self.factory = self
         
+        # TO DO: this is odd...
         calliope.Bubble.__init__(self, *args, **kwargs)
         calliope.TagSet.__init__(self)
 

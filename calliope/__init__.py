@@ -10,6 +10,8 @@ from calliope.core.tag_set import TagSet
 from calliope.core.illustrate import illustrate, illustrate_me
 from calliope.core.to_snake_case import to_snake_case
 
+from calliope.pitch.scale import Scale
+
 # bubbles
 from calliope.bubbles.bubble import Bubble
 # from calliope.bubbles.fragment import Fragment, SegmentMixin, Segment, MultiFragment, SimulFragment
@@ -45,7 +47,7 @@ from calliope.grids.pitches.tally_repeated_jumps import TallyRepeatedJumps
 
 # machine transforms
 from calliope.transforms.transform import Transform
-from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths
+from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths, TransposeWithinScale
 from calliope.transforms.add_constant_pitch import AddConstantPitch
 from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells, PhrasePhrases
 from calliope.transforms.stack_pitches import StackPitches
@@ -54,6 +56,7 @@ from calliope.transforms.crop_chords import CropChords
 from calliope.transforms.pulse_events import PulseEvents
 from calliope.transforms.poke import Poke
 from calliope.transforms.label import Label
+from calliope.transforms.overlay import Overlay
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 
@@ -66,7 +69,7 @@ from calliope.factories.factory import Factory, FromSelectableFactory, EventBran
 from calliope.factories.chords_from_selectable import ChordsFromSelectable
 from calliope.factories.copy_events import CopyEventsFactory
 # from calliope.factories.stack_pitches import StackPitches # TO DO: this is a dupe
-from calliope.factories.composite_row import CompositeRow, CompositeCell, CompositeLine
+from calliope.factories.composite_row import CompositeRow, CompositeCell, CompositeLine, SplayRow
 from calliope.factories.pitches_through_grid import PitchesThroughGrid
 
 # libraries

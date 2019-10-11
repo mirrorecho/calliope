@@ -104,14 +104,17 @@ class Tree(calliope.SelectableMixin, TreeNode):
             lambda x: x.select_by_type(select_type),
             )
 
-
-    def __call__(self, name=None, **kwargs):
+    def copy(self, name=None, **kwargs):
         return_node = copy.deepcopy(self)
         if name:
             return_node.name = name # TO DO: ????
         for name, value in kwargs.items():
             setattr(return_node, name, value)
         return return_node
+
+    # a shortcut to copy...
+    def __call__(self, name=None, **kwargs):
+        return self.copy(name=name, **kwargs)
 
     def __setitem__(self, key, expr):
         if inspect.isclass(expr):
@@ -357,6 +360,11 @@ class Tree(calliope.SelectableMixin, TreeNode):
     def remove(self, node):
         i = self.index(node)
         del(self[i])
+
+    # TO DO: is this the best implementation?
+    def clear(self):
+        for n in self.children:
+            self.remove(n)
 
     ### PUBLIC PROPERTIES ###
 

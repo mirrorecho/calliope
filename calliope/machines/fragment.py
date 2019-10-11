@@ -55,7 +55,7 @@ class Fragment(calliope.Machine):
     def append_rhythm(self, beats):
         # note, this is overriden on Event so that events will create a rhythm out of 
         # logical ties as opposed to events of events in an infinite loop
-        self.append( calliope.Event(rhythm=(beats,) ))
+        self.append( calliope.Event(beats=beats))
 
     @property
     def rhythm(self):

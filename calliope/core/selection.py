@@ -85,6 +85,9 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
             if self.select_args: 
                 if index in self.select_args or item.name in self.select_args:
                     return True
+                for func in [f for f in self.select_args if callable(f)]:
+                    if func(self, index, item):
+                        return True
             if self.range_args:
                 for r in self.range_args:
                     if index in r:
