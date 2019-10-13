@@ -61,6 +61,13 @@ class FragmentBlock(calliope.Fragment):
 
         return cls(*child_rows)
 
+    def to_score(self, *args, **kwargs):
+        return calliope.Score(
+            *[calliope.Staff(n()) for n in self],
+            *args,
+            **kwargs
+            )
+
         # TO DO... this would be more elegant, but has an issue...
         # return cls(
         #     *[cls.child_types[0](
