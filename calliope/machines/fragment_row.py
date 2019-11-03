@@ -1,3 +1,4 @@
+import copy
 import abjad, calliope
 from abjadext import rmakers
 
@@ -35,7 +36,7 @@ class FragmentRow(calliope.Fragment):
         if self.use_child_metrical_durations:
             # TO DO... need to test this! (and probably could be a 1-liner)
             for c in self:
-                my_durations.extend(c.get_metrical_durations())
+                durations.extend(c.get_metrical_durations())
             return durations
         else:
             meter = self.meter or calliope.meters.METER_4_4
@@ -189,24 +190,34 @@ class FragmentRow(calliope.Fragment):
             #     m = abjad.mutate(music_logical_tie)
             #     m.replace(custom_music)
 
-            # TO DO: any way to make this more generic?
-            time_signature = data_logical_tie.getattr_first_ancestors("time_signature")
-            if time_signature:
-                # TO DO: don't repeat this all the time?
-                time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
-                abjad.attach(time_command_numeric, music_logical_tie[0])
 
-                time_command =  abjad.LilyPondLiteral(r"\time " + str(time_signature[0]) + "/" + str(time_signature[1]), "before")
-                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
-                # time_command = abjad.TimeSignature( self.time_signature )
-                abjad.attach(time_command, music_logical_tie[0])
+            if data_logical_tie.skip:
+                for note in music_logical_tie:
+                    my_skip = abjad.Skip(copy.deepcopy(note.written_duration))
+                    # print(my_skip)
+                    m = abjad.mutate([note])
+                    m.replace(my_skip)
 
-            if not data_logical_tie.rest:
+            elif not data_logical_tie.rest:
 
                 my_pitch = data_logical_tie.pitch or data_logical_tie.parent.pitch
                 my_respell = data_logical_tie.get_respell()
                 calliope.set_pitch(music_logical_tie, my_pitch, my_respell)
 
+            # TO DO: any way to make this more generic?
+            time_signature = data_logical_tie.getattr_first_ancestors("time_signature")
+
+            if time_signature:
+                # print("time", time_signature)
+                # TO DO: don't repeat this all the time?
+                time_command_numeric =  abjad.LilyPondLiteral(r"\numericTimeSignature", "before")
+                abjad.attach(time_command_numeric, music[leaf_index])
+
+                time_command =  abjad.LilyPondLiteral(r"\time " + str(time_signature[0]) + "/" + str(time_signature[1]), "before")
+                # TO DO MAYBE: below is cleaner... but abjad only attaches time signature properly to staff (not notes in a container)... workaround?
+                time_command = abjad.TimeSignature( time_signature )
+                # print(music_logical_tie)
+                abjad.attach(time_command, music[leaf_index])
 
             # TO DO: these loops could be cleaner...
             for tag_name in data_logical_tie.get_all_tags():
@@ -243,7 +254,13 @@ class FragmentRow(calliope.Fragment):
                             else:
                                 abjad.attach(attachment, music[leaf_index])
 
+            self.process_logical_tie(music, music_logical_tie, data_logical_tie, leaf_index)
+
             leaf_index += len(music_logical_tie)
+
+    # HOOK TO ALLOW FANCY THINGS TO HAPPEN
+    def process_logical_tie(self, music, music_logical_tie, data_logical_tie, leaf_index):
+        pass
 
     def process_music(self, music, **kwargs):
         super().process_music(music, **kwargs)

@@ -113,10 +113,10 @@ class Segment(calliope.FragmentRow):
             # TO DO... TEMPO MAKES EVERYTHING SLOW... WHY?
             if self.tempo_text or self.tempo_units_per_minute:
                 if self.tempo_units_per_minute:
-                    tempo_reference_duration = Duration(self.tempo_duration)
+                    tempo_reference_duration = abjad.Duration(self.tempo_duration)
                 else:
                     tempo_reference_duration = None
-                tempo = abjad.Tempo(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
+                tempo = abjad.MetronomeMark(tempo_reference_duration, units_per_minute=self.tempo_units_per_minute, textual_indication=self.tempo_text)
                 abjad.attach(tempo, music_start)
 
             elif self.tempo_command:

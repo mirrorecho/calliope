@@ -13,6 +13,7 @@ class LogicalTie(calliope.Machine):
     ticks = 0
     pitch = None # if None, defaults to Event's pitch
     rest = False
+    skip = False
 
     is_primary = True # True if this logical tie is a primary one for it's parent event
 

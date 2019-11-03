@@ -26,6 +26,15 @@ def get_pitch_number(pitch_object):
     # TO DO... error handling here?
 
 # TO DO... still messy... refactor
+# def set_skip(music_logical_tie):
+#     for note in music_logical_tie:
+#         chord = abjad.Chord()
+#         chord.note_heads = named_pitches
+#         chord.written_duration = copy.deepcopy(note.written_duration)
+#         m = abjad.mutate([note])
+#         m.replace(chord)
+
+# TO DO... still messy... refactor
 def set_pitch(music_logical_tie, pitch_thingy, respell=None):
     pitch_number = get_pitch_number(pitch_thingy)
     if pitch_number is not None:

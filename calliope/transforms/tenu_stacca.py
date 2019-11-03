@@ -3,15 +3,15 @@ import calliope
 
 class TenuStacca(calliope.Transform):
     """
-    includes only certain items in chords
+    longer notes are tenuto, shorter staccato
     """
     break_beats=1
 
     def transform(self, selectable, **kwargs):
         for e in selectable.note_events:
             if e.beats >= self.break_beats:
-                self.tag("-")
+                e.tag("-")
             else:
-                self.tag(".")
+                e.tag(".")
 
 

@@ -9,8 +9,8 @@ class SpanByType(calliope.Transform):
     def transform(self, selectable, **kwargs):
         for node in selectable.select_by_type(self.by_type):
             if len(node) > 1:
-                node.logical_ties[0].tag(self.start_span)
-                node.logical_ties[-1].tag(self.stop_span)
+                node.note_events[0].tag(self.start_span)
+                node.note_events[-1].tag(self.stop_span)
  
 # NOTE: this doesn't work... why?
 class BracketCells(SpanByType):

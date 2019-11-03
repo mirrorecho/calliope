@@ -52,6 +52,15 @@ class Fragment(calliope.Machine):
         for l in self.logical_ties: # TO DO... what about custom here?
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
 
+    @property
+    def skip(self):
+        return all([l.skip for l in self.logical_ties])
+
+    @rest.setter
+    def skip(self, is_skip):
+        for l in self.logical_ties: # TO DO... what about custom here?
+            l.skip = is_skip # NOTE... turning OFF rests could result in odd behavior!
+
     def append_rhythm(self, beats):
         # note, this is overriden on Event so that events will create a rhythm out of 
         # logical ties as opposed to events of events in an infinite loop

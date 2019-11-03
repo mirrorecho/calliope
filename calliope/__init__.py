@@ -57,6 +57,10 @@ from calliope.transforms.pulse_events import PulseEvents
 from calliope.transforms.poke import Poke
 from calliope.transforms.label import Label
 from calliope.transforms.overlay import Overlay
+from calliope.transforms.scale_rhythm import ScaleRhythm
+from calliope.transforms.tenu_stacca import TenuStacca
+from calliope.transforms.tag_notes import TagNotes
+
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
 # from calliope.machines.transforms.make_chords import MakeChords 

@@ -3,7 +3,7 @@ import calliope
 
 # TO DO: rename to TaggableMixin?
 class TagSet(object):
-    tags = None # to be set to a set
+    _tags = None # to be set to a set
     
     # TO DO... abjad may already define these somewhere.. research:
     # TO DO... implement beaming here... would be especially userful with span_every
@@ -16,7 +16,7 @@ class TagSet(object):
     clefs_inventory = set( ("treble", "alto", "bass", "treble^8", "bass_8", "soprano", "tenor", "bass^15", "percussion") )
     
     # TO DO: add more bar lines?
-    bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ) )
+    bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ":|.", ".|:", ) )
 
     # NOTE "{" is made up shorthand for HorizontalBracket
     start_spanners_inventory = set(("~","8va", "{", "[")) | slurs_inventory | hairpins_inventory
@@ -27,6 +27,10 @@ class TagSet(object):
                 "blue",        "cyan",           "magenta",     "yellow",
                 "grey",        "darkred",        "darkgreen",   "darkblue",
                 "darkcyan",    "darkmagenta",    "darkyellow",))
+
+    fermatas_inventory = set( 
+        ("fermata", "shortfermata", "longfermata", "verylongfermata",)  
+        )
 
     # TO DO: useful? ...
     # # the set of tags that are NOT allowed
@@ -48,7 +52,7 @@ class TagSet(object):
         spanner_closures[item] = hairpins_inventory
 
     def __init__(self):
-        self.tags = set()
+        self._tags = set()
         super().__init__()
 
     def get_attachment(self, tag_name):
@@ -64,6 +68,8 @@ class TagSet(object):
             return abjad.Hairpin(">")
         elif tag_name == "[":
             return abjad.ComplexBeam(beam_rests=True)
+        elif tag_name in self.fermatas_inventory:
+            return abjad.Fermata(command=tag_name)
         elif tag_name in self.stem_tremolos_inventory:
             tremolo_flags = int(tag_name[1:])
             return abjad.StemTremolo(tremolo_flags)
@@ -74,6 +80,8 @@ class TagSet(object):
             return abjad.Tie()
         elif tag_name == "8va":
             return abjad.OctavationSpanner(start=1)
+        elif tag_name == "8vb":
+            return abjad.OctavationSpanner(start=-1)
         elif tag_name == "{":
             # NOTE: this doesn't work... why?
             return abjad.HorizontalBracket() # TO DO - CONSIDER... add markup?
@@ -86,20 +94,23 @@ class TagSet(object):
             return lambda x : abjad.label(x).color_leaves(tag_name)
         elif not tag_name in self.stop_spanners_inventory:
             if tag_name[0] == "\\":
-                return abjad.LilyPondCommand(tag_name[1:])
+                return abjad.LilyPondLiteral(tag_name, "before")
+            if tag_name[:2] == "!\\":
+                return abjad.LilyPondLiteral(tag_name[1:], "after")
             else:
                 return abjad.Markup(tag_name, direction=abjad.Up)
 
     # TO DO... only if needed
     # def get_attachments(self, **kwargs):
-    #     return [AttachmentSetData.get_attachment(a) for a in self.tags]
+    #     return [AttachmentSetData.get_attachment(a) for a in self._tags]
 
     def set_tag(self, my_set, *args):
         for arg in args:
             if arg[:5] == "attr:":
                 my_set.add(str(getattr(self, arg[5:])))
             else:
-                # overwrite existing dynamics, hairpins, clefs, and bars:
+                # overwrite existing dynamics, hairpins, clefs
+                # bars, and fermatas:
                 if arg in self.dynamics_inventory:
                     my_set -= self.dynamics_inventory
                 elif arg in self.clefs_inventory:
@@ -108,15 +119,29 @@ class TagSet(object):
                     my_set -= self.bar_lines_inventory
                 elif arg in self.hairpins_inventory:
                     my_set -= self.hairpins_inventory
+                elif arg in self.fermatas_inventory:
+                    my_set -= self.fermatas_inventory
                 my_set.add(arg)        
 
     def tag(self, *args):
-        self.set_tag(self.tags, *args)
+        self.set_tag(self._tags, *args)
+
+    @property
+    def tags(self):
+        # TO DO: this is a little wonky
+        my_tags = self._tags or set()
+        return set(my_tags)
+
+    @tags.setter
+    def tags(self, iterable):
+        self._tags = set()
+        self.tag(*iterable)
+
 
     def untag(self, *args):
         for arg in args:
-            if arg in self.tags:
-                self.tags.remove(arg)
+            if arg in self._tags:
+                self._tags.remove(arg)
         return self
 
     # TO CONSIDER: are these children methods even worth it?
@@ -155,7 +180,7 @@ class TagSet(object):
         return set()
 
     def get_all_tags(self):
-        return self.combine_tags(self.tags, self.get_ancestor_tags())
+        return self.combine_tags(self._tags, self.get_ancestor_tags())
 
     # TO DO... consider implementing this
     # # TO DO.. this should be able to work with original_depthwise_index (or fragments should not reset segments)
@@ -195,12 +220,12 @@ class TagSet(object):
     # TO DO... implement only if needed
     # def get_descendant_names(self):
     #     if self.children:
-    #         return self.children[0].tags | self.get_descendant_names()
+    #         return self.children[0]._tags | self.get_descendant_names()
     #     else:
     #         return set()
 
     # def get_consolidated_names(self):
-    #     return self.tags | self.get_ancestor_names() | self.get_descendant_names()
+    #     return self._tags | self.get_ancestor_names() | self.get_descendant_names()
 
     # def get_consolidated_attachments(self):
     #     """
