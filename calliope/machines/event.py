@@ -1,7 +1,7 @@
 import abjad
 import calliope
 
-class Event(calliope.FragmentRow):
+class Event(calliope.PitchDataMixin, calliope.FragmentRow):
     child_types = (calliope.LogicalTie,)
     select_property = "events"
     print_kwargs = ("beats", "pitch")
@@ -9,15 +9,13 @@ class Event(calliope.FragmentRow):
     init_beats = 1
     tie_name = None
 
-    _pitch = 0 # this could be set to a list/tuple to indicate a chord
-
-    sort_init_attrs = ("beats", "rhythm", "transpose", "pitches_skip_rests", "pitches", "rest", "skip")
+    sort_init_attrs = ("beats", "rhythm", "transpose", "pitches_skip_rests", "pitch", "pitches", "rest", "skip")
 
     @property
     def pitch_class(self):
         if self.pitch is None:
             return None
-        elif isinstance(self.pitch, (list, tuple)):
+        elif self.is_chord:
             return [p % 12 for p in self.pitch]
         else:
             return self.pitch % 12
@@ -39,11 +37,15 @@ class Event(calliope.FragmentRow):
             my_tie = calliope.LogicalTie(
                 name=self.tie_name, 
                 is_primary=True,
-
                 )
             self.append(my_tie)
         
         return my_tie
+
+    @property
+    # TO DO... needed?
+    def signed_beats(self):
+        return super().beats if not self.rest else 0 - super().beats 
 
     @property
     def beats(self):
@@ -54,41 +56,8 @@ class Event(calliope.FragmentRow):
         self.first_primary_tie.ticks = abs(int(value * calliope.MACHINE_TICKS_PER_BEAT))
         if value < 0:
             self.rest = True
-
-    @property
-    # TO DO... needed?
-    def signed_beats(self):
-        return super().beats if not self.rest else 0 - super().beats 
-
-    @property
-    def skip(self):
-        return super().skip
-
-    @skip.setter
-    def skip(self, is_skip:bool):
-        if is_skip:
-            self._pitch = "S"
-        for l in self.logical_ties: # TO DO... what about custom here?
-            l.skip = is_skip # NOTE... turning OFF rests could result in odd behavior!
-
-    @property
-    def pitch(self):
-        return self._pitch
-
-    @pitch.setter
-    def pitch(self, pitch):
-        calliope.set_machine_pitch(self, pitch)
-
-    @property
-    def rest(self:bool):
-        return super().rest
-
-    @rest.setter
-    def rest(self, is_rest):
-        if is_rest:
-            self._pitch = None
-        for l in self.logical_ties: # TO DO... what about custom here?
-            l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
+        elif self.pitch_undefined:
+            self.pitch = 0
 
     def append_rhythm(self, beats):
         # TO DO: needed??

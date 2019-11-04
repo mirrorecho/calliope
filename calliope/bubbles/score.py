@@ -20,11 +20,15 @@ class Score(calliope.Bubble):
         super().startup_root()
 
         calliope.Cell.set_tree_select_property("note_events", 
-            lambda x: x.select_by_type(calliope.Event).exclude(rest=True)
+            lambda x: x.select_by_type(calliope.Event).exclude(skip_or_rest=True)
             ) 
 
         calliope.Cell.set_tree_select_property("rest_events", 
             lambda x: x.select_by_type(calliope.Event)(rest=True)
+            ) 
+
+        calliope.Cell.set_tree_select_property("skip_events", 
+            lambda x: x.select_by_type(calliope.Event)(skip=True)
             ) 
 
         # TO DO: needed?

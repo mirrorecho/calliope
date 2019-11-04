@@ -9,15 +9,12 @@ import calliope
 
 # TO DO MAYBE ... BOTH LogicalTie and Event share some in common
 # ... share a mixin?
-class LogicalTie(calliope.Machine):
+class LogicalTie(calliope.PitchDataMixin, calliope.Machine):
     # original_duration = 0 # TO DO: USE THIS?
     is_simultaneous = False
-    print_kwargs = ("beats", "pitch", "rest")
+    print_kwargs = ("beats", "pitch")
     ticks = 0
     
-    _pitch = None # if None, defaults to Event's pitch
-    _rest = False
-    _skip = False
 
     is_primary = True # True if this logical tie is a primary one for it's parent event
 
@@ -26,45 +23,10 @@ class LogicalTie(calliope.Machine):
 
     select_property = "logical_ties"
 
-    @property
-    def rest(self):
-        return self._rest
-
-    @rest.setter
-    def rest(self, is_rest:bool):
-        self._rest = is_rest
-        if self._rest:
-            self._skip = False
-            self._pitch = None
-
-    @property
-    def skip(self):
-        return self._skip
-
-    @skip.setter
-    def skip(self, is_skip:bool):
-        self._skip = is_skip
-        if self._skip:
-            self._rest = False
-            self._pitch = "S"
-
-    @property
-    def pitch(self):
-        if self._rest or self._skip:
-            return self._pitch
-        elif self._pitch is not None:
-            return self._pitch
-        elif self.parent is not None:
-            return self.parent.pitch
-
-    @pitch.setter
-    def pitch(self, pitch):
-        calliope.set_machine_pitch(self, pitch)
-
 
     @property
     def signed_ticks(self):
-        return self.ticks if not self.rest else 0 - self.ticks
+        return self.ticks if not self.render_as_rest else 0 - self.ticks
 
     @property
     def beats(self):

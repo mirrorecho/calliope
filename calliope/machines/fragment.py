@@ -49,6 +49,7 @@ class Fragment(calliope.Machine):
 
     @rest.setter
     def rest(self, is_rest:bool):
+        print("WARNING SETTING REST ON FRAGMENT")
         for l in self.logical_ties: # TO DO... what about custom here?
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
 
@@ -58,6 +59,7 @@ class Fragment(calliope.Machine):
 
     @rest.setter
     def skip(self, is_skip:bool):
+        print("WARNING SETTING SKIP ON FRAGMENT")
         for l in self.logical_ties: # TO DO... what about custom here?
             l.skip = is_skip # NOTE... turning OFF rests could result in odd behavior!
 
@@ -107,7 +109,7 @@ class Fragment(calliope.Machine):
     def pitch_set(self):
         my_set = set()
         for p in self.pitches:
-            if isinstance(p, (list, tuple)):
+            if p.is_chord:
                 my_set = my_set | set(p)
             else:
                 my_set.add(p)
@@ -132,7 +134,7 @@ class Fragment(calliope.Machine):
 
     def transpose(self, interval):
         def transpose_thingy(thingy, interval):
-            if isinstance( thingy.pitch, (list, tuple) ):
+            if thingy.pitch.is_chord:
                 for i, pitch in thingy.pitch:
                     thingy.pitch[i] = abjad.NamedPitch(thingy.pitch[i]).transpose(interval)
             else:

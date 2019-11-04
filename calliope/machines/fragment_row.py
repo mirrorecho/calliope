@@ -200,7 +200,7 @@ class FragmentRow(calliope.Fragment):
 
             elif not data_logical_tie.rest:
 
-                my_pitch = data_logical_tie.pitch or data_logical_tie.parent.pitch
+                my_pitch = data_logical_tie.pitch
                 my_respell = data_logical_tie.get_respell()
                 calliope.set_pitch(music_logical_tie, my_pitch, my_respell)
 

@@ -5,7 +5,7 @@ from calliope.core.selectable_mixin import SelectableMixin
 from calliope.core.tree import Tree
 from calliope.core.selection import Selection, ExcludeSelection
 from calliope.core.rhythm import by_logical_tie_group_rests
-from calliope.core.pitch import set_pitch, set_machine_pitch
+from calliope.core.pitch import set_pitch, get_pitch_number
 from calliope.core.tag_set import TagSet
 from calliope.core.illustrate import illustrate, illustrate_me
 from calliope.core.to_snake_case import to_snake_case
@@ -23,6 +23,7 @@ from calliope.bubbles.sequence import MatchSequence
 
 # machines
 from calliope.machines.machine import Machine
+from calliope.machines.pitch_data_mixin import PitchDataMixin
 from calliope.machines.fragment import Fragment
 from calliope.machines.fragment_row import FragmentRow
 # ... note the order, inner to outer, is important...
