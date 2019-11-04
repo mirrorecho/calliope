@@ -5,7 +5,7 @@ from calliope.core.selectable_mixin import SelectableMixin
 from calliope.core.tree import Tree
 from calliope.core.selection import Selection, ExcludeSelection
 from calliope.core.rhythm import by_logical_tie_group_rests
-from calliope.core.pitch import set_pitch
+from calliope.core.pitch import set_pitch, set_machine_pitch
 from calliope.core.tag_set import TagSet
 from calliope.core.illustrate import illustrate, illustrate_me
 from calliope.core.to_snake_case import to_snake_case

@@ -22,7 +22,7 @@ def get_pitch_number(pitch_object):
     elif isinstance(pitch_object, abjad.Pitch):
         return pitch_object.pitch_number
     elif isinstance(pitch_object, (list, tuple)):
-        return [get_pitch_number(p) for p in pitch_object]
+        return tuple([get_pitch_number(p) for p in pitch_object])
     # TO DO... error handling here?
 
 # TO DO... still messy... refactor
@@ -34,9 +34,27 @@ def get_pitch_number(pitch_object):
 #         m = abjad.mutate([note])
 #         m.replace(chord)
 
+def set_machine_pitch(event_or_logical_tie, pitch_thingy=None):
+    if pitch_thingy is None:
+        event_or_logical_tie.rest = True
+        event_or_logical_tie._pitch = pitch_thingy
+    elif pitch_thingy == "S":
+        event_or_logical_tie.skip = True
+        event_or_logical_tie._pitch = pitch_thingy
+    else:
+        event_or_logical_tie.rest = False
+        event_or_logical_tie.skip = False
+        event_or_logical_tie._pitch = get_pitch_number(pitch_thingy)
+
 # TO DO... still messy... refactor
 def set_pitch(music_logical_tie, pitch_thingy, respell=None):
-    pitch_number = get_pitch_number(pitch_thingy)
+    
+    # # TO DO... assume not needed since this handled when pitch
+    # # set on machine...
+    # pitch_number = get_pitch_number(pitch_thingy)
+    
+    pitch_number = None if pitch_thingy == "S" else pitch_thingy
+
     if pitch_number is not None:
         if isinstance(pitch_number, (list, tuple)):
             if respell=="flats":

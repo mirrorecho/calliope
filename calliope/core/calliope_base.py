@@ -9,31 +9,28 @@ class CalliopeBase(object):
 
     # TO DO: CONSIDER... remove args here?
     def __init__(self, *args, **kwargs): 
-        init_kwargs = {
+        init_dict = {
             init_attr[5:]:getattr(self.__class__, init_attr) 
             for init_attr in filter(lambda x: x[:5]=="init_", dir(self.__class__))
         }
-        init_kwargs.update(kwargs)
 
-        init_attrs = self.sort_init_attrs + tuple(set(init_kwargs.keys()) - set(self.sort_init_attrs))
+        self.init_set_attrs_from_kwargs(**init_dict)
+        self.init_set_attrs_from_kwargs(**kwargs)
 
-        for attr in init_attrs:
-            value = self.kwargs_or_attr(attr, **init_kwargs)
-            set_method = getattr(self, "_init_set_" + attr, None)
+    def init_set_attrs_from_kwargs(self, **kwargs):
+        my_attrs = self.sort_init_attrs + tuple(set(kwargs.keys()) - set(self.sort_init_attrs))
 
-            if set_method:
-                set_method(value)
-            else:
-                setattr(self, attr, value)
+        for attr in my_attrs:
+            if value := kwargs.get(attr, None):
+                if set_method:= getattr(self, "_init_set_" + attr, None):
+                    set_method(value)
+                else:
+                    setattr(self, attr, value)
 
     @classmethod
     def class_snake_name(cls):
         return calliope.to_snake_case(cls.__name__)
 
-    def kwargs_or_attr(self, attr, **kwargs):
-        return kwargs.get(attr, 
-            getattr(self, attr, None)
-            )
 
     def get_module_info(self):
         """Returns a tuple with the path and name for the module in which this bubble class is defined"""

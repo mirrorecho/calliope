@@ -19,7 +19,7 @@ class Fragment(calliope.Machine):
     
     # TO DO MAYBE, only makes sense as an init_
     _transposition = 0 
-    sort_init_attrs = ("rhythm", "transpose", "pitches")
+    sort_init_attrs = ("rhythm", "transpose", "pitches_skip_rests", "pitches")
 
 
     # init_rhythm = ()
@@ -37,8 +37,8 @@ class Fragment(calliope.Machine):
         self._transposition = transpose
 
     def _init_set_pitches(self, pitches=()):
-        # # TO DO: DEAL WIT TRANSPOSITION
-        # transposition = self.kwargs_or_attr("_transposition", **kwargs)
+        # # TO DO: DEAL WITH TRANSPOSITION ???
+        # transposition = ...
         # if transposition:
         #     pitches = [p + transposition for p in pitches]
         self.pitches = pitches
@@ -48,7 +48,7 @@ class Fragment(calliope.Machine):
         return all([l.rest for l in self.logical_ties])
 
     @rest.setter
-    def rest(self, is_rest):
+    def rest(self, is_rest:bool):
         for l in self.logical_ties: # TO DO... what about custom here?
             l.rest = is_rest # NOTE... turning OFF rests could result in odd behavior!
 
@@ -57,7 +57,7 @@ class Fragment(calliope.Machine):
         return all([l.skip for l in self.logical_ties])
 
     @rest.setter
-    def skip(self, is_skip):
+    def skip(self, is_skip:bool):
         for l in self.logical_ties: # TO DO... what about custom here?
             l.skip = is_skip # NOTE... turning OFF rests could result in odd behavior!
 
@@ -85,16 +85,19 @@ class Fragment(calliope.Machine):
 
     @pitches.setter
     def pitches(self, values):
-        if self.pitches_skip_rests:
+        self.set_pitches(values, self.pitches_skip_rests)
+
+    def set_pitches(self, values, skip_rests=False):
+        if skip_rests:
+            values = list(values)
             for i,e in enumerate(self.events):
-                if e.rest and i <= len(values):
-                    values.insert(i, None)
+                if (e.rest or e.skip) and i <= len(values):
+                    values.insert(i, e.pitch)
 
         my_length = len(self.events)
 
         for i, v in enumerate(values[:my_length]):
             self.events[i].pitch = v
-            self.events[i].rest = v is None
 
     @property
     def logical_tie_pitches(self):
