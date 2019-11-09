@@ -95,8 +95,11 @@ class TagSet(object):
         elif not tag_name in self.stop_spanners_inventory:
             if tag_name[0] == "\\":
                 return abjad.LilyPondLiteral(tag_name, "before")
-            if tag_name[:2] == "!\\":
+            elif tag_name[:2] == "!\\":
                 return abjad.LilyPondLiteral(tag_name[1:], "after")
+            elif tag_name[:14] == "markup_column:":
+                markup_list = [abjad.Markup(m) for m in tag_name[14:].split("|")]
+                return abjad.Markup.column(markup_list, direction=abjad.Up)
             else:
                 return abjad.Markup(tag_name, direction=abjad.Up)
 

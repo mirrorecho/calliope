@@ -21,8 +21,8 @@ class CalliopeBase(object):
         my_attrs = self.sort_init_attrs + tuple(set(kwargs.keys()) - set(self.sort_init_attrs))
 
         for attr in my_attrs:
-            if value := kwargs.get(attr, None):
-                if set_method:= getattr(self, "_init_set_" + attr, None):
+            if (value := kwargs.get(attr, None)) is not None:
+                if (set_method:= getattr(self, "_init_set_" + attr, None)) is not None:
                     set_method(value)
                 else:
                     setattr(self, attr, value)
