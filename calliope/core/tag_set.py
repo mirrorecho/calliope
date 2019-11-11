@@ -100,6 +100,8 @@ class TagSet(object):
             elif tag_name[:14] == "markup_column:":
                 markup_list = [abjad.Markup(m) for m in tag_name[14:].split("|")]
                 return abjad.Markup.column(markup_list, direction=abjad.Up)
+            elif tag_name[:1] == "_":
+                return abjad.Markup(tag_name[1:], direction=abjad.Down)
             else:
                 return abjad.Markup(tag_name, direction=abjad.Up)
 
