@@ -19,8 +19,8 @@ class TagSet(object):
     bar_lines_inventory = set( ("|", "||", ".|", "..", "|.|", "|.", ";", "!", ":|.", ".|:", ) )
 
     # NOTE "{" is made up shorthand for HorizontalBracket
-    start_spanners_inventory = set(("~","8va", "{", "[")) | slurs_inventory | hairpins_inventory
-    stop_spanners_inventory = set( (")", "))", r"\!", "~!","8va!", "}", "]"), )
+    start_spanners_inventory = set(("~","8va", "8vb", "{", "[")) | slurs_inventory | hairpins_inventory
+    stop_spanners_inventory = set( (")", "))", r"\!", "~!","8va!","8vb!", "}", "]"), )
     stem_tremolos_inventory = set( (":8",":16",":32") )
     tremolos_inventory = set( ("tremolo:1", "tremolo:2", "tremolo:3",) )
     colors_inventory = set(("red",         "green",
@@ -42,6 +42,7 @@ class TagSet(object):
     # defines things that the spanners close:
     spanner_closures = {
         "8va!": set(("8va",)), # (made up shorthand for end octavation)
+        "8vb!": set(("8vb",)), # (made up shorthand for end octavation)
         ")":    set(("(",)),
         "))":   set(("((",)),
         "~!":   set(("~",)), # (made up shorthand for end tie)

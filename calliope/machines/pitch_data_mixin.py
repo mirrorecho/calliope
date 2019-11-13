@@ -28,6 +28,17 @@ class PitchDataMixin(object):
             self._pitch_data = calliope.get_pitch_number(pitch_data)
 
     @property
+    def pitch_numbers(self):
+        """
+        convenience property returns all pitches as list 
+        excludes rests and skips
+        always returns sorted list (whether chord or not)
+        """
+        my_pitches = self.pitch if self.is_chord else [self.pitch]
+        my_pitches = [p for p in my_pitches if isinstance(p, int)]
+        return sorted(my_pitches)
+
+    @property
     def skip(self):
         return self.pitch == "S"
 
@@ -59,4 +70,4 @@ class PitchDataMixin(object):
 
     @property
     def is_chord(self):
-        return isinstance(self._pitch_data, tuple)
+        return isinstance(self.pitch, tuple)
