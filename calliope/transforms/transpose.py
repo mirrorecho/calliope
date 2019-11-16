@@ -9,7 +9,7 @@ class Transpose(calliope.Transform):
     def transform(self, selectable, **kwargs):
         for event in selectable.note_events:
             my_pitch = event.pitch
-            print(event, my_pitch)
+            # print(event, my_pitch)
             if event.is_chord:
                 event.pitch = [p + self.interval for p in my_pitch]
             else:
@@ -59,7 +59,7 @@ class TransposeWithinScale(calliope.Transform):
         for event in selectable.note_events:
             my_pitch = event.pitch
 
-            if isinstance(my_pitch, (list, tuple)):
+            if event.is_chord:
                 event.pitch = [self.scale.pitch_change_scale(
                     p,
                     self.new_scale,

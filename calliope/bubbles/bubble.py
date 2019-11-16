@@ -12,7 +12,26 @@ class Bubble(calliope.Tree):
     stylesheets = () # TO DO, best place for this?
     is_simultaneous=True
     music_contents = None
-    # select_property = "bubbles" # TO DO: causes oddo recursion when setting properties on startup... WHY?
+    factory = None # a factory for this factory! :-)
+
+    def __init__(self, *args, **kwargs):
+
+        if isinstance(self, calliope.Factory):
+            self.factory = self
+
+        super().__init__(*args, **kwargs)
+
+
+    def set_children_from_class(self, *args, **kwargs):
+        """ overrides Tree's set_children_from_class in order call fabricate on factory instance """
+        if self.factory is not None:
+            if self.factory.masks == False:
+                super().set_children_from_class(*args, **kwargs)
+            self.factory.fabricate(self, *args, **kwargs) # TO DO... remove args/kwargs here?
+        else:
+            super().set_children_from_class(*args, **kwargs)
+
+    # select_property = "bubbles" # TO DO: causes odd recursion when setting properties on startup... WHY?
     # NOTE: should never set "name" attribute at the class level... because it's an attribute (with setter logic) on the uqbar UniqueTreeContainer
 
     def music_container(self, *args, **kwargs):

@@ -2,6 +2,8 @@ import calliope
 
 # TO DO: keep base factory SIMPLE... only needs to implement fabricate
 class Factory(calliope.CalliopeBase):
+    masks = True # if set to false, then children bubbles will still be added
+
     branch_type = calliope.Cell # TO DO: this isn't used all the time KISS
 
     def get_branches_kwargs(self, *args, **kwargs):

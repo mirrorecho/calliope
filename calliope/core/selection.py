@@ -168,6 +168,10 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
         # TO DO... test... works OK?
         map(func, self)        
 
+    def remove(self):
+        for item in self:
+            item.parent.remove(item)
+
     def setattrs(self, **kwargs):
         for item in self:
             for n, v in kwargs.items():

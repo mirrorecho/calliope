@@ -52,3 +52,7 @@ class SelectableMixin:
 
     def print_comments(self):
         return "with %s children and %s nodes" % (len(self.children), len(list(self.depth_first()))+1)
+
+
+    def get_cyclic(self, index):
+        return self[index % len(self)]
