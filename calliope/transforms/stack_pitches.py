@@ -6,12 +6,14 @@ class StackPitches(calliope.Transform):
     """
     convert individual notes to chords
     """
-    intervals = (0,)
+    intervals = ( (0,12), )
 
     def transform(self, selectable, **kwargs):
-        for event in selectable.note_events:
-            if isinstance(event.pitch, (list, tuple)):
-                event.pitch = [p + ip for p in event.pitch for ip in self.intervals]
-            elif event.pitch is not None:
-                event.pitch = [ip + event.pitch for ip in self.intervals]
+        for i, event in enumerate(selectable.note_events):
+            my_intervals = self.intervals[i % len(self.intervals)]
+
+            if event.is_chord:
+                event.pitch = [p + ip for p in event.pitch for ip in my_intervals]
+            else:
+                event.pitch = [ip + event.pitch for ip in my_intervals]
 
