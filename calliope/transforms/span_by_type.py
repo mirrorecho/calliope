@@ -8,7 +8,7 @@ class SpanByType(calliope.Transform):
 
     def transform(self, selectable, **kwargs):
         for node in selectable.select_by_type(self.by_type):
-            if len(node) > 1:
+            if len(node.note_events) > 1:
                 node.note_events[0].tag(self.start_span)
                 node.note_events[-1].tag(self.stop_span)
  

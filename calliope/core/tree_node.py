@@ -193,3 +193,9 @@ class TreeNode(calliope.CalliopeBase):
         return getattr(self, name, None) or (
             self.parent.getattr_first_ancestors(name) if self.parent and self.my_index == 0 else None
             )
+
+    # TO DO: reconcile with other parts of this tree structure...
+    def remove_if_empty(self):
+        if (parent_item := self.parent) and not self.children:
+            parent_item.remove(self)
+            parent_item.remove_if_empty()

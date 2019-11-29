@@ -2,6 +2,7 @@ import math
 import abjad
 import calliope
 
+# TO DO: consider making this an abstract cyclic thingy
 class Scale(calliope.CalliopeBase):
     """ 
     An abstract representation of a scale. Does not necessarily need
@@ -45,6 +46,8 @@ class Scale(calliope.CalliopeBase):
         else:
             raise(TypeError("Scale indices must be integers or slices."))
 
+    def contains(self, arg):
+        return (arg - self.root) % self.octave_size in self.steps
 
     def pitch_transpose_within(self, pitch, steps):
         return self[self.index(pitch)+steps]

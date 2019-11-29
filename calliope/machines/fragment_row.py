@@ -103,7 +103,7 @@ class FragmentRow(calliope.Fragment):
 
     def cleanup_data(self, **kwargs):
 
-        # self.info("", self.logical_ties)
+        # TO DO should use the method in TreeNode instead
         def remove_empty_ancestors(tree_item):
             parent_item = tree_item.parent
             if parent_item and not tree_item.children:

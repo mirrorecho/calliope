@@ -40,7 +40,7 @@ class Score(calliope.Bubble):
     def process_music(self, music, **kwargs):
 
         super().process_music(music, **kwargs)
-        self.info("finished creating abjad music container object for the score")
+        self.info("created abjad music container object for the score")
 
 
 # TO DO EVENTUALLY: rethink this as a factory

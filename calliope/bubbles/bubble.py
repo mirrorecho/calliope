@@ -71,16 +71,17 @@ class Bubble(calliope.Tree):
         music = self.blow()
         lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
             )
-        self.info("got abjad representation of lilypond file... now rendering with lilypond")
+        self.info("got abjad instance of LilyPondFile... now rendering with lilypond")
         return lilypond_file
 
     def illustrate_me(self, 
             as_pdf = True, 
             open_pdf = True, 
             as_midi = False,
+            open_midi = False,
             **kwargs
         ):
-
+        self.info("ready to illustrate")
         # NOTE... this is odd... with sublimetext using the virtual envionment package on a mac ONLY, 
         # lilypond executable is not found properly (something to do with os.environ not finding the right PATH info)
         # ... adding this here as a bandaid:
@@ -103,5 +104,6 @@ class Bubble(calliope.Tree):
         if as_midi:
             midi_filename = "%s.midi" % path
             my_persistance_agent.as_midi(midi_filename)
-
+            if open_midi:
+                abjad.IOManager.open_file(midi_filename)
 

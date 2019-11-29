@@ -52,7 +52,7 @@ from calliope.transforms.transpose import Transpose, Displace, DisplaceFifths, T
 from calliope.transforms.add_constant_pitch import AddConstantPitch
 from calliope.transforms.span_by_type import SpanByType, BracketCells, SlurCells, PhrasePhrases
 from calliope.transforms.stack_pitches import StackPitches
-from calliope.transforms.smart_range import SmartRange
+from calliope.transforms.smart_range import SmartRange, SmartRanges
 from calliope.transforms.crop_chords import CropChords
 from calliope.transforms.pulse_events import PulseEvents
 from calliope.transforms.poke import Poke

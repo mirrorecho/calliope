@@ -20,6 +20,8 @@ class Segment(calliope.FragmentRow):
     tempo_command = None
     rehearsal_mark_number = None
     compress_full_bar_rests = None # TO DO... maybe this should be handled somewhere else? (currently it's being repeated where not necessary... at the beginning of every line)
+    
+    # NOTE: this causes issue with SegmentBlock ... why??
     accidental_style = "modern-cautionary" # TO DO... necessary?
 
     # TO DO: would be awesome to implement these!
