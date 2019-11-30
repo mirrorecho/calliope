@@ -10,6 +10,7 @@ class Score(calliope.Bubble):
     child_types=(calliope.StaffGroup, calliope.Staff)
     # TO DO... the following are no longer used... keep them?
     hide_empty = False 
+    midi_tempo = 60
     title = ""
 
     @classmethod

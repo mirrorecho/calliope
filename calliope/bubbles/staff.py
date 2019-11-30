@@ -11,6 +11,7 @@ class Staff(calliope.Bubble):
     is_simultaneous = False
     container_type = abjad.Staff
     instrument = None
+    midi_instrument = None
     clef = None
     select_property = "staves"
 
@@ -37,6 +38,12 @@ class Staff(calliope.Bubble):
                     r"\set Staff.shortInstrumentName = " + format(self.instrument.short_markup), 
                     "before")
                 abjad.attach(short_instrument_command, music_start)
+
+                if self.midi_instrument:
+                    midi_command = abjad.LilyPondLiteral(
+                    r"""\set Staff.midiInstrument = #"%s" """ % self.midi_instrument, 
+                    "before")
+                    abjad.attach(midi_command, music_start)
 
             if self.clef:
                 clef_obj = abjad.Clef(self.clef)

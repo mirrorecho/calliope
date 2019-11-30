@@ -67,8 +67,23 @@ class Bubble(calliope.Tree):
     def ly(self):
         return format(self.blow())
 
-    def get_lilypond_file(self):
+    def get_lilypond_file(self, as_midi=False):
         music = self.blow()
+
+        if as_midi:
+            tempo = getattr(self, "midi_tempo", 60)
+            midi_command = abjad.LilyPondLiteral("""
+                \\midi {
+                    \\context {
+                        \\Score
+                        midiChannelMapping = #'instrument
+                    }
+                    \\tempo 4 = %s
+                }                    
+                """
+                 % tempo, "after")
+            abjad.attach(midi_command, music)
+
         lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
             )
         self.info("got abjad instance of LilyPondFile... now rendering with lilypond")
@@ -90,7 +105,7 @@ class Bubble(calliope.Tree):
             from abjad import abjad_configuration
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 
-        ly_file = self.get_lilypond_file()
+        ly_file = self.get_lilypond_file(as_midi=as_midi)
         my_persistance_agent = abjad.persist( ly_file )
 
         path = self.get_output_path(**kwargs)
@@ -103,7 +118,7 @@ class Bubble(calliope.Tree):
                 abjad.IOManager.open_file(pdf_filename)
         if as_midi:
             midi_filename = "%s.midi" % path
-            my_persistance_agent.as_midi(midi_filename)
+            # my_persistance_agent.as_midi(midi_filename)
             if open_midi:
                 abjad.IOManager.open_file(midi_filename)
 
