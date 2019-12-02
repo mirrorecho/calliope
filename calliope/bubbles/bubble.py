@@ -79,7 +79,8 @@ class Bubble(calliope.Tree):
                         midiChannelMapping = #'instrument
                     }
                     \\tempo 4 = %s
-                }                    
+                }
+                \\layout { }                 
                 """
                  % tempo, "after")
             abjad.attach(midi_command, music)

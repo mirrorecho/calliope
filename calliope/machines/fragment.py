@@ -85,6 +85,10 @@ class Fragment(calliope.Machine):
     def pitches(self):
         return [l.pitch for l in self.events]
 
+    @property
+    def note_pitches(self):
+        return [l.pitch for l in self.note_events]
+
     @pitches.setter
     def pitches(self, values):
         self.set_pitches(values, self.pitches_skip_rests)
@@ -109,7 +113,17 @@ class Fragment(calliope.Machine):
     def pitch_set(self):
         my_set = set()
         for p in self.pitches:
-            if p.is_chord:
+            if isinstance(p, tuple):
+                my_set = my_set | set(p)
+            else:
+                my_set.add(p)
+        return my_set
+
+    @property
+    def note_pitch_set(self):
+        my_set = set()
+        for p in self.note_pitches:
+            if isinstance(p, tuple):
                 my_set = my_set | set(p)
             else:
                 my_set.add(p)
@@ -117,7 +131,7 @@ class Fragment(calliope.Machine):
 
     @property
     def pitch_class_set(self):
-        return set([p % 12 for p in self.pitch_set])
+        return set([p % 12 for p in self.note_pitch_set])
 
     @property
     def first_non_rest(self):

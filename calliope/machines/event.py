@@ -30,6 +30,10 @@ class Event(calliope.PitchDataMixin, calliope.FragmentRow):
             self.pitch = values[0]
 
     @property
+    def note_pitches(self):
+        return [self.pitch] if not self.rest else []
+
+    @property
     def first_primary_tie(self):
         my_tie = next((x for x in self.logical_ties if x.is_primary==True), None)
         
@@ -65,4 +69,8 @@ class Event(calliope.PitchDataMixin, calliope.FragmentRow):
 
         my_tie.beats = beats
         self.append( my_tie )
+
+    def event_at_beat(self, beats):
+        if self.beats > beats:
+            return self
 

@@ -123,7 +123,8 @@ class FragmentRow(calliope.Fragment):
                 remove_empty_ancestors(parent_item)
 
             elif isinstance(node, calliope.LogicalTie):
-                if last_rest is not None and node.rest:
+                # NOTE: does not combine rests if they're tagged with anything
+                if last_rest is not None and node.rest and len(node.get_all_tags())==0:
                     last_rest.ticks += node.ticks
                     parent_item.remove(node)
                 elif node.rest:
@@ -327,4 +328,13 @@ class FragmentRow(calliope.Fragment):
     def slur(self):
         self.first_non_rest.tag("(")
         self.last_non_rest.tag(")")
+
+    def event_at_beat(self, beats):
+        beat_counter = 0
+        for e in self.events:
+            if beat_counter >= beats:
+                return e
+            beat_counter += e.beats
+
+
 
