@@ -372,6 +372,10 @@ class Tree(calliope.SelectableMixin, TreeNode):
     def children(self):
         return tuple(self._children)
 
+    def __add__(self, other):
+        new_node = self()
+        new_node.extend(other())
+        return new_node
 
 
     ### ---------------------------------------- ###
@@ -389,9 +393,6 @@ class Tree(calliope.SelectableMixin, TreeNode):
     #         self.extend(next_item.children)
     #     # for c in range(count):
     #     #     self.parent.remove(my_index + c + 1)
-        
-    # def __add__(self, other):
-    #     return self.parent_type(self(), other)
 
     # def __mul__(self, num):
     #     return self.parent_type( **[self() for i in range(num)] )

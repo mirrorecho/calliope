@@ -123,8 +123,9 @@ class FragmentRow(calliope.Fragment):
                 remove_empty_ancestors(parent_item)
 
             elif isinstance(node, calliope.LogicalTie):
-                # NOTE: does not combine rests if they're tagged with anything
-                if last_rest is not None and node.rest and len(node.get_all_tags())==0:
+                # TO DO: don't combine rests if tagged (but then need to deal with pitch assignment loop)
+                # if last_rest is not None and node.rest and len(node.get_all_tags())==0:
+                if last_rest is not None and node.rest:
                     last_rest.ticks += node.ticks
                     parent_item.remove(node)
                 elif node.rest:
@@ -190,7 +191,6 @@ class FragmentRow(calliope.Fragment):
             #     custom_music = data_logical_tie.music()
             #     m = abjad.mutate(music_logical_tie)
             #     m.replace(custom_music)
-
 
             if data_logical_tie.skip:
                 for note in music_logical_tie:
