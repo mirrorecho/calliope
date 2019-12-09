@@ -382,17 +382,6 @@ class Tree(calliope.SelectableMixin, TreeNode):
     ### ---------------------------------------- ###
     ### new implementations based on move from uqbar
     ### ---------------------------------------- ###    
-    
-
-    # KISS! 
-    # def fuse(self, count):
-    #     # TO DO... this could be more elegant!!!
-    #     my_index = self.my_index
-    #     for c in range(count):
-    #         next_item = self.parent[my_index + c + 1]
-    #         self.extend(next_item.children)
-    #     # for c in range(count):
-    #     #     self.parent.remove(my_index + c + 1)
 
     # def __mul__(self, num):
     #     return self.parent_type( **[self() for i in range(num)] )

@@ -194,8 +194,38 @@ class TreeNode(calliope.CalliopeBase):
             self.parent.getattr_first_ancestors(name) if self.parent and self.my_index == 0 else None
             )
 
-    # TO DO: reconcile with other parts of this tree structure...
+    # ==========================================================
+    # ==========================================================
+
+    # TO DO: reconcile everything below with other parts of this tree structure...
+    # (jut to double check DRY and no conflicts)
+
     def remove_if_empty(self):
         if (parent_item := self.parent) and not self.children:
             parent_item.remove(self)
-            parent_item.remove_if_empty()
+            parent_item.remove_if_empty()                 
+
+    def tree_sib(self, degrees):
+        self_index = 0
+        sib_selection = getattr(self.root, self.select_property)
+        
+        # TO DO: there is probably a more elegant / efficient way to do this:
+        for i, node in enumerate(sib_selection):
+            self_index = i
+            if node is self:
+                break
+        
+        if self_index + degrees < 0:
+            return None
+        
+        try:
+            return sib_selection[self_index+degrees]
+        except:
+            # fail silently because often it will be useful to 
+            # try to see if following node exists, and do something else if
+            # None returned
+            pass
+
+
+
+

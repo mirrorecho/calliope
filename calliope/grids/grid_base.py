@@ -26,10 +26,13 @@ class GridBase(calliope.CalliopeBase):
     tallies = None # to be set to instance of a DataFrame
     auto_load = True
     init_name = None
+    init_output_directory = None
     filename = None
 
     def __init__(self, *args, **kwargs):
         my_name = self.init_name or kwargs.get("name", None)
+        self.output_directory = self.init_output_directory or kwargs.get("output_directory", None)
+
         self.filename = my_name
 
         self.tally_apps = list(args)
@@ -109,7 +112,8 @@ class GridBase(calliope.CalliopeBase):
     # def item_to_machine(self, item):
     #     return (self.item_machine_type)(item)
 
-    def get_output_file_path(self, save_attr):
+
+    def get_output_data_path(self, save_attr):
         return self.get_output_path(
             directory=self.output_directory, 
             sub_directory = "data",
@@ -121,14 +125,14 @@ class GridBase(calliope.CalliopeBase):
         for save_attr in self.save_attrs:
             attr = getattr(self, save_attr, None)
             if attr is not None:
-                file_path = self.get_output_file_path(save_attr)
+                file_path = self.get_output_data_path(save_attr)
                 # TO DO: consider using python's json to format the json file to be readable
                 attr.to_json(file_path, orient="split")
                 self.info("saved " + file_path)
 
     def load(self, **kwargs):
         for save_attr in self.save_attrs:
-            file_path = self.get_output_file_path(save_attr)
+            file_path = self.get_output_data_path(save_attr)
             try:
                 setattr(self, save_attr, pd.read_json(file_path, orient="split"))
             except:
@@ -301,7 +305,7 @@ class GridBase(calliope.CalliopeBase):
         self.tally_me()
 
         def re_tally():
-            T0 = time.clock()
+            # T0 = time.clock()
             while not stop_event.isSet(): #as long as long as flag is not set 
                 self.rearrange_me() 
                 # self.pitch_lines = best_try.pitch_lines
@@ -355,7 +359,7 @@ class GridBase(calliope.CalliopeBase):
             self.load()
             # print("Loaded ")
             self.tally_me()
-            self.info("total tally:" + str(self.tally_tosttal))
+            self.info("total tally:" + str(self.tally_total))
             self.update_rearranged()
             self.tally_loop(times)
 
@@ -375,7 +379,14 @@ class GridBase(calliope.CalliopeBase):
             self.tally_loop(times)
 
         elif k == "p":
-            self.illustrate_me()
+            my_score = self.to_score()
+            for i, staff in enumerate(my_score.staves):
+                staff.instrument = abjad.Piano(
+                name=str(i), short_name=str(i))
+                calliope.Label()( staff.events )
+                # for e in s.events:
+                #     e.beats = 1
+            my_score.illustrate_me()
             self.tally_loop(times)
 
         # TO DO AND WARNING... this ONLY applies to pitch grids
@@ -437,7 +448,7 @@ class GridBase(calliope.CalliopeBase):
             self.tally_loop(times)
 
         elif k == r"/":
-            self.info(self.get_output_file_path("[data_attr]"))
+            self.info(self.get_output_data_path("[data_attr]"))
             self.tally_loop(times)
 
         elif k == "q":

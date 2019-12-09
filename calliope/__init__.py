@@ -61,6 +61,7 @@ from calliope.transforms.overlay import Overlay
 from calliope.transforms.scale_rhythm import ScaleRhythm
 from calliope.transforms.tenu_stacca import TenuStacca
 from calliope.transforms.tag_notes import TagNotes
+from calliope.transforms.standard_durations import StandardDurations
 
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
