@@ -93,6 +93,14 @@ class Fragment(calliope.Machine):
     def pitches(self, values):
         self.set_pitches(values, self.pitches_skip_rests)
 
+    def auto_respell(self):
+        diatonic_root = calliope.Scale.get_diatonic_root(pitches=self.note_pitches)
+        root_fifths = (diatonic_root*7)%12
+        if root_fifths < 6:
+            self.respell="sharps"
+        else:
+            self.respell="flats"
+
     def set_pitches(self, values, skip_rests=False):
         if skip_rests:
             values = list(values)

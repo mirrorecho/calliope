@@ -1,23 +1,27 @@
 import abjad, abjadext, calliope
 
-class ShortScore(calliope.Factory, calliope.SegmentBlock):
-    branch_type = calliope.Segment
+# class ShortScore(calliope.Factory, calliope.SegmentBlock):
+#     branch_type = calliope.Segment
 
-    def get_branch(self, node, *args, **kwargs):
-        return node(*args, **kwargs)
+#     def get_branch(self, node, *args, **kwargs):
+#         return node(*args, **kwargs)
 
-    def get_branches(self, *args, **kwargs):
-        return self
+#     def get_branches(self, *args, **kwargs):
+#         return self
 
-class Arrangement(calliope.FromSelectableFactory):
-    def get_branch(self, node, *args, **kwargs):
-        return node(*args, **kwargs)
+# class Arrangement(calliope.FromSelectableFactory):
+#     def get_branch(self, node, *args, **kwargs):
+#         return node(*args, **kwargs)
 
-    def get_branches(self, *args, **kwargs):
-        return self
+#     def get_branches(self, *args, **kwargs):
+#         return self
 
 
-# c = calliope.Cell(rhythm=(1,2,3,4), pitches=(0,2,4,2))
+c = calliope.Cell(rhythm=(1,2,3,4), 
+    pitches=(-1, -3, -4)
+    )
+c.auto_respell()
+calliope.illustrate(c)
 
 # s = calliope.Selection()[0,1]
 

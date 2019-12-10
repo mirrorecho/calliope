@@ -11,6 +11,11 @@ class PitchesThroughGrid(calliope.FromSelectableFactory, calliope.PitchGrid):
     # def __init__(self, selectable=None, *args, **kwargs):
     #     super().__init__(selectable=selectable, *args, **kwargs)
 
+    def set_ranges_from(self, ranges_def, *args):
+        # TO DO... ranges_def should be a PitchRanges object
+        # ... currently declared in imaginary... need to move to calliope
+        self.pitch_ranges = ranges_def.as_data_frame(self.data.shape[1], *args)
+    
     def get_start_data(self):
         return pd.DataFrame.from_records([l.pitches for l in self.selectable])
 

@@ -328,7 +328,8 @@ class GridBase(calliope.CalliopeBase):
                 'l' to (re)load from file, 
                 'd' to reset data (getting start data again),
                 'r' to re-randomize, 
-                'r' to re-randomize, 
+                'ra1' to re-move into ranges only if outside of range,
+                'ra2' to re-move into ranges for all, 
                 'co' to change octave of a single value
                 'cs' to manually swap 2
                 's' to save, 
@@ -373,6 +374,16 @@ class GridBase(calliope.CalliopeBase):
             self.info("randomized all columns... new tally is: " + str(self.tally_total))
             self.update_rearranged()
             self.tally_loop(times)
+        
+        elif k == "ra1":
+            self.move_into_ranges(10)
+            self.update_rearranged()
+            self.tally_loop(times)
+
+        elif k == "ra2":
+            self.move_into_ranges(0)
+            self.update_rearranged()
+            self.tally_loop(times)
 
         elif k == "s":
             self.save()
@@ -384,6 +395,9 @@ class GridBase(calliope.CalliopeBase):
                 staff.instrument = abjad.Piano(
                 name=str(i), short_name=str(i))
                 calliope.Label()( staff.events )
+                if (sum([n.pitch for n in staff.note_events]) / len(staff.note_events)) < 0:
+                    staff.clef = "bass"
+                staff[0].auto_respell()
                 # for e in s.events:
                 #     e.beats = 1
             my_score.illustrate_me()

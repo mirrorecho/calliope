@@ -2,6 +2,9 @@ import math
 import abjad
 import calliope
 
+
+
+
 # TO DO: consider making this an abstract cyclic thingy
 class Scale(calliope.CalliopeBase):
     """ 
@@ -16,6 +19,18 @@ class Scale(calliope.CalliopeBase):
     # TO DO: add methods to swap between iterables of degrees and pitches
 
     # TO DO: add slicing
+
+    # TO DO MAYBE: consider move to a util module
+    @classmethod
+    def get_diatonic_root(
+        cls,
+        pitches = (),
+        mode_offset = 1, # 1 is major
+        ):
+        fifths_away = sorted([((pitch * 7) % 12) for pitch in set(pitches)])
+        gaps = [(f - fifths_away[i-1]) % 12 for i,f in enumerate(fifths_away)]
+        largest_gap_before = max(zip(fifths_away, gaps), key = lambda x:x[1])[0]
+        return ((largest_gap_before * 7) + (7*mode_offset)) % 12
 
 
     @property
