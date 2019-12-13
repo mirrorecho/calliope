@@ -165,8 +165,12 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
             item.untag(*args)
 
     def apply(self, func):
-        # TO DO... test... works OK?
-        map(func, self)        
+        for n in self:
+            func(n)
+        # # TO DO... test... 
+        # # ... WTF WHY DOESN'T THE BELOW ALWAYS WORK???!
+        # map(func, self)        
+
 
     def remove(self):
         for item in self:

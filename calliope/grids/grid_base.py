@@ -398,8 +398,9 @@ class GridBase(calliope.CalliopeBase):
                 if (sum([n.pitch for n in staff.note_events]) / len(staff.note_events)) < 0:
                     staff.clef = "bass"
                 staff[0].auto_respell()
-                # for e in s.events:
-                #     e.beats = 1
+                staff[0].time_signature = (1,4)
+                for e in staff.events:
+                    e.beats = 1
             my_score.illustrate_me()
             self.tally_loop(times)
 
