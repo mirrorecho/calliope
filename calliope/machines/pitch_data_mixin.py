@@ -65,6 +65,10 @@ class PitchDataMixin(object):
         return self.pitch in ("R", "S")
 
     @property
+    def rest_can_combine(self):
+        return self.render_as_rest and len(self.get_all_tags())==0
+
+    @property
     def pitch_undefined(self):
         return self._pitch_data is None
 

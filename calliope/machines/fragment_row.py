@@ -125,10 +125,10 @@ class FragmentRow(calliope.Fragment):
             elif isinstance(node, calliope.LogicalTie):
                 # TO DO: don't combine rests if tagged (but then need to deal with pitch assignment loop)
                 # if last_rest is not None and node.rest and len(node.get_all_tags())==0:
-                if last_rest is not None and node.rest:
+                if last_rest is not None and node.rest_can_combine:
                     last_rest.ticks += node.ticks
                     parent_item.remove(node)
-                elif node.rest:
+                elif node.rest_can_combine:
                     last_rest = node
                 else:
                     last_rest = None 
@@ -195,12 +195,18 @@ class FragmentRow(calliope.Fragment):
             if data_logical_tie.skip:
                 for note in music_logical_tie:
                     my_skip = abjad.Skip(copy.deepcopy(note.written_duration))
-                    # print(my_skip)
                     m = abjad.mutate([note])
                     m.replace(my_skip)
-
-            elif not data_logical_tie.rest:
-
+            elif data_logical_tie.rest:
+                # if the rest could not be combined originally, then need to
+                # recreate it as a rest here
+                if not data_logical_tie.rest_can_combine:
+                    for note in music_logical_tie:
+                        my_rest = abjad.Rest(copy.deepcopy(note.written_duration))
+                        # print(my_skip)
+                        m = abjad.mutate([note])
+                        m.replace(my_rest)
+            else:
                 my_pitch = data_logical_tie.pitch
                 my_respell = data_logical_tie.get_respell()
                 calliope.set_pitch(music_logical_tie, my_pitch, my_respell)

@@ -17,10 +17,12 @@ import abjad, abjadext, calliope
 #         return self
 
 
-c = calliope.Cell(rhythm=(1,2,3,4), 
-    pitches=(-1, -3, -4)
+c = calliope.Cell(
+    rhythm=(-0.5,-0.5,-1,-1,-3,-22), 
+    # pitches=("R","S","S","R")
     )
-c.auto_respell()
+c.events[4].tag("fermata")
+# c.auto_respell()
 calliope.illustrate(c)
 
 # s = calliope.Selection()[0,1]

@@ -11,15 +11,16 @@
 
 \score {
     {
-        b4
-        a4
-        ~
-        a4
-        gs4
-        ~
-        gs2
-        c'2
-        ~
-        c'2
+        r2
+        r4
+        r4
+        \fermata
+        r2
+        r2
+        r1
+        r1
+        r1
+        r1
+        r1
     }
 }

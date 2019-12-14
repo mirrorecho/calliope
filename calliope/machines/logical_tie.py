@@ -26,7 +26,7 @@ class LogicalTie(calliope.PitchDataMixin, calliope.Machine):
 
     @property
     def signed_ticks(self):
-        return self.ticks if not self.render_as_rest else 0 - self.ticks
+        return self.ticks if not self.rest_can_combine else 0 - self.ticks
 
     @property
     def beats(self):
