@@ -219,8 +219,7 @@ class GridBase(calliope.CalliopeBase):
         # more eratic/dramatic ones will be attempted...
         sorted_column_indices = self.column_indices_by_tally()
         if try_type_number == 0:
-            # completely randomize 2 random columns and swap 2 in worst and 2nd worst columns (not weighed)
-            self.randomize_column(random.randrange(self.data.shape[1]))
+            # completely randomize 1 random column and swap 2 in worst and 2nd worst columns (not weighed)
             self.randomize_column(random.randrange(self.data.shape[1]))
             self.column_swap2(sorted_column_indices[0])
             self.column_swap2(sorted_column_indices[1])

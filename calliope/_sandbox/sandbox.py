@@ -18,12 +18,26 @@ import abjad, abjadext, calliope
 
 
 c = calliope.Cell(
-    rhythm=(-0.5,-0.5,-1,-1,-3,-22), 
+    rhythm=(-0.5,-0.5,-1,-1,-1), 
     # pitches=("R","S","S","R")
     )
-c.events[4].tag("fermata")
+c.events[2].tag("\\<")
+c.events[4].tag("\\!")
+cb1 = calliope.CellBlock(
+    c(),
+    c(),
+    c(),
+    )
+cb2 = cb1()
+cb2.events.setattrs(pitch=4)
+cb1 = cb1 + cb2.select[1:]
+
+
+calliope.illustrate(cb1)
+# print(abjad.inspect(m[2]).spanners())
+
 # c.auto_respell()
-calliope.illustrate(c)
+# calliope.illustrate(c)
 
 # s = calliope.Selection()[0,1]
 

@@ -63,7 +63,7 @@ class Segment(calliope.FragmentRow):
             
             measure_duration_tally += l.written_duration
             
-            if isinstance(l, abjad.Rest) and measure_has_only_rests:
+            if isinstance(l, abjad.Rest) and measure_has_only_rests and not abjad.inspect(l).has_indicator():
                 measure_rests_to_replace.append(l)
             else:
                 measure_has_only_rests = False

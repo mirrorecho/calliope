@@ -377,6 +377,12 @@ class Tree(calliope.SelectableMixin, TreeNode):
         new_node.extend(other())
         return new_node
 
+    def __mul__(self, times):
+        return_node = self
+        for t in range(times-1):
+            return_node = return_node + self
+        return return_node
+
 
     ### ---------------------------------------- ###
     ### ---------------------------------------- ###
