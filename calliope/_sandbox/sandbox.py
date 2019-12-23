@@ -28,12 +28,15 @@ cb1 = calliope.CellBlock(
     c(),
     c(),
     )
-cb2 = cb1()
+cb2 = cb1(name="FOO")
 cb2.events.setattrs(pitch=4)
 cb1 = cb1 + cb2.select[1:]
 
+# print(cb1.cells[0,1,2,3,4,5].note_events.selection_root)
+# print(cb2.cells[0,1].note_events.select_from.select_from)
+# print(cb2.cells[0,1].note_events.selection_root)
 
-calliope.illustrate(cb1)
+# calliope.illustrate(cb1)
 # print(abjad.inspect(m[2]).spanners())
 
 # c.auto_respell()

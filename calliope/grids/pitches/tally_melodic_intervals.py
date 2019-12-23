@@ -5,8 +5,8 @@ class TallyMelodicIntervals(calliope.TallyBase):
     over_incremental_multiplier=None # e.g. (12, 10)
     by_pitch_class=False
     bidirectional=True
-    column_weights=None
-    row_weights=None
+    column_weights=None # not implemented yet
+    row_weights=None # not implemented yet
     down_rating=0
     up_rating=0
 

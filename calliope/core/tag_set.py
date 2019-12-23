@@ -68,7 +68,7 @@ class TagSet(object):
         elif tag_name == r"\>":
             return abjad.Hairpin(">")
         elif tag_name == "[":
-            return abjad.ComplexBeam(beam_rests=True)
+            return abjad.Beam(beam_rests=True)
         elif tag_name in self.fermatas_inventory:
             return abjad.Fermata(command=tag_name)
         elif tag_name in self.stem_tremolos_inventory:

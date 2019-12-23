@@ -2,6 +2,44 @@ import abjad
 import calliope
 import uqbar
 
+class SelectionOperation(calliope.CalliopeBase):
+    selection = None
+    original_node = None # TO DO: this is wonky
+
+    _index_tags = None # a dict of integer names and set values
+    _index_setattrs = None # a dict of integer names and dict values
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._index_tags = {} 
+        self._index_setattrs = {}
+
+    def go(self):
+        for i, n in enumerate(self.selection):
+            if i in self._index_tags:
+                n.tag(*self._index_tags[i])
+            if i in self._index_setattrs:
+                for name, value in self._index_setattrs[i].items():
+                    setattr(n, name, value)
+        # TO DO: this return is confusing...
+        return self.original_node or self.selection
+
+    # TO DO: would be nice to implement slices here
+    def __call__(self, *args, **kwargs):
+        if len(args) == 0:
+            return self.go()
+        else:
+            indices=[a for a in args if isinstance(a, int)]
+            tags = [a for a in args if not isinstance(a, int)]
+            for i in indices:
+                self._index_tags[i] = self._index_tags.get(i, set()) | set(tags)
+                self._index_setattrs[i] = {
+                    **self._index_setattrs.get(i, {}), 
+                    **kwargs
+                    }
+            return self
+
+
 
 class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
     select_from = ()
@@ -11,10 +49,9 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
 
     # _length = None # cached length?
 
-    def __init__(self, select_from=(), select_root=None, *args, **kwargs):
+    def __init__(self, select_from=(), *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.select_from = select_from
-        self.select_root = select_root or getattr(select_from, "select_root", None)
 
     def print_comments(self):
         my_len = len(self)
@@ -46,8 +83,9 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
             select_args.append(a)
         return ExcludeSelection(self, select_args=select_args, filter_kwargs=kwargs)
 
-    # def reset_selection(self):
-    #     self._length = None
+    @property
+    def selection_root(self):
+        return getattr(self.select_from, "selection_root", self.select_from)
 
     # TO DO: should this be added to selectable mixin?
     def insert(self, index, new_item):
@@ -100,9 +138,13 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
                         n, pred = n.split("__")
                         if pred == "in" and getattr(item, n) in v:
                             return True
-                        if pred == "lt" and getattr(item, n) < v:
+                        elif pred == "lt" and getattr(item, n) < v:
                             return True
                         elif pred == "gt" and getattr(item, n) > v:
+                            return True
+                        elif pred == "lte" and getattr(item, n) <= v:
+                            return True
+                        elif pred == "gte" and getattr(item, n) >= v:
                             return True
                     elif getattr(item, n) == v:
                         return True
@@ -175,11 +217,16 @@ class Selection(calliope.SelectableMixin, calliope.CalliopeBase):
     def remove(self):
         for item in self:
             item.parent.remove(item)
+        # TO DO... consider removing empty parents as well... maybe with cascade_up param
 
     def setattrs(self, **kwargs):
         for item in self:
             for n, v in kwargs.items():
                 setattr(item, n, v)
+
+    @property
+    def ops(self):
+        return SelectionOperation(selection=self)
 
     def fuse(self):
         self.warn("fuse is not implemented yet!")

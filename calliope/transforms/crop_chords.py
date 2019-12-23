@@ -7,19 +7,23 @@ class CropChords(calliope.Transform):
     """
     indices = (0,)
     above = (None,)
+    below = (None,)
 
     def transform(self, selectable, **kwargs):
         cyclic_indices = abjad.CyclicTuple(self.indices)
         cyclic_above = abjad.CyclicTuple(self.above)
+        cyclic_below = abjad.CyclicTuple(self.below)
 
         for i, e in enumerate(selectable.note_events):
             index = cyclic_indices[i]
-            above = cyclic_above[i]
+            above = cyclic_above[i] or index
+            below = cyclic_below[i] or index
+
             if e.is_chord:
-                if above is not None:
-                    e.pitch = sorted(e.pitch)[index:above]
-                else:
-                    e.pitch = sorted(e.pitch)[index]
+                my_pitch = sorted(e.pitch)[above:below]
+                if len(my_pitch) == 1:
+                    my_pitch = my_pitch[0]
+                e.pitch = my_pitch
                     
 
 

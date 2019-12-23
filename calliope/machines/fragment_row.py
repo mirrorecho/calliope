@@ -6,6 +6,8 @@ class FragmentRow(calliope.Fragment):
     is_simultaneous = False
     metrical_durations = None
     use_child_metrical_durations = False
+    beam_each_division=True
+    beam_rests=True
 
     @property
     def ticks(self):
@@ -161,8 +163,8 @@ class FragmentRow(calliope.Fragment):
             talea=talea,
             read_talea_once_only=True,
             beam_specifier=rmakers.BeamSpecifier(
-                beam_each_division=True,
-                beam_rests=True,
+                beam_each_division=self.beam_each_division,
+                beam_rests=self.beam_rests,
                 ),
             # read_talea_once_only = False, # for testing only...
             # division_masks=division_masks, # for testing only...

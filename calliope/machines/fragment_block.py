@@ -61,12 +61,25 @@ class FragmentBlock(calliope.Fragment):
 
         return cls(*child_rows)
 
-    def to_score(self, *args, **kwargs):
-        return calliope.Score(
-            *[calliope.Staff(n()) for n in self],
-            *args,
-            **kwargs
-            )
+
+    def to_score(self, 
+        score=None, # will append segments to existing score, matching segment names with staff names
+        score_type=calliope.Score, 
+        *args, **kwargs):
+        if score is not None:
+            staff_names = [st.name for st in score.staves]
+            for row in self:
+                if row.name in staff_names:
+                    score.staves[row.name].append(row())
+                # else:
+                #     print("WARNING", row.name, "not in staves:", staff_names)
+            return score
+        else:
+            return score_type(
+                *[calliope.Staff(row()) for row in self],
+                *args,
+                **kwargs
+                )
 
         # TO DO... this would be more elegant, but has an issue...
         # return cls(
