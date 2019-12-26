@@ -15,6 +15,7 @@ class TreeNode(calliope.CalliopeBase):
     Unique tree nodes may have at most one parent and may appear only once in
     the tree.
     """
+    slug = None # used in auto-naming schemes
 
     ### CLASS VARIABLES ###
     # ???????????
