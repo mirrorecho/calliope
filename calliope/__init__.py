@@ -64,6 +64,7 @@ from calliope.transforms.scale_rhythm import ScaleRhythm
 from calliope.transforms.tenu_stacca import TenuStacca
 from calliope.transforms.tag_notes import TagNotes
 from calliope.transforms.standard_durations import StandardDurations
+from calliope.transforms.smear import SmearBefore, SmearAfter
 
 # from calliope.machines.transforms.filtering import Filter, Remove
 # from calliope.machines.transforms.line_stacked import StackedTransform, LineStacked
@@ -77,7 +78,9 @@ from calliope.factories.factory import Factory, FromSelectableFactory, EventBran
 from calliope.factories.chords_from_selectable import ChordsFromSelectable
 from calliope.factories.copy_events import CopyEventsFactory
 # from calliope.factories.stack_pitches import StackPitches # TO DO: this is a dupe
-from calliope.factories.composite_row import CompositeRow, CompositeCell, CompositeLine, SplayRow
+from calliope.factories.composite_row import (
+    CompositeChordsRow, CompositeChordsCell, CompositeChordsLine, CompositeRow, CompositeCell, CompositeLine, 
+    SplayBlock, SplayLineBlock, SplaySegmentBlock)
 from calliope.factories.pitches_through_grid import PitchesThroughGrid
 
 # libraries

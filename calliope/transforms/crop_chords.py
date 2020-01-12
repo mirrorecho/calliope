@@ -16,13 +16,16 @@ class CropChords(calliope.Transform):
 
         for i, e in enumerate(selectable.note_events):
             index = cyclic_indices[i]
-            above = cyclic_above[i] or index
-            below = cyclic_below[i] or index
+            above = cyclic_above[i] 
+            below = cyclic_below[i] 
 
             if e.is_chord:
-                my_pitch = sorted(e.pitch)[above:below]
-                if len(my_pitch) == 1:
-                    my_pitch = my_pitch[0]
+                if above is not None or below is not None:
+                    my_pitch = sorted(e.pitch)[above:below]
+                    if len(my_pitch) == 1:
+                        my_pitch = my_pitch[0]
+                else:
+                    my_pitch = sorted(e.pitch)[index]
                 e.pitch = my_pitch
                     
 

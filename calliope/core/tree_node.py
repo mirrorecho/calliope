@@ -206,9 +206,10 @@ class TreeNode(calliope.CalliopeBase):
             parent_item.remove(self)
             parent_item.remove_if_empty()                 
 
-    def tree_sib(self, degrees):
+    def tree_sib(self, degrees, ancestor=None):
         self_index = 0
-        sib_selection = getattr(self.root, self.select_property)
+        ancestor = ancestor or self.root
+        sib_selection = getattr(ancestor, self.select_property)
         
         # TO DO: there is probably a more elegant / efficient way to do this:
         for i, node in enumerate(sib_selection):
