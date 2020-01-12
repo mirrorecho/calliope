@@ -101,6 +101,7 @@ class Fragment(calliope.Machine):
                 self.respell="sharps"
             else:
                 self.respell="flats"
+        return self
 
     def set_pitches(self, values, skip_rests=False):
         if skip_rests:
