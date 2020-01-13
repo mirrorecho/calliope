@@ -67,8 +67,28 @@ class Bubble(calliope.Tree):
     def ly(self):
         return format(self.blow())
 
-    def get_lilypond_file(self, as_midi=False):
+    def get_lilypond_file(
+        self, 
+        as_midi=False,
+        composer="Randall West",
+        title=None,
+        part_name=None,
+        transpose_me = False,
+        **kwargs,
+        ):
         music = self.blow()
+
+
+        if transpose_me:
+            staves = getattr(self, "staves", None)
+            if staves:
+                abjad_staves = abjad.select(music).components(abjad.Staff)
+                for staff, abjad_staff in zip(staves, abjad_staves):
+                    if staff.instrument:
+                        staff.instrument.transpose_from_sounding_pitch(abjad_staff)
+                        staff.info("transposing to: " + str(staff.instrument.middle_c_sounding_pitch))
+                    else:
+                        staff.warn("CANNOT TRANSPOSE... staff has no instrument")
 
         if as_midi:
             tempo = getattr(self, "midi_tempo", 60)
@@ -85,9 +105,18 @@ class Bubble(calliope.Tree):
                  % tempo, "after")
             abjad.attach(midi_command, music)
 
-        lilypond_file = abjad.LilyPondFile.new(music, includes=self.stylesheets, 
+        lilypond_file = abjad.LilyPondFile.new(
+            music, 
+            includes=self.stylesheets, 
             )
-        self.info("got abjad instance of LilyPondFile... now rendering with lilypond")
+        # self.info("got abjad instance of LilyPondFile... now rendering with lilypond")
+        
+        lilypond_file.header_block.composer = abjad.Markup(composer)
+        if title is not None:
+            lilypond_file.header_block.title = abjad.Markup(title)
+        if part_name is not None:
+            lilypond_file.header_block.piece = abjad.Markup(part_name)
+
         return lilypond_file
 
     def illustrate_me(self, 
@@ -106,7 +135,7 @@ class Bubble(calliope.Tree):
             from abjad import abjad_configuration
             abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 
-        ly_file = self.get_lilypond_file(as_midi=as_midi)
+        ly_file = self.get_lilypond_file(as_midi=as_midi, **kwargs)
         my_persistance_agent = abjad.persist( ly_file )
 
         path = self.get_output_path(**kwargs)

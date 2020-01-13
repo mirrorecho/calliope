@@ -23,6 +23,8 @@ class Segment(calliope.FragmentRow):
     
     # NOTE: this causes issue with SegmentBlock ... why??
     accidental_style = "neo-modern-cautionary" # TO DO... necessary?
+    tempo_font_size = 1
+
 
     # TO DO: would be awesome to implement these!
     # auto_split_rests = True
@@ -122,7 +124,7 @@ class Segment(calliope.FragmentRow):
                 abjad.attach(tempo, music_start)
 
             elif self.tempo_command:
-                tempo_command =  abjad.LilyPondLiteral(r"\tempo \markup \fontsize #3 { %s }" % self.tempo_command, "before")
+                tempo_command =  abjad.LilyPondLiteral(r"\tempo \markup \fontsize #" + str(self.tempo_font_size) + " { %s }" % self.tempo_command, "before")
                 # print(tempo_command)
                 abjad.attach(tempo_command, music_start)
 
