@@ -57,6 +57,13 @@ class TagSet(object):
         super().__init__()
 
     def get_attachment(self, tag_name):
+        def set_note_head(x, index, style):
+            for leaf in x:
+                if isinstance(leaf, abjad.Chord):
+                    abjad.tweak(leaf.note_heads[index]).style = style
+                elif isinstance(leaf, abjad.Note):
+                    abjad.tweak(leaf.note_head).style = style
+
         if tag_name in self.articulations_inventory:
             return abjad.Articulation(name=tag_name)
         elif tag_name in self.dynamics_inventory:
@@ -93,6 +100,11 @@ class TagSet(object):
             return abjad.Clef(tag_name)
         elif tag_name in self.colors_inventory:
             return lambda x : abjad.label(x).color_leaves(tag_name)
+        elif tag_name in self.colors_inventory:
+            return lambda x : abjad.label(x).color_leaves(tag_name)
+        elif tag_name.startswith("note_head:"):
+            my_data = tag_name.split(":")
+            return lambda x: set_note_head(x, int(my_data[1]), my_data[2])
         elif not tag_name in self.stop_spanners_inventory:
             if tag_name[0] == "\\":
                 return abjad.LilyPondLiteral(tag_name, "before")
