@@ -14,11 +14,10 @@ class CompositeChordsRow(calliope.FromSelectableFactory):
             for e in r.events:
                 # (notes override rests)
                 if ticks_counter in pitches_dict:
-                    pitches_dict[ ticks_counter ] -= set(("R",))
                     pitches_dict[ ticks_counter ] |= e.pitch_set 
                 else:
                     pitches_dict[ ticks_counter ] = e.pitch_set
-
+                pitches_dict[ ticks_counter ] -= set(("R",))
                 ticks_counter += e.ticks
         
         # create a list of copies events in the dict,

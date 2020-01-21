@@ -24,6 +24,8 @@ class CropChords(calliope.Transform):
                     my_pitch = sorted(e.pitch)[above:below]
                     if len(my_pitch) == 1:
                         my_pitch = my_pitch[0]
+                elif isinstance(index, (list, tuple)):
+                    my_pitch = [p for i,p in enumerate(sorted(e.pitch)) if i in index]
                 else:
                     my_pitch = sorted(e.pitch)[index]
                 e.pitch = my_pitch

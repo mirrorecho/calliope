@@ -133,16 +133,21 @@ StaffGroup.child_types = (StaffGroup, Staff)
 class Piano(StaffGroup):
     class Piano1(Staff): 
         instrument=abjad.Piano()
+        midi_instrument = "acoustic grand"
     class Piano2(Staff):
         instrument=abjad.Piano()
+        midi_instrument = "acoustic grand"
         clef = "bass"
     lilypond_type='PianoStaff'
+
 
 class Harp(StaffGroup):
     class Harp1(Staff): 
         instrument=abjad.Harp()
+        midi_instrument = "orchestral harp"
     class Harp2(Staff):
         instrument=abjad.Harp()
+        midi_instrument = "orchestral harp"
         clef = "bass"
     lilypond_type='PianoStaff'
 

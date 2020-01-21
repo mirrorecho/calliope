@@ -101,9 +101,14 @@ class Segment(calliope.FragmentRow):
         if len(leaves) > 0:
             music_start = leaves[0]
             
+            # print(self.parent.name, self.rehearsal_mark_number)
             if self.rehearsal_mark_number:
                 mark = abjad.RehearsalMark(number=self.rehearsal_mark_number)
                 abjad.attach(mark, music_start)
+
+                # NOTE ... want to add double bar, but causes odd formatting issues...
+                # bar_command =  abjad.LilyPondLiteral(r""" \bar "]" """, "before")
+                # abjad.attach(bar_command, music_start)
             # NOTE... True adds command to compress, False adds compand to expand, None does nothing
             
             if self.compress_full_bar_rests == True:
