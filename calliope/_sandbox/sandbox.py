@@ -16,21 +16,20 @@ import abjad, abjadext, calliope
 #     def get_branches(self, *args, **kwargs):
 #         return self
 
-
-c = calliope.Cell(
-    rhythm=(-0.5,-0.5,-1,-1,-1), 
-    # pitches=("R","S","S","R")
-    )
-c.events[2].tag("\\<")
-c.events[4].tag("\\!")
-cb1 = calliope.CellBlock(
-    c(),
-    c(),
-    c(),
-    )
-cb2 = cb1(name="FOO")
-cb2.events.setattrs(pitch=4)
-cb1 = cb1 + cb2.select[1:]
+# c = calliope.Cell(
+#     rhythm=(-0.5,-0.5,-1,-1,-1), 
+#     # pitches=("R","S","S","R")
+#     )
+# c.events[2].tag("\\<")
+# c.events[4].tag("\\!")
+# cb1 = calliope.CellBlock(
+#     c(),
+#     c(),
+#     c(),
+#     )
+# cb2 = cb1(name="FOO")
+# cb2.events.setattrs(pitch=4)
+# cb1 = cb1 + cb2.select[1:]
 
 # print(cb1.cells[0,1,2,3,4,5].note_events.selection_root)
 # print(cb2.cells[0,1].note_events.select_from.select_from)

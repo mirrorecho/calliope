@@ -73,6 +73,7 @@ class Bubble(calliope.Tree):
         composer="Randall West",
         title=None,
         part_name=None,
+        piece_name=None,
         transpose_me = False,
         **kwargs,
         ):
@@ -115,7 +116,9 @@ class Bubble(calliope.Tree):
         if title is not None:
             lilypond_file.header_block.title = abjad.Markup(title)
         if part_name is not None:
-            lilypond_file.header_block.piece = abjad.Markup(part_name)
+            lilypond_file.header_block.instrument = abjad.Markup(part_name)
+        if piece_name is not None:
+            lilypond_file.header_block.piece = abjad.Markup(piece_name)
 
         return lilypond_file
 
