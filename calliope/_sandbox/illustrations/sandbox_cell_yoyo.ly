@@ -12,15 +12,14 @@
 
 \score { %! abjad.LilyPondFile._get_formatted_blocks()
     {
-        <
-            \tweak style #'cross
-            e
-            g
-            d'
-            \tweak style #'cross
-            b'
-        >4
-        r4
+        r8
+        [
+        d'8
+        ]
+        e'8
+        [
+        f'8
+        ]
         r2
     }
 } %! abjad.LilyPondFile._get_formatted_blocks()

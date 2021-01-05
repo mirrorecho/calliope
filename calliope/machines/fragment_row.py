@@ -156,23 +156,14 @@ class FragmentRow(calliope.Fragment):
         if my_ticks < metrical_durations_ticks:
             ticks_list.append(my_ticks-metrical_durations_ticks)
 
-        talea = rmakers.Talea(
-            counts=ticks_list, 
-            denominator=calliope.MACHINE_TICKS_PER_WHOLE)
-        talea_rmaker = rmakers.TaleaRhythmMaker(
-            talea=talea,
-            read_talea_once_only=True,
-            beam_specifier=rmakers.BeamSpecifier(
-                beam_each_division=self.beam_each_division,
-                beam_rests=self.beam_rests,
-                ),
-            # read_talea_once_only = False, # for testing only...
-            # division_masks=division_masks, # for testing only...
-            # extra_counts_per_division=extra_counts_per_division, # for testing only...
+        # TO DO: research rmakers more!!!
+        stack = rmakers.stack(
+            rmakers.talea(ticks_list, calliope.MACHINE_TICKS_PER_WHOLE), 
+            rmakers.beam(beam_rests=True), 
+            rmakers.extract_trivial(),
         )
-
-        # print("YO", metrical_durations)
-        leaf_selections = talea_rmaker([abjad.Duration(d) for d in metrical_durations])
+        divisions = [abjad.Duration(d) for d in metrical_durations]
+        leaf_selections = stack(divisions)
         return self.container_type(components=leaf_selections, **kwargs)
 
     def process_rhythm_music(self, music, **kwargs):

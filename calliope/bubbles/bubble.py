@@ -79,7 +79,7 @@ class Bubble(calliope.Tree):
         ):
         music = self.blow()
 
-
+        # TO DO... NOT THE BEST PLACE FOR TRANSPOSITIONS
         if transpose_me:
             staves = getattr(self, "staves", None)
             if staves:
@@ -130,13 +130,15 @@ class Bubble(calliope.Tree):
             **kwargs
         ):
         self.info("ready to illustrate")
+
+        # BELOW IS NO LONGER NEEDED WITH ABJAD CONFIG FILE
         # NOTE... this is odd... with sublimetext using the virtual envionment package on a mac ONLY, 
         # lilypond executable is not found properly (something to do with os.environ not finding the right PATH info)
         # ... adding this here as a bandaid:
-        mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
-        if os.path.exists(mac_default_lilypond_path):
-            from abjad import abjad_configuration
-            abjad_configuration["lilypond_path"] = mac_default_lilypond_path
+        # mac_default_lilypond_path = "/Applications/LilyPond.app/Contents/Resources/bin/lilypond"
+        # if os.path.exists(mac_default_lilypond_path):
+        #     from abjad import abjad_configuration
+        #     abjad_configuration["lilypond_path"] = mac_default_lilypond_path
 
         ly_file = self.get_lilypond_file(as_midi=as_midi, **kwargs)
         my_persistance_agent = abjad.persist( ly_file )
@@ -146,7 +148,8 @@ class Bubble(calliope.Tree):
 
         if as_pdf:
             pdf_filename = "%s.pdf" % path
-            my_persistance_agent.as_pdf(pdf_filename)
+            my_pdf = my_persistance_agent.as_pdf(pdf_filename)
+            print(my_pdf)
             if open_pdf:
                 abjad.IOManager.open_file(pdf_filename)
         if as_midi:

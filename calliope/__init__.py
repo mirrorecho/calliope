@@ -35,6 +35,10 @@ from calliope.machines.line import Line
 from calliope.machines.segment import Segment
 from calliope.machines.fragment_block import FragmentBlock, EventBlock, CellBlock, PhraseBlock, LineBlock, SegmentBlock
 
+# library stuff
+from calliope.core.library import Library
+from calliope.core.library import register
+
 Score.startup_root()
 
 # grids

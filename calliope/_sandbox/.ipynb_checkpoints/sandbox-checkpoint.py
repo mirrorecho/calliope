@@ -1,83 +1,11 @@
-import abjad
-import calliope
-
-
-@calliope.register
-def short_score(lib):
-    lib("boring.simple_cell")
-    lib("boring.simple_cell")
-
-
-@calliope.register
-class FancyScore(calliope.Score):
-    class Oboe1(calliope.Staff):
-        pass
-
-    class Oboe2(calliope.Staff):
-        pass
-
-    lib = calliope.Library(calliope.example_lib)
-
-# eventually, support this:
-# examples.illustrate("boring.simple_cell", "boring.simple_phrase1")
-
-print(dir(examples.lib("SimpleCell")))
+import abjad, calliope
 
 c = calliope.Cell(
     name="YOYO",
-    rhythm=(-0.5, 0.5, 0.5,0.5, -2),
-    pitches=("R", 2, 4, 5, "R")
+    rhythm=(-0.5,-0.5,-1,-1,-1), 
+    pitches=("R",2,4,"R")
     )
-
-
-
-
-# ticks_list = c.get_signed_ticks_list()
-# my_ticks = sum([abs(t) for t in ticks_list])
-
-# metrical_durations = c.get_metrical_durations()
-# metrical_durations_ticks = int(sum([ (d[0]/d[1]) * calliope.MACHINE_TICKS_PER_WHOLE for d in metrical_durations]))
-
-# # add rest at end if needed to prevent talea problems if metrical durations
-# # length is greater than music (my_ticks) length
-# if my_ticks < metrical_durations_ticks:
-#     ticks_list.append(my_ticks-metrical_durations_ticks)
-
-# stack = rmakers.stack(
-#     rmakers.talea(ticks_list, calliope.MACHINE_TICKS_PER_WHOLE), 
-#     rmakers.beam(beam_rests=True), 
-#     rmakers.extract_trivial(),
-# )
-# divisions = [abjad.Duration(d) for d in metrical_durations]
-# new_selections = stack(divisions)
-
-# talea = rmakers.Talea(
-#     counts=ticks_list, 
-#     denominator=calliope.MACHINE_TICKS_PER_WHOLE)
-# talea_rmaker = rmakers.TaleaRhythmMaker(
-#     talea=talea,
-#     read_talea_once_only=True,
-
-#     # NO LONGER IN ABJAD ... 
-#     # beam_specifier=rmakers.BeamSpecifier(
-#     #     beam_each_division=self.beam_each_division,
-#     #     beam_rests=self.beam_rests,
-#     #     ),
-
-#     # read_talea_once_only = False, # for testing only...
-#     # division_masks=division_masks, # for testing only...
-#     # extra_counts_per_division=extra_counts_per_division, # for testing only...
-# )
-
-# leaf_selections = talea_rmaker([abjad.Duration(d) for d in metrical_durations])
-# cont = abjad.Container(components=new_selections)
-# # print(format(cont))
-
-# # calliope.illustrate(c)
-# abjad.show(cont)
-
-
-# calliope.illustrate(c)
+calliope.illustrate(c)
 
 
 # class ShortScore(calliope.®actory, calliope.SegmentBlock):
